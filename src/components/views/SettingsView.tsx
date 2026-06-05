@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { User, Bell, Shield, Moon, Globe, Save } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
 
 const SettingsView = () => {
+  const { theme, setTheme } = useAppContext();
   const [name, setName] = useState('Reggie Martins');
   const [email, setEmail] = useState('reggie@example.com');
   const [currency, setCurrency] = useState('USD');
-  const [theme, setTheme] = useState('dark');
 
   const handleSave = () => {
     alert('Settings saved successfully!');
@@ -83,7 +84,7 @@ const SettingsView = () => {
                 </button>
                 <button 
                   onClick={() => setTheme('dark')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${theme === 'dark' ? 'bg-white dark:bg-slate-800 border-blue-600 text-blue-600 shadow-sm' : 'bg-slate-50 dark:bg-slate-950 border-transparent text-slate-500'}`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${theme === 'dark' ? 'bg-slate-900 border-blue-600 text-blue-600 shadow-sm' : 'bg-slate-50 dark:bg-slate-950 border-transparent text-slate-500'}`}
                 >
                   <Moon size={16} />
                   Dark

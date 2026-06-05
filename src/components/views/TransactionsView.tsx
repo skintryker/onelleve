@@ -21,7 +21,7 @@ interface TransactionsViewProps {
 const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
   const { transactions, deleteTransaction, expenseLogs, incomeLogs } = useAppContext();
   const [searchTerm, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<any>(initialType);
+  const [filterType, setFilterType] = useState<'income' | 'expense' | 'all' | 'investment'>(initialType);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
   
@@ -30,6 +30,7 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
 
   // Sync internal state when initialType changes from sidebar clicks
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilterType(initialType);
   }, [initialType]);
 

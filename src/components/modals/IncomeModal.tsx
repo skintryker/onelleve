@@ -23,6 +23,7 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(null);
       if (editingIncome) {
         setSource(editingIncome.source);

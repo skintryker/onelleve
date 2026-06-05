@@ -120,6 +120,8 @@ interface AppContextType {
   accounts: Account[];
   investments: Investment[];
   summary: AppSummary;
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
   addIncome: (log: Omit<IncomeLog, 'id'>) => void;
   addExpense: (log: Omit<ExpenseLog, 'id'>) => void;
   updateExpense: (id: string, log: Partial<ExpenseLog>) => void;
@@ -137,6 +139,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [theme, setThemeState] = useState<'light' | 'dark'>('dark');
   const [incomeLogs, setIncomeLogs] = useState<IncomeLog[]>([]);
   const [expenseLogs, setExpenseLogs] = useState<ExpenseLog[]>([]);
   const [cards, setCards] = useState<Card[]>([
@@ -298,9 +301,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const setTheme = (t: 'light' | 'dark') => {
+    setThemeState(t);
+    if (t === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
+  // Ensure initial theme is applied on mount
+  React.useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
   return (
     <AppContext.Provider value={{ 
-      incomeLogs, expenseLogs, transactions, cards, accounts, investments, summary,
+      incomeLogs, expenseLogs, transactions, cards, accounts, investments, summary, theme, setTheme,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment
     }}>
