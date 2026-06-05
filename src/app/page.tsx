@@ -38,7 +38,13 @@ export default function Dashboard() {
 
   // 2. Notification Logic (Due Expenses)
   const notifications = useMemo(() => {
-    const alerts = [];
+    interface Alert {
+      id: string;
+      title: string;
+      message: string;
+      type: 'overdue' | 'due-soon';
+    }
+    const alerts: Alert[] = [];
     const today = new Date();
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(today.getDate() + 3);

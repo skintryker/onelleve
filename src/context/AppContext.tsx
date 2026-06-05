@@ -182,7 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       category: log.category,
       amount: -log.amount,
       date: log.date,
-      icon: log.category === 'Food' ? 'Coffee' : log.category === 'Shopping' ? 'ShoppingCart' : 'Smartphone',
+      icon: log.category === 'Dining' ? 'Coffee' : log.category === 'Leisure' ? 'ShoppingCart' : 'Smartphone',
       type: 'expense',
       status: log.status,
       paymentChannel: log.paymentChannel,
