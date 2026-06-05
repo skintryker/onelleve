@@ -20,7 +20,7 @@ const transactionTypes: TransactionType[] = [
 ];
 
 const paymentChannels: PaymentChannel[] = [
-  'Bank', 'Credit Card', 'Autopay', 'Venmo', 'Zelle', 'Cash', 'Other'
+  'Bank', 'Credit Card', 'Autopay', 'Venmo', 'Zelle', 'Cash', 'PayPal'
 ];
 
 const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionModalProps) => {

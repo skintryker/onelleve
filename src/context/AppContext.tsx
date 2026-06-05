@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useMemo } from 'react';
 // --- Interfaces ---
 
 export type TransactionType = 'Purchase' | 'Payment' | 'Autopay' | 'Investment' | 'Income' | 'Other';
-export type PaymentChannel = 'Bank' | 'Credit Card' | 'Autopay' | 'Venmo' | 'Zelle' | 'Cash' | 'Other';
+export type PaymentChannel = 'Bank' | 'Credit Card' | 'Autopay' | 'Venmo' | 'Zelle' | 'Cash' | 'PayPal';
 export type ExpenseCategory = 
   | 'Housing' | 'Groceries' | 'Dining' | 'Leisure' | 'Gifts' 
   | 'Travel' | 'Memberships' | 'Autopay' | 'Credit Card'
