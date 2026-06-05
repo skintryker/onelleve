@@ -66,7 +66,7 @@ export default function ReportsView() {
     const totalIncome = monthIncome.reduce((acc, log) => acc + log.amount, 0);
     const totalSpending = monthExpense.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0);
     
-    // Logic for Cash Out (Bank/Autopay/Card Payments + Manual Investments)
+    // Logic for Cash Out (Bank/Autopay/Card Payments + Investments)
     const cashOutExpenses = monthExpense.filter(log => 
       log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment'
     ).reduce((acc, log) => acc + log.amount, 0);
