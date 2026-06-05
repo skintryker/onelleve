@@ -2,41 +2,91 @@
 
 import React, { useState } from 'react';
 import { useAppContext, Card } from '@/context/AppContext';
-import { Plus, Edit2, Trash2, Wifi } from 'lucide-react';
+import { Plus, Edit2, Trash2, Wifi, Calendar } from 'lucide-react';
 import Modal from '../modals/Modal';
+
+// EXACT 8 options as requested
+const colorOptions = [
+  { name: 'Platinum / Silver', hex: '#C0C0C0' },
+  { name: 'Gold', hex: '#D4AF37' },
+  { name: 'Reserve / Navy', hex: '#0B1220' },
+  { name: 'Apple / White', hex: '#FFFFFF' },
+  { name: 'Black', hex: '#000000' },
+  { name: 'Blue', hex: '#2563EB' },
+  { name: 'Green', hex: '#059669' },
+  { name: 'Purple', hex: '#4F46E5' },
+];
+
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+// Refined gradients for better vibrancy and "Metallic" feel
+const getCardGradient = (hex: string) => {
+  switch (hex) {
+    case '#C0C0C0': return 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%)';
+    case '#D4AF37': return 'linear-gradient(135deg, #fbbf24 0%, #d4af37 50%, #92400e 100%)';
+    case '#0B1220': return 'linear-gradient(135deg, #1e293b 0%, #0b1220 100%)';
+    case '#FFFFFF': return 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)';
+    case '#000000': return 'linear-gradient(135deg, #475569 0%, #000000 100%)';
+    case '#2563EB': return 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)';
+    case '#059669': return 'linear-gradient(135deg, #10b981 0%, #065f46 100%)';
+    case '#4F46E5': return 'linear-gradient(135deg, #6366f1 0%, #3730a3 100%)';
+    default: return hex;
+  }
+};
+
+const getThemeForCard = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('platinum')) return '#C0C0C0';
+  if (n.includes('gold')) return '#D4AF37';
+  if (n.includes('reserve') || n.includes('sapphire')) return '#0B1220';
+  if (n.includes('apple')) return '#FFFFFF';
+  return '#0B1220';
+};
 
 const CardsView = () => {
   const { cards, deleteCard, addCard, editCard } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
 
-  // Defensive check to ensure cards is always an array
   const safeCards = Array.isArray(cards) ? cards : [];
 
   // Form State
   const [cardName, setCardName] = useState('');
-  const [lastFour, setLastFour] = useState('');
+  const [dueDay, setDueDay] = useState('');
   const [expiry, setExpiry] = useState('');
-  const [creditLimit, setCreditLimit] = useState('');
-  const [color, setColor] = useState('bg-slate-900');
+  const [selectedColor, setSelectedColor] = useState('#0B1220');
+  const [annualFee, setAnnualFee] = useState('');
+  const [renewalMonth, setRenewalMonth] = useState('January');
 
   const handleOpenModal = (card: Card | null = null) => {
     if (card) {
       setEditingCard(card);
       setCardName(card.cardName);
-      setLastFour(card.lastFour || '');
+      setDueDay(card.dueDay || '');
       setExpiry(card.expiry || '');
-      setCreditLimit(card.creditLimit.toString());
-      setColor(card.color || 'bg-slate-900');
+      setSelectedColor(card.color || getThemeForCard(card.cardName));
+      setAnnualFee(card.annualFee?.toString() || '');
+      setRenewalMonth(card.renewalMonth || 'January');
     } else {
       setEditingCard(null);
       setCardName('');
-      setLastFour('');
+      setDueDay('');
       setExpiry('');
-      setCreditLimit('');
-      setColor('bg-blue-600');
+      setSelectedColor('#0B1220');
+      setAnnualFee('');
+      setRenewalMonth('January');
     }
     setIsModalOpen(true);
+  };
+
+  const handleNameChange = (val: string) => {
+    setCardName(val);
+    if (!editingCard) {
+      setSelectedColor(getThemeForCard(val));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,15 +94,17 @@ const CardsView = () => {
     const cardData = {
       cardName,
       type: 'Credit' as const,
-      lastFour,
       expiry,
-      creditLimit: parseFloat(creditLimit),
+      creditLimit: 0,
       currentBalance: editingCard ? editingCard.currentBalance : 0,
       totalCharges: editingCard ? editingCard.totalCharges : 0,
       totalPayments: editingCard ? editingCard.totalPayments : 0,
-      availableCredit: editingCard ? (parseFloat(creditLimit) - editingCard.currentBalance) : parseFloat(creditLimit),
-      utilization: editingCard ? (editingCard.currentBalance / parseFloat(creditLimit)) * 100 : 0,
-      color
+      availableCredit: 0,
+      utilization: 0,
+      color: selectedColor,
+      dueDay,
+      annualFee: annualFee ? parseFloat(annualFee) : 0,
+      renewalMonth
     };
 
     if (editingCard) {
@@ -70,145 +122,190 @@ const CardsView = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white">
-      <div className="flex justify-between items-center">
+    <div className="max-w-[1400px] mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white px-4">
+      {/* SECTION HEADER: FIXED ALIGNMENT */}
+      <div className="flex flex-row justify-between items-center">
         <div>
-          <h2 className="text-xl font-bold">Your Cards</h2>
-          <p className="text-sm text-slate-500 font-medium">Manage your physical and virtual cards</p>
+          <h2 className="text-xl font-black uppercase tracking-tight">Credit Cards</h2>
+          <p className="text-xs text-slate-500 font-medium tracking-tight italic">Manage your statements and expiration dates</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-[10px] uppercase tracking-widest whitespace-nowrap"
         >
-          <Plus size={20} />
+          <Plus size={14} />
           Add Card
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {safeCards.map((card) => (
-          <div key={card.id} className="group relative">
-            <div className="absolute -top-3 -right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all z-20">
-              <button 
-                onClick={() => handleOpenModal(card)}
-                className="p-2 bg-white dark:bg-slate-800 shadow-xl rounded-full text-blue-600 border border-slate-100 dark:border-slate-700 hover:scale-110 transition-all"
-              >
-                <Edit2 size={14} />
-              </button>
-              <button 
-                onClick={() => handleDelete(card.id)}
-                className="p-2 bg-white dark:bg-slate-800 shadow-xl rounded-full text-rose-600 border border-slate-100 dark:border-slate-700 hover:scale-110 transition-all"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-
-            <div className={`w-full aspect-[1.6/1] ${card.color} rounded-[32px] p-8 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden group-hover:-translate-y-2 transition-transform duration-500`}>
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+      {/* COMPACT GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {safeCards.map((card) => {
+          const isLight = card.color === '#FFFFFF' || card.color === '#C0C0C0' || card.color === '#D4AF37';
+          
+          return (
+            <div key={card.id} className="bg-white dark:bg-slate-900 p-5 rounded-[28px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all relative group flex flex-col gap-5">
               
-              <div className="flex justify-between items-start relative z-10">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Platinum</p>
-                  <p className="text-sm font-bold">{card.type} Card</p>
-                </div>
-                <Wifi size={24} className="opacity-60 rotate-90" />
+              <div className="flex justify-end gap-1.5">
+                <button 
+                  onClick={() => handleOpenModal(card)}
+                  className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-slate-100 dark:border-slate-700"
+                  title="Edit Card"
+                >
+                  <Edit2 size={11} />
+                </button>
+                <button 
+                  onClick={() => handleDelete(card.id)}
+                  className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-slate-100 dark:border-slate-700"
+                  title="Delete Card"
+                >
+                  <Trash2 size={11} />
+                </button>
               </div>
 
-              <div className="space-y-4 relative z-10">
-                <p className="text-2xl font-mono tracking-[0.2em] font-medium">•••• •••• •••• {card.lastFour || '0000'}</p>
-                <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-[8px] font-black uppercase tracking-widest opacity-60 mb-1">Card Holder</p>
-                    <p className="text-sm font-bold uppercase tracking-wider">{card.cardName}</p>
+              <div 
+                className={`w-full relative overflow-hidden rounded-[18px] shadow-2xl ${isLight ? 'text-slate-900 border border-slate-200' : 'text-white'}`}
+                style={{ 
+                  aspectRatio: '1.586 / 1',
+                  background: getCardGradient(card.color || '#0B1220') 
+                }}
+              >
+                <div className={`absolute top-0 right-0 w-40 h-40 ${isLight ? 'bg-black/5' : 'bg-white/10'} rounded-full -mr-20 -mt-20 blur-3xl`} />
+                
+                <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
+                  <div className="flex justify-between items-start">
+                    <p className={`text-[8px] font-bold uppercase tracking-tight ${isLight ? 'text-slate-500' : 'text-white/60'}`}>Credit Card</p>
+                    <Wifi size={16} className={`${isLight ? 'text-slate-400' : 'text-white/50'} rotate-90`} />
                   </div>
-                  <div className="text-right">
-                    <p className="text-[8px] font-black uppercase tracking-widest opacity-60 mb-1">Expires</p>
-                    <p className="text-sm font-bold">{card.expiry || 'MM/YY'}</p>
+
+                  <div className="py-1 flex justify-center">
+                    <p className="text-lg sm:text-xl font-mono tracking-normal font-medium whitespace-nowrap overflow-hidden text-center">**** **** **** ****</p>
                   </div>
+
+                  <div className="flex justify-between items-end">
+                    <div className="max-w-[65%] space-y-0.5">
+                      <p className={`text-[7px] font-medium ${isLight ? 'text-slate-400' : 'text-white/40'}`}>Card Name</p>
+                      <p className="text-xs font-semibold truncate tracking-tight uppercase">{card.cardName}</p>
+                    </div>
+                    <div className="text-right shrink-0 space-y-0.5">
+                      <p className={`text-[7px] font-medium ${isLight ? 'text-slate-400' : 'text-white/40'}`}>Expires</p>
+                      <p className="text-xs font-semibold tracking-tight">{card.expiry || '12/28'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-end px-1">
+                <div className="space-y-0.5">
+                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">Outstanding</p>
+                  <p className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
+                    ${card.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div className="text-right space-y-0.5">
+                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">Due Day</p>
+                  <p className="text-xs font-black text-blue-600 dark:text-blue-400 flex items-center gap-1.5 leading-none justify-end uppercase">
+                    <Calendar size={12} strokeWidth={2.5} />
+                    Day {card.dueDay || '--'}
+                  </p>
                 </div>
               </div>
             </div>
-
-            <div className="mt-6 px-4 flex justify-between items-center">
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Usage</p>
-                <p className="text-lg font-black">
-                  ${card.currentBalance.toLocaleString()} 
-                  <span className="text-slate-400 font-medium text-sm ml-1">/ ${card.creditLimit.toLocaleString()}</span>
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full border-4 border-blue-600/20 border-t-blue-600 flex items-center justify-center">
-                <span className="text-[10px] font-black">{card.creditLimit > 0 ? Math.round((card.currentBalance / card.creditLimit) * 100) : 0}%</span>
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCard ? 'Edit Card' : 'Add New Card'}>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCard ? 'Edit Card Details' : 'Add New Credit Card'}>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Card Name (e.g. Amex Platinum)</label>
+          <div className="space-y-2 text-slate-900 dark:text-white">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Card Identification</label>
             <input 
               type="text" 
               required
+              placeholder="e.g. AMEX Platinum"
               value={cardName}
-              onChange={(e) => setCardName(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white"
+              onChange={(e) => handleNameChange(e.target.value)}
+              className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          
+          <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Last 4 Digits</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Due Day (1-31)</label>
               <input 
-                type="text" 
-                maxLength={4}
+                type="number" 
+                min="1" 
+                max="31"
                 required
-                value={lastFour}
-                onChange={(e) => setLastFour(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white"
+                placeholder="15"
+                value={dueDay}
+                onChange={(e) => setDueDay(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Expiry (MM/YY)</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Expiry (MM/YY)</label>
               <input 
                 type="text" 
-                placeholder="12/25"
                 required
+                placeholder="12/28"
                 value={expiry}
                 onChange={(e) => setExpiry(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Credit Limit ($)</label>
-            <input 
-              type="number" 
-              required
-              value={creditLimit}
-              onChange={(e) => setCreditLimit(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white font-bold"
-            />
+
+          <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Annual Fee ($)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                placeholder="695.00"
+                value={annualFee}
+                onChange={(e) => setAnnualFee(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Renewal Month</label>
+              <select 
+                value={renewalMonth}
+                onChange={(e) => setRenewalMonth(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold appearance-none focus:ring-2 focus:ring-blue-500/20"
+              >
+                {months.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Card Theme</label>
-            <div className="flex gap-3">
-              {['bg-slate-900', 'bg-blue-600', 'bg-emerald-600', 'bg-indigo-600'].map((c) => (
+
+          <div className="space-y-2 text-slate-900 dark:text-white">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Card Theme</label>
+            <div className="flex flex-wrap gap-4 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+              {colorOptions.map((opt) => (
                 <button
-                  key={c}
+                  key={opt.hex}
                   type="button"
-                  onClick={() => setColor(c)}
-                  className={`w-10 h-10 rounded-full ${c} border-4 ${color === c ? 'border-blue-200 dark:border-blue-900' : 'border-transparent'}`}
-                />
+                  title={opt.name}
+                  onClick={() => setSelectedColor(opt.hex)}
+                  style={{ backgroundColor: opt.hex }}
+                  className={`w-10 h-10 rounded-full border-2 ${selectedColor === opt.hex ? 'ring-4 ring-blue-500/30 border-blue-500 scale-110 shadow-lg' : 'border-slate-200 dark:border-slate-800'} transition-all relative overflow-hidden`}
+                >
+                   {selectedColor === opt.hex && (
+                     <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                     </div>
+                   )}
+                </button>
               ))}
             </div>
           </div>
           <button 
             type="submit"
-            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25"
+            className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
           >
-            {editingCard ? 'Update Card' : 'Create Card'}
+            {editingCard ? 'Update Card' : 'Add Card'}
           </button>
         </form>
       </Modal>

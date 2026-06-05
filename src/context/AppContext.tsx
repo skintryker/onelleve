@@ -4,11 +4,11 @@ import React, { createContext, useContext, useState, useMemo } from 'react';
 
 // --- Interfaces ---
 
-export type TransactionType = 'Purchase' | 'Card Payment' | 'Auto Debit' | 'Manual Investment' | 'Income' | 'Other';
-export type PaymentChannel = 'Bank' | 'Credit Card' | 'Auto Debit' | 'Other';
+export type TransactionType = 'Purchase' | 'Card Payment' | 'Autopay' | 'Manual Investment' | 'Income' | 'Other';
+export type PaymentChannel = 'Bank' | 'Credit Card' | 'Autopay' | 'Venmo' | 'Zelle' | 'Cash' | 'Other';
 export type ExpenseCategory = 
   | 'Housing' | 'Groceries' | 'Dining' | 'Leisure' | 'Gifts' 
-  | 'Travel' | 'Fixed Memberships' | 'Automatic Debit' 
+  | 'Travel' | 'Fixed Memberships' | 'Autopay' 
   | 'Health' | 'Transport' | 'Other' | 'Salary' | 'Investment';
 
 export interface IncomeLog {
@@ -69,6 +69,10 @@ export interface Card {
   notes?: string;
   color?: string;
   type: 'Credit' | 'Debit';
+  dueDay?: string; // Renamed from statementDate
+  annualFee?: number;
+  renewalMonth?: string;
+  expiry?: string;
 }
 
 export interface Account {
@@ -138,7 +142,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [incomeLogs, setIncomeLogs] = useState<IncomeLog[]>([]);
   const [expenseLogs, setExpenseLogs] = useState<ExpenseLog[]>([]);
   const [cards, setCards] = useState<Card[]>([
-    { id: '1', cardName: 'Amex Platinum', creditLimit: 10000, currentBalance: 0, totalCharges: 0, totalPayments: 0, availableCredit: 10000, utilization: 0, color: 'bg-slate-900', type: 'Credit' }
+    { 
+      id: '1', 
+      cardName: 'AMEX Platinum', 
+      creditLimit: 0, 
+      currentBalance: 0, 
+      totalCharges: 0, 
+      totalPayments: 0, 
+      availableCredit: 0, 
+      utilization: 0, 
+      color: '#C0C0C0', 
+      type: 'Credit', 
+      dueDay: '15',
+      annualFee: 695.00,
+      renewalMonth: 'January',
+      expiry: '12/28'
+    }
   ]);
   const [accounts, setAccounts] = useState<Account[]>([
     { id: '1', institution: 'Chase Bank', type: 'Checking', balance: 5000 },
@@ -179,7 +198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const incomeThisMonth = incomeLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => acc + log.amount, 0);
     const spendingThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth && log.transactionType !== 'Card Payment').reduce((acc, log) => acc + log.amount, 0);
     const cashOutThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => {
-        if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Auto Debit' || log.transactionType === 'Card Payment') return acc + log.amount;
+        if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Card Payment') return acc + log.amount;
         return acc;
     }, 0);
     

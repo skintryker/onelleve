@@ -12,15 +12,15 @@ interface TransactionModalProps {
 }
 
 const categories: ExpenseCategory[] = [
-  'Housing', 'Groceries', 'Dining', 'Leisure', 'Gifts', 'Travel', 'Fixed Memberships', 'Automatic Debit', 'Health', 'Transport', 'Other'
+  'Housing', 'Groceries', 'Dining', 'Leisure', 'Gifts', 'Travel', 'Fixed Memberships', 'Autopay', 'Health', 'Transport', 'Other'
 ];
 
 const transactionTypes: TransactionType[] = [
-  'Purchase', 'Card Payment', 'Auto Debit', 'Manual Investment', 'Other'
+  'Purchase', 'Card Payment', 'Autopay', 'Manual Investment', 'Other'
 ];
 
 const paymentChannels: PaymentChannel[] = [
-  'Bank', 'Credit Card', 'Auto Debit', 'Other'
+  'Bank', 'Credit Card', 'Autopay', 'Venmo', 'Zelle', 'Cash', 'Other'
 ];
 
 const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionModalProps) => {
@@ -77,7 +77,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
       category,
       transactionType: type,
       paymentChannel: channel,
-      bank: (channel === 'Bank' || channel === 'Auto Debit' || type === 'Card Payment') ? bank : undefined,
+      bank: (channel === 'Bank' || channel === 'Autopay' || type === 'Card Payment') ? bank : undefined,
       creditCard: (channel === 'Credit Card' || type === 'Card Payment') ? card : undefined,
       status,
       amountPaid: status === 'Paid' ? parseFloat(amount) : 0,
@@ -127,7 +127,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                 placeholder="Ex: Weekly Groceries"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold pl-12"
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-black"
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-black pl-12"
                 />
               </div>
             </div>
@@ -186,7 +186,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {(channel === 'Bank' || channel === 'Auto Debit' || type === 'Card Payment') && (
+            {(channel === 'Bank' || channel === 'Autopay' || type === 'Card Payment') && (
                <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Source Bank</label>
                 <select 

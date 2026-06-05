@@ -74,14 +74,6 @@ export default function Dashboard() {
         return (
           <>
             <SummaryCards />
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-              <div className="xl:col-span-2">
-                <Charts />
-              </div>
-              <div className="xl:col-span-1">
-                <RecentTransactions />
-              </div>
-            </div>
             {searchQuery && (
                <div className="mt-8 bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-4">
                   <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">Search Results for &quot;{searchQuery}&quot;</h3>

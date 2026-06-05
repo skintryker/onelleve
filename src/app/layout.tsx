@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 import { AppProvider } from "@/context/AppContext";
 
 export const metadata: Metadata = {
-  title: "Spendly - Track Expenses",
+  title: "onelleve - Track Expenses",
   description: "Personal finance dashboard to track your income and expenses",
 };
 

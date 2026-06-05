@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext, UnifiedTransaction } from '@/context/AppContext';
 import { 
   ArrowUpRight, 
@@ -22,6 +22,11 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
   const [filterType, setFilterType] = useState(initialType);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any | null>(null);
+
+  // Sync internal state when initialType changes from sidebar clicks
+  useEffect(() => {
+    setFilterType(initialType);
+  }, [initialType]);
 
   const filteredTransactions = transactions.filter(t => {
     const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 

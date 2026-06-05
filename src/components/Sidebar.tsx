@@ -37,39 +37,45 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
   };
 
   return (
-    <div className="w-64 bg-white dark:bg-slate-900 h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-xl md:shadow-none">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-500/20">
-              <Wallet size={24} />
-            </div>
-            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Spendly</span>
-          </div>
-          <button className="md:hidden p-2 text-slate-500" onClick={onClose}>
+    <div className="w-64 bg-white dark:bg-slate-900 h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-xl md:shadow-none relative z-[60]">
+      {/* LOGO AREA: ADJUSTED SCALE (Reduced by 20%) */}
+      <div className="w-full h-28 flex items-center justify-center overflow-hidden pt-2">
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* 
+            ADJUSTED SCALE: 
+            Reduced from 170% to 136% as requested (20% reduction).
+          */}
+          <img 
+            src="/logo-onelleve.jpg" 
+            alt="onelleve" 
+            className="w-[136%] max-w-none h-auto object-contain mix-blend-multiply dark:mix-blend-normal"
+          />
+          <button className="md:hidden absolute right-4 top-4 z-50 p-2 text-slate-500 bg-white/80 rounded-full" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
+      </div>
 
-        <nav className="space-y-1">
+      <div className="p-6 pt-0">
+        <nav className="space-y-1.5 mt-4">
           {menuItems.map((item, index) => (
             <button 
               key={index}
               onClick={() => handleItemClick(item.label)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                 activeItem === item.label 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-[1.02]' 
                   : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800 hover:translate-x-1'
               }`}
             >
-              <item.icon size={20} className={`${activeItem === item.label ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
-              <span className="font-semibold">{item.label}</span>
+              <item.icon size={18} strokeWidth={2.5} className={`${activeItem === item.label ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
+              <span className="font-bold text-sm tracking-tight">{item.label}</span>
             </button>
           ))}
         </nav>
       </div>
 
-      <div className="mt-auto p-6 space-y-1 border-t border-slate-200 dark:border-slate-800">
+      <div className="mt-auto p-6 space-y-1.5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 relative z-10 pb-10">
         <button 
           onClick={() => handleItemClick('Settings')}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${
@@ -78,14 +84,14 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
               : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'
           }`}
         >
-          <Settings size={20} className={`${activeItem === 'Settings' ? 'text-white' : 'group-hover:text-blue-600'}`} />
-          <span className="font-semibold">Settings</span>
+          <Settings size={18} strokeWidth={2.5} className={`${activeItem === 'Settings' ? 'text-white' : 'group-hover:text-blue-600'}`} />
+          <span className="font-bold text-sm tracking-tight">Settings</span>
         </button>
         <button 
           onClick={() => alert('Logging out...')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all font-semibold active:scale-95"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all font-bold text-sm tracking-tight active:scale-95"
         >
-          <LogOut size={20} />
+          <LogOut size={18} strokeWidth={2.5} />
           <span>Logout</span>
         </button>
       </div>
