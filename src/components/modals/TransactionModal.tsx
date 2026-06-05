@@ -41,26 +41,46 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
   useEffect(() => {
     if (isOpen) {
       if (editingTransaction) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setName(editingTransaction.description);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAmount(Math.abs(editingTransaction.amount).toString());
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCategory(editingTransaction.category);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDate(editingTransaction.date);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType(editingTransaction.transactionType);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setChannel(editingTransaction.paymentChannel);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBank(editingTransaction.bank || '');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCard(editingTransaction.creditCard || '');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setStatus(editingTransaction.status);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCarryToNext(editingTransaction.carryToNextPaycheck);
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setName('');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAmount('');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCategory('Other');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDate(new Date().toISOString().split('T')[0]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType('Purchase');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setChannel('Bank');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBank(accounts[0]?.institution || '');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCard(cards[0]?.cardName || '');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setStatus('Paid');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCarryToNext(false);
       }
     }

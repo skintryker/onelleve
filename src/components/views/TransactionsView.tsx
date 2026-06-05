@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAppContext, UnifiedTransaction } from '@/context/AppContext';
+import { useAppContext, UnifiedTransaction, ExpenseLog } from '@/context/AppContext';
 import { 
   ArrowUpRight, 
   ArrowDownLeft, 
@@ -17,14 +17,15 @@ interface TransactionsViewProps {
 }
 
 const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
-  const { transactions, deleteTransaction } = useAppContext();
+  const { transactions, deleteTransaction, expenseLogs } = useAppContext();
   const [searchTerm, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState(initialType);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<any | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<ExpenseLog | null>(null);
 
   // Sync internal state when initialType changes from sidebar clicks
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilterType(initialType);
   }, [initialType]);
 
@@ -42,8 +43,13 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
   };
 
   const handleEdit = (t: UnifiedTransaction) => {
-    setEditingTransaction(t);
-    setIsModalOpen(true);
+    const log = expenseLogs.find(e => e.id === t.id);
+    if (log) {
+      setEditingTransaction(log);
+      setIsModalOpen(true);
+    } else {
+      alert('Editing for Income is not yet implemented in this modal.');
+    }
   };
 
   return (

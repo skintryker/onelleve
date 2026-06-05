@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAppContext, Investment } from '@/context/AppContext';
-import { TrendingUp, Plus, PieChart, Wallet, CreditCard, Banknote } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
+import { TrendingUp, Plus, Wallet, CreditCard, Banknote } from 'lucide-react';
 import Modal from '../modals/Modal';
 
 const InvestmentsView = () => {
@@ -11,7 +11,6 @@ const InvestmentsView = () => {
   
   // Form State
   const [institution, setInstitution] = useState('');
-  const [type, setType] = useState('Stock');
   const [contribution, setContribution] = useState('');
   const [balance, setBalance] = useState('');
   const [payrollDeduction, setPayrollDeduction] = useState(false);
@@ -21,7 +20,7 @@ const InvestmentsView = () => {
     const data = {
       date: new Date().toISOString().split('T')[0],
       institution,
-      accountType: type,
+      accountType: 'Investment',
       contribution: parseFloat(contribution),
       currentBalance: parseFloat(balance),
       payrollDeduction,

@@ -20,12 +20,18 @@ const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) =>
   useEffect(() => {
     if (isOpen) {
       if (editingAccount) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setInstitution(editingAccount.institution);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType(editingAccount.type);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBalance(editingAccount.balance.toString());
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setInstitution('');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType('Checking');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBalance('');
       }
     }
