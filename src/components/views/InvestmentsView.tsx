@@ -52,7 +52,7 @@ const InvestmentsView = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center px-1">
         <div>
           <h2 className="text-xl font-black uppercase tracking-tight">Investment Portfolio</h2>
           <p className="text-sm text-slate-500 font-medium tracking-tight italic">Track your manually entered balances and contributions</p>
@@ -66,14 +66,15 @@ const InvestmentsView = () => {
         </button>
       </div>
 
-      {/* REFINED: Manual Tracking Summary Card */}
+      {/* REFINED: Premium Manual Tracking Summary Card with Consistent Typography */}
       <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50/30 dark:bg-blue-900/5 rounded-full -mr-32 -mt-32 blur-3xl" />
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="space-y-1">
             <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Total Investment Balance</p>
-            <h3 className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+            {/* FIXED: Reduced font size to match standard Dashboard KPI scale (text-3xl) */}
+            <h3 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
               ${totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </h3>
           </div>
