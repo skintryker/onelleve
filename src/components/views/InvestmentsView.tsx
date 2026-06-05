@@ -145,7 +145,7 @@ const InvestmentsView = () => {
         ))}
         {/* Placeholder States if empty */}
         {investments.length === 0 && (
-          ['Robinhood', '401k', 'HSA', 'Apple Savings'].map(label => (
+          ['Stocks/ETF', '401k', 'Roth IRA', 'Savings'].map(label => (
             <div key={label} className="bg-slate-50/50 dark:bg-slate-950 p-8 rounded-[32px] border-2 border-dashed border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center text-center opacity-60">
               <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 mb-4 italic font-black text-lg">?</div>
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</h3>
@@ -166,11 +166,12 @@ const InvestmentsView = () => {
               required
             >
               <option value="">Select Institution</option>
-              <option value="Robinhood">Robinhood</option>
+              <option value="Stocks/ETF">Stocks/ETF</option>
               <option value="401k">401k</option>
+              <option value="Roth IRA">Roth IRA</option>
               <option value="HSA">HSA</option>
-              <option value="Apple Savings">Apple Savings</option>
-              <option value="Other">Other</option>
+              <option value="HYSA">HYSA</option>
+              <option value="Savings">Savings</option>
             </select>
           </div>
           
