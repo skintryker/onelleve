@@ -4,11 +4,11 @@ import React, { createContext, useContext, useState, useMemo } from 'react';
 
 // --- Interfaces ---
 
-export type TransactionType = 'Purchase' | 'Card Payment' | 'Autopay' | 'Manual Investment' | 'Income' | 'Other';
+export type TransactionType = 'Purchase' | 'Payment' | 'Autopay' | 'Manual Investment' | 'Income' | 'Other';
 export type PaymentChannel = 'Bank' | 'Credit Card' | 'Autopay' | 'Venmo' | 'Zelle' | 'Cash' | 'Other';
 export type ExpenseCategory = 
   | 'Housing' | 'Groceries' | 'Dining' | 'Leisure' | 'Gifts' 
-  | 'Travel' | 'Fixed Memberships' | 'Autopay' 
+  | 'Travel' | 'Memberships' | 'Autopay' | 'Credit Card'
   | 'Health' | 'Transport' | 'Other' | 'Salary' | 'Investment';
 
 export interface IncomeLog {
@@ -196,9 +196,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
     const incomeThisMonth = incomeLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => acc + log.amount, 0);
-    const spendingThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth && log.transactionType !== 'Card Payment').reduce((acc, log) => acc + log.amount, 0);
+    const spendingThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.category !== 'Credit Card').reduce((acc, log) => acc + log.amount, 0);
     const cashOutThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => {
-        if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Card Payment') return acc + log.amount;
+        if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment') return acc + log.amount;
         return acc;
     }, 0);
     
@@ -228,10 +228,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addExpense = (log: Omit<ExpenseLog, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9);
     setExpenseLogs(prev => [...prev, { ...log, id }]);
-    if (log.paymentChannel === 'Credit Card' && log.creditCard) {
+    
+    // Purchase adds to card balance
+    if (log.transactionType === 'Purchase' && log.paymentChannel === 'Credit Card' && log.creditCard) {
       setCards(prev => prev.map(card => card.cardName === log.creditCard ? { ...card, currentBalance: card.currentBalance + log.amount, totalCharges: card.totalCharges + log.amount } : card));
     }
+    
+    // Payment reduces card balance AND reduce bank cash
+    if (log.transactionType === 'Payment' && log.creditCard) {
+      setCards(prev => prev.map(card => card.cardName === log.creditCard ? { ...card, currentBalance: card.currentBalance - log.amount, totalPayments: card.totalPayments + log.amount } : card));
+    }
+
+    // Any Bank/Autopay/Payment reduces bank balance
+    if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment') {
+      if (log.bank) {
+        setAccounts(prev => prev.map(acc => acc.institution === log.bank ? { ...acc, balance: acc.balance - log.amount } : acc));
+      }
+    }
   };
+
   const updateExpense = (id: string, log: Partial<ExpenseLog>) => setExpenseLogs(prev => prev.map(item => item.id === id ? { ...item, ...log } : item));
   const deleteExpense = (id: string) => setExpenseLogs(prev => prev.filter(t => t.id !== id));
   
@@ -248,7 +263,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const editAccount = (id: string, account: Partial<Account>) => setAccounts(prev => prev.map(item => item.id === id ? { ...item, ...account } : item));
   const deleteAccount = (id: string) => setAccounts(prev => prev.filter(a => a.id !== id));
   
-  const addInvestment = (inv: Omit<Investment, 'id'>) => setInvestments(prev => [...prev, { ...inv, id: Math.random().toString(36).substr(2, 9) }]);
+  const addInvestment = (inv: Omit<Investment, 'id'>) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setInvestments(prev => [...prev, { ...inv, id }]);
+    
+    // Reduce bank if it's a manual investment from bank
+    if (!inv.payrollDeduction && inv.fromBank) {
+      setAccounts(prev => prev.map(acc => acc.institution === inv.fromBank ? { ...acc, balance: acc.balance - inv.contribution } : acc));
+    }
+  };
 
   return (
     <AppContext.Provider value={{ 

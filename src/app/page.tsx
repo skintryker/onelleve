@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import SummaryCards from '@/components/SummaryCards';
+import AccountsView from '@/components/views/AccountsView';
 import CardsView from '@/components/views/CardsView';
 import InvestmentsView from '@/components/views/InvestmentsView';
 import TransactionsView from '@/components/views/TransactionsView';
@@ -104,9 +105,7 @@ export default function Dashboard() {
           </>
         );
       case 'Accounts':
-        return <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <CardsView />
-        </div>;
+        return <AccountsView />;
       case 'Cards':
         return <CardsView />;
       case 'Investments':

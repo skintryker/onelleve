@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useAppContext, ExpenseLog, TransactionType, PaymentChannel, ExpenseCategory } from '@/context/AppContext';
-import { DollarSign, Tag } from 'lucide-react';
+import { DollarSign, Tag, AlertCircle } from 'lucide-react';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -12,11 +12,11 @@ interface TransactionModalProps {
 }
 
 const categories: ExpenseCategory[] = [
-  'Housing', 'Groceries', 'Dining', 'Leisure', 'Gifts', 'Travel', 'Fixed Memberships', 'Autopay', 'Health', 'Transport', 'Other'
+  'Housing', 'Groceries', 'Dining', 'Leisure', 'Gifts', 'Travel', 'Memberships', 'Autopay', 'Credit Card', 'Health', 'Transport', 'Other'
 ];
 
 const transactionTypes: TransactionType[] = [
-  'Purchase', 'Card Payment', 'Autopay', 'Manual Investment', 'Other'
+  'Purchase', 'Payment', 'Autopay', 'Manual Investment', 'Other'
 ];
 
 const paymentChannels: PaymentChannel[] = [
@@ -28,18 +28,21 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
   
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<ExpenseCategory>('Other');
+  const [category, setCategory] = useState<ExpenseCategory | ''>('');
   const [date, setDate] = useState('');
-  const [type, setType] = useState<TransactionType>('Purchase');
-  const [channel, setChannel] = useState<PaymentChannel>('Bank');
+  const [type, setType] = useState<TransactionType | ''>('');
+  const [channel, setChannel] = useState<PaymentChannel | ''>('');
   const [bank, setBank] = useState('');
   const [card, setCard] = useState('');
-  const [status, setStatus] = useState<'Paid' | 'Pending' | 'Planned'>('Paid');
+  const [status, setStatus] = useState<'Paid' | 'Pending' | 'Planned' | ''>('');
   const [carryToNext, setCarryToNext] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Sync state with editing item safely
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setError(null);
       if (editingTransaction) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setName(editingTransaction.description);
@@ -62,22 +65,23 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setCarryToNext(editingTransaction.carryToNextPaycheck);
       } else {
+        // RESET TO EMPTY/DEFAULT FOR NEW LOGS
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setName('');
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setAmount('');
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCategory('Other');
+        setCategory('');
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setDate(new Date().toISOString().split('T')[0]);
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setType('Purchase');
+        setType('');
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setChannel('Bank');
+        setChannel('');
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setBank(accounts[0]?.institution || '');
+        setBank(''); // DO NOT AUTOFILL
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCard(cards[0]?.cardName || '');
+        setCard(''); // DO NOT AUTOFILL
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setStatus('Paid');
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -85,21 +89,37 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, editingTransaction, accounts, cards]);
+  }, [isOpen, editingTransaction]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // Basic Validations
+    if (!type) { setError('Please select transaction type.'); return; }
+    if (!category) { setError('Please select a category.'); return; }
+    if (!channel) { setError('Please select payment channel.'); return; }
+    
+    // Payment Type Specific Validations
+    if (type === 'Payment' || channel === 'Bank' || channel === 'Autopay') {
+      if (!bank) { setError('Please select source bank.'); return; }
+    }
+    
+    if (type === 'Payment' || channel === 'Credit Card') {
+      if (!card) { setError('Please select target card.'); return; }
+    }
+
     const monthKey = date.slice(0, 7);
     const data = {
       date,
       description: name,
       amount: parseFloat(amount),
-      category,
-      transactionType: type,
-      paymentChannel: channel,
-      bank: (channel === 'Bank' || channel === 'Autopay' || type === 'Card Payment') ? bank : undefined,
-      creditCard: (channel === 'Credit Card' || type === 'Card Payment') ? card : undefined,
-      status,
+      category: category as ExpenseCategory,
+      transactionType: type as TransactionType,
+      paymentChannel: channel as PaymentChannel,
+      bank: (channel === 'Bank' || channel === 'Autopay' || type === 'Payment') ? bank : undefined,
+      creditCard: (channel === 'Credit Card' || type === 'Payment') ? card : undefined,
+      status: (status || 'Paid') as 'Paid' | 'Pending' | 'Planned',
       amountPaid: status === 'Paid' ? parseFloat(amount) : 0,
       carryToNextPaycheck: carryToNext,
       monthKey,
@@ -120,9 +140,16 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
       title={editingTransaction ? 'Edit Log' : 'New Expense Log'}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="flex items-center gap-2 p-3 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold border border-rose-100 animate-in shake duration-300">
+            <AlertCircle size={14} />
+            {error}
+          </div>
+        )}
+
         <div className="space-y-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Type</label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {transactionTypes.map(t => (
               <button
                 key={t}
@@ -174,7 +201,9 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold"
+                required
               >
+                <option value="" disabled>Select Category</option>
                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
             </div>
@@ -187,7 +216,9 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                 value={channel}
                 onChange={(e) => setChannel(e.target.value as PaymentChannel)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold"
+                required
               >
+                <option value="" disabled>Select Channel</option>
                 {paymentChannels.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -197,6 +228,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                 value={status}
                 onChange={(e) => setStatus(e.target.value as 'Paid' | 'Pending' | 'Planned')}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold"
+                required
               >
                 <option value="Paid">Paid</option>
                 <option value="Pending">Pending</option>
@@ -206,7 +238,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {(channel === 'Bank' || channel === 'Autopay' || type === 'Card Payment') && (
+            {(channel === 'Bank' || channel === 'Autopay' || type === 'Payment') && (
                <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Source Bank</label>
                 <select 
@@ -214,11 +246,13 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                   onChange={(e) => setBank(e.target.value)}
                   className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold border-l-4 border-l-blue-500"
                 >
+                  <option value="">Select Bank</option>
                   {accounts.map(b => <option key={b.id} value={b.institution}>{b.institution}</option>)}
+                  {accounts.length === 0 && <option disabled>No banks added yet</option>}
                 </select>
               </div>
             )}
-            {(channel === 'Credit Card' || type === 'Card Payment') && (
+            {(channel === 'Credit Card' || type === 'Payment') && (
                <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Card</label>
                 <select 
@@ -226,7 +260,9 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                   onChange={(e) => setCard(e.target.value)}
                   className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold border-l-4 border-l-emerald-500"
                 >
+                  <option value="">Select Card</option>
                   {cards.map(c => <option key={c.id} value={c.cardName}>{c.cardName}</option>)}
+                  {cards.length === 0 && <option disabled>No cards added yet</option>}
                 </select>
               </div>
             )}
@@ -249,7 +285,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
         <button 
           type="submit"
           className={`w-full py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${
-            type === 'Card Payment' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-blue-600 hover:bg-blue-700'
+            type === 'Payment' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-blue-600 hover:bg-blue-700'
           } text-white`}
         >
           {editingTransaction ? 'Save Log Update' : 'Record Transaction'}
