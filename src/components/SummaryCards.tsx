@@ -13,42 +13,42 @@ const SummaryCards = () => {
       amount: summary.availableBalance,
       icon: Wallet,
       color: 'blue',
-      subtitle: 'Liquid Assets'
+      subtitle: 'Real available cash'
     },
     {
       title: 'Income This Month',
       amount: summary.incomeThisMonth,
       icon: DollarSign,
       color: 'emerald',
-      subtitle: 'Total Net Paychecks'
+      subtitle: 'Total money in'
     },
     {
       title: 'Spending This Month',
       amount: summary.spendingThisMonth,
       icon: Target,
       color: 'rose',
-      subtitle: 'By Category'
+      subtitle: 'Purchases by category'
     },
     {
-      title: 'Cash Out This Month',
-      amount: summary.cashOutThisMonth,
+      title: 'Investment This Month',
+      amount: summary.investmentThisMonth,
       icon: Banknote,
-      color: 'rose',
-      subtitle: 'Actual Outflows'
+      color: 'blue',
+      subtitle: 'Monthly contributions'
     },
     {
       title: 'Card Outstanding',
       amount: summary.cardOutstanding,
       icon: CreditCard,
       color: 'amber',
-      subtitle: 'Unpaid Balances'
+      subtitle: 'Remaining unpaid balance'
     },
     {
       title: 'Investments Total',
       amount: summary.investmentsTotal,
       icon: Building2,
       color: 'indigo',
-      subtitle: 'Accumulated Assets'
+      subtitle: 'Accumulated investments'
     }
   ];
 
@@ -72,7 +72,7 @@ const SummaryCards = () => {
             <h3 className="text-3xl font-black tracking-tighter">
               ${card.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
-            <p className="text-[10px] font-bold text-slate-400 mt-2 italic">{card.subtitle}</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-2 italic tracking-tight">{card.subtitle}</p>
           </div>
         </div>
       ))}

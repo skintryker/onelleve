@@ -64,7 +64,7 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
           </button>
           <button 
             onClick={() => setFilterType('income')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterType === 'income' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:text-emerald-500'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterType === 'income' ? 'bg-emerald-50 text-white shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:text-emerald-500'}`}
           >
             Income
           </button>
@@ -117,7 +117,14 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
                       <div className={`p-2 rounded-lg ${t.type === 'income' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20' : 'bg-slate-100 text-slate-600 dark:bg-slate-800'}`}>
                         {t.type === 'income' ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                       </div>
-                      <span className="font-bold">{t.name}</span>
+                      <div className="flex flex-col">
+                        <span className="font-bold">{t.name}</span>
+                        {t.paymentPlan === 'Installment' && (
+                          <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                            Installment {t.currentInstallment} of {t.totalInstallments}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">

@@ -34,11 +34,11 @@ export interface ExpenseLog {
   paymentChannel: PaymentChannel;
   bank?: string;
   creditCard?: string;
-  installment?: string;
+  paymentPlan: 'One-time' | 'Installment';
+  currentInstallment?: number;
+  totalInstallments?: number;
   status: 'Paid' | 'Pending' | 'Planned';
   amountPaid: number;
-  carryToNextPaycheck: boolean;
-  plannedPaycheck?: string;
   notes?: string;
   monthKey: string;
 }
@@ -55,6 +55,9 @@ export interface UnifiedTransaction {
   paymentChannel?: string;
   bank?: string;
   creditCard?: string;
+  paymentPlan?: 'One-time' | 'Installment';
+  currentInstallment?: number;
+  totalInstallments?: number;
 }
 
 export interface Card {
@@ -104,14 +107,9 @@ interface AppSummary {
   availableBalance: number;
   incomeThisMonth: number;
   spendingThisMonth: number;
-  cashOutThisMonth: number;
+  investmentThisMonth: number;
   cardOutstanding: number;
-  bankBalancesTotal: number;
   investmentsTotal: number;
-  netPosition: number;
-  netFlowThisMonth: number;
-  fourOhOneKMonth: number;
-  hsaMonth: number;
 }
 
 interface AppContextType {
@@ -187,7 +185,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: log.status,
       paymentChannel: log.paymentChannel,
       bank: log.bank,
-      creditCard: log.creditCard
+      creditCard: log.creditCard,
+      paymentPlan: log.paymentPlan,
+      currentInstallment: log.currentInstallment,
+      totalInstallments: log.totalInstallments
     }));
 
     return [...incomes, ...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -195,51 +196,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const incomeThisMonth = incomeLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => acc + log.amount, 0);
-    const spendingThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.category !== 'Credit Card').reduce((acc, log) => acc + log.amount, 0);
-    const cashOutThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => {
-        if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment') return acc + log.amount;
-        return acc;
-    }, 0);
     
-    const manualInvestmentsMonth = investments.filter(inv => inv.monthKey === currentMonth && !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
-    const totalCashOut = cashOutThisMonth + manualInvestmentsMonth;
+    // 1. Income: All income logged this month
+    const incomeThisMonth = incomeLogs
+      .filter(log => log.monthKey === currentMonth)
+      .reduce((acc, log) => acc + log.amount, 0);
+    
+    // 2. Spending: All expenses this month EXCEPT 'Payment' (which are card bill payments)
+    const spendingThisMonth = expenseLogs
+      .filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.category !== 'Credit Card')
+      .reduce((acc, log) => acc + log.amount, 0);
+    
+    // 3. Investment: All contributions logged this month (manual + payroll)
+    const investmentThisMonth = investments
+      .filter(inv => inv.monthKey === currentMonth)
+      .reduce((acc, inv) => acc + inv.contribution, 0);
+
+    // 4. Available Balance: Sum of all current bank balances (already updated by addExpense/addInvestment)
+    const availableBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
+
+    // 5. Card Outstanding: Sum of all current credit card balances
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
-    const bankBalancesTotal = accounts.reduce((acc, account) => acc + account.balance, 0);
+
+    // 6. Investments Total: Sum of all current investment account balances
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
     return {
-      availableBalance: bankBalancesTotal - cardOutstanding,
+      availableBalance,
       incomeThisMonth,
       spendingThisMonth,
-      cashOutThisMonth: totalCashOut,
+      investmentThisMonth,
       cardOutstanding,
-      bankBalancesTotal,
-      investmentsTotal,
-      netPosition: bankBalancesTotal + investmentsTotal - cardOutstanding,
-      netFlowThisMonth: incomeThisMonth - totalCashOut,
-      fourOhOneKMonth: investments.filter(inv => inv.monthKey === currentMonth && inv.institution === '401k').reduce((acc, inv) => acc + inv.contribution, 0),
-      hsaMonth: investments.filter(inv => inv.monthKey === currentMonth && inv.institution === 'HSA').reduce((acc, inv) => acc + inv.contribution, 0)
+      investmentsTotal
     };
   }, [incomeLogs, expenseLogs, cards, accounts, investments]);
 
   // Actions
-  const addIncome = (log: Omit<IncomeLog, 'id'>) => setIncomeLogs(prev => [...prev, { ...log, id: Math.random().toString(36).substr(2, 9) }]);
+  const addIncome = (log: Omit<IncomeLog, 'id'>) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setIncomeLogs(prev => [...prev, { ...log, id }]);
+    
+    // Add to bank balance
+    setAccounts(prev => prev.map(acc => acc.institution === log.depositBank ? { ...acc, balance: acc.balance + log.amount } : acc));
+  };
+
   const addExpense = (log: Omit<ExpenseLog, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9);
     setExpenseLogs(prev => [...prev, { ...log, id }]);
     
-    // Purchase adds to card balance
+    // Purchase with Credit Card -> increase card balance
     if (log.transactionType === 'Purchase' && log.paymentChannel === 'Credit Card' && log.creditCard) {
       setCards(prev => prev.map(card => card.cardName === log.creditCard ? { ...card, currentBalance: card.currentBalance + log.amount, totalCharges: card.totalCharges + log.amount } : card));
     }
     
-    // Payment reduces card balance AND reduce bank cash
+    // Payment (Card Bill) -> decrease card balance AND reduce bank cash
     if (log.transactionType === 'Payment' && log.creditCard) {
       setCards(prev => prev.map(card => card.cardName === log.creditCard ? { ...card, currentBalance: card.currentBalance - log.amount, totalPayments: card.totalPayments + log.amount } : card));
     }
 
-    // Any Bank/Autopay/Payment reduces bank balance
+    // Any transaction that uses Bank/Autopay/Payment -> reduces bank balance
     if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment') {
       if (log.bank) {
         setAccounts(prev => prev.map(acc => acc.institution === log.bank ? { ...acc, balance: acc.balance - log.amount } : acc));

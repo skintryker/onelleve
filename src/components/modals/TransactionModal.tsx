@@ -34,8 +34,9 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
   const [channel, setChannel] = useState<PaymentChannel | ''>('');
   const [bank, setBank] = useState('');
   const [card, setCard] = useState('');
-  const [status, setStatus] = useState<'Paid' | 'Pending' | 'Planned' | ''>('');
-  const [carryToNext, setCarryToNext] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState<'One-time' | 'Installment'>('One-time');
+  const [currentInstallment, setCurrentInstallment] = useState('');
+  const [totalInstallments, setTotalInstallments] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   // Sync state with editing item safely
@@ -61,9 +62,11 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setCard(editingTransaction.creditCard || '');
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setStatus(editingTransaction.status);
+        setPaymentPlan(editingTransaction.paymentPlan || 'One-time');
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCarryToNext(editingTransaction.carryToNextPaycheck);
+        setCurrentInstallment(editingTransaction.currentInstallment?.toString() || '');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTotalInstallments(editingTransaction.totalInstallments?.toString() || '');
       } else {
         // RESET TO EMPTY/DEFAULT FOR NEW LOGS
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -79,13 +82,15 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setChannel('');
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setBank(''); // DO NOT AUTOFILL
+        setBank(''); 
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCard(''); // DO NOT AUTOFILL
+        setCard(''); 
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setStatus('Paid');
+        setPaymentPlan('One-time');
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCarryToNext(false);
+        setCurrentInstallment('');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTotalInstallments('');
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,6 +114,21 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
       if (!card) { setError('Please select target card.'); return; }
     }
 
+    if (paymentPlan === 'Installment') {
+      if (!currentInstallment || !totalInstallments) {
+        setError('Please enter installment details.');
+        return;
+      }
+      if (parseInt(currentInstallment) > parseInt(totalInstallments)) {
+        setError('Current installment cannot exceed total installments.');
+        return;
+      }
+      if (parseInt(totalInstallments) <= 1) {
+        setError('Total installments must be greater than 1.');
+        return;
+      }
+    }
+
     const monthKey = date.slice(0, 7);
     const data = {
       date,
@@ -119,9 +139,11 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
       paymentChannel: channel as PaymentChannel,
       bank: (channel === 'Bank' || channel === 'Autopay' || type === 'Payment') ? bank : undefined,
       creditCard: (channel === 'Credit Card' || type === 'Payment') ? card : undefined,
-      status: (status || 'Paid') as 'Paid' | 'Pending' | 'Planned',
-      amountPaid: status === 'Paid' ? parseFloat(amount) : 0,
-      carryToNextPaycheck: carryToNext,
+      paymentPlan,
+      currentInstallment: paymentPlan === 'Installment' ? parseInt(currentInstallment) : undefined,
+      totalInstallments: paymentPlan === 'Installment' ? parseInt(totalInstallments) : undefined,
+      status: 'Paid' as const, // Defaulting to Paid as per simplified logic
+      amountPaid: parseFloat(amount),
       monthKey,
     };
 
@@ -222,19 +244,61 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                 {paymentChannels.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="space-y-2">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
-               <select 
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'Paid' | 'Pending' | 'Planned')}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold"
+            <div className="space-y-2 text-slate-900 dark:text-white">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date</label>
+              <input 
+                type="date" 
                 required
-              >
-                <option value="Paid">Paid</option>
-                <option value="Pending">Pending</option>
-                <option value="Planned">Planned</option>
-              </select>
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+              />
             </div>
+          </div>
+
+          <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="space-y-2">
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Payment Plan</label>
+               <div className="grid grid-cols-2 gap-2">
+                 {['One-time', 'Installment'].map(plan => (
+                   <button
+                    key={plan}
+                    type="button"
+                    onClick={() => setPaymentPlan(plan as 'One-time' | 'Installment')}
+                    className={`py-3 rounded-xl text-xs font-bold transition-all ${paymentPlan === plan ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg' : 'bg-slate-50 dark:bg-slate-950 text-slate-500'}`}
+                   >
+                     {plan}
+                   </button>
+                 ))}
+               </div>
+            </div>
+
+            {paymentPlan === 'Installment' && (
+              <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Installment</label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    placeholder="1"
+                    value={currentInstallment}
+                    onChange={(e) => setCurrentInstallment(e.target.value)}
+                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Installments</label>
+                  <input 
+                    type="number" 
+                    min="2"
+                    placeholder="6"
+                    value={totalInstallments}
+                    onChange={(e) => setTotalInstallments(e.target.value)}
+                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -267,19 +331,6 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
               </div>
             )}
           </div>
-        </div>
-
-        <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
-           <input 
-            type="checkbox" 
-            id="carryForward"
-            checked={carryToNext}
-            onChange={(e) => setCarryToNext(e.target.checked)}
-            className="w-5 h-5 rounded-lg accent-blue-600"
-           />
-           <label htmlFor="carryForward" className="text-xs font-bold text-slate-600 dark:text-slate-400 cursor-pointer">
-             Carry to next paycheck?
-           </label>
         </div>
 
         <button 
