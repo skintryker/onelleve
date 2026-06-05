@@ -50,7 +50,7 @@ export interface UnifiedTransaction {
   amount: number;
   date: string;
   icon: string;
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'investment';
   status?: string;
   paymentChannel?: string;
   bank?: string;
@@ -181,7 +181,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       amount: -log.amount,
       date: log.date,
       icon: log.category === 'Dining' ? 'Coffee' : log.category === 'Leisure' ? 'ShoppingCart' : 'Smartphone',
-      type: 'expense',
+      type: (log.transactionType === 'Investment' || log.category === 'Investment') ? 'investment' : 'expense',
       status: log.status,
       paymentChannel: log.paymentChannel,
       bank: log.bank,
@@ -191,8 +191,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       totalInstallments: log.totalInstallments
     }));
 
-    return [...incomes, ...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [incomeLogs, expenseLogs]);
+    const unifiedInvestments: UnifiedTransaction[] = investments.map(inv => ({
+      id: inv.id,
+      name: inv.institution,
+      category: 'Investment',
+      amount: -inv.contribution,
+      date: inv.date,
+      icon: 'TrendingUp',
+      type: 'investment'
+    }));
+
+    return [...incomes, ...expenses, ...unifiedInvestments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [incomeLogs, expenseLogs, investments]);
 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
@@ -202,9 +212,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .filter(log => log.monthKey === currentMonth)
       .reduce((acc, log) => acc + log.amount, 0);
     
-    // 2. Spending: All expenses this month EXCEPT 'Payment' (which are card bill payments)
+    // 2. Spending: All expenses this month EXCEPT 'Payment' and 'Investment'
     const spendingThisMonth = expenseLogs
-      .filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.category !== 'Credit Card')
+      .filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.transactionType !== 'Investment' && log.category !== 'Credit Card')
       .reduce((acc, log) => acc + log.amount, 0);
     
     // 3. Investment: All contributions logged this month (manual + payroll)
