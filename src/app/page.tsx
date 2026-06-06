@@ -11,11 +11,12 @@ import ReportsView from '@/components/views/ReportsView';
 import SettingsView from '@/components/views/SettingsView';
 import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
-import { Search, Bell, Menu, Plus, Clock, AlertCircle, X } from 'lucide-react';
+import Auth from '@/components/Auth';
+import { Search, Bell, Menu, Plus, Clock, AlertCircle, X, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 
 export default function Dashboard() {
-  const { transactions } = useAppContext();
+  const { transactions, user, loading } = useAppContext();
   const [activeItem, setActiveItem] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,10 +66,22 @@ export default function Dashboard() {
     return alerts;
   }, [transactions]);
 
-  // 3. Update Timestamp (Calculated on render to avoid cascading state updates)
+  // 3. Update Timestamp
   const lastUpdate = useMemo(() => {
     return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }, [transactions]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-600" size={48} />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
 
   const renderView = () => {
     switch (activeItem) {

@@ -13,6 +13,7 @@ import {
   X,
   Building2
 } from 'lucide-react';
+import { supabase } from '@/utils/supabaseClient';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard' },
@@ -36,21 +37,23 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
     if (onClose) onClose();
   };
 
+  const handleLogout = async () => {
+    if (confirm('Are you sure you want to logout?')) {
+      if (supabase) await supabase.auth.signOut();
+    }
+  };
+
   return (
     <div className="w-64 bg-white dark:bg-slate-900 h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-xl md:shadow-none relative z-[60]">
       {/* LOGO AREA: REFINED SCALE */}
       <div className="w-full h-24 flex items-center justify-center overflow-hidden pt-2">
-        <div className="relative w-full h-full flex items-center justify-center">
-          {/* 
-            REFINED SCALE: 
-            Reduced from 136% to 115% for a slightly more compact brand presence.
-          */}
+        <div className="relative w-full h-full flex items-center justify-center px-4">
           <img 
             src="/logo-onelleve.jpg" 
             alt="onelleve" 
-            className="w-[115%] max-w-none h-auto object-contain mix-blend-multiply dark:mix-blend-normal"
+            className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal"
           />
-          <button className="md:hidden absolute right-4 top-4 z-50 p-2 text-slate-500 bg-white/80 rounded-full" onClick={onClose}>
+          <button className="md:hidden absolute right-0 top-2 p-2 text-slate-500 bg-white/80 rounded-full" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
@@ -88,7 +91,7 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
           <span className="font-bold text-sm tracking-tight">Settings</span>
         </button>
         <button 
-          onClick={() => alert('Logging out...')}
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all font-bold text-sm tracking-tight active:scale-95"
         >
           <LogOut size={18} strokeWidth={2.5} />

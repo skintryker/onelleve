@@ -1,6 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import { supabase } from '@/utils/supabaseClient';
+import { User, Session } from '@supabase/supabase-js';
 
 // --- Interfaces ---
 
@@ -13,6 +15,7 @@ export type ExpenseCategory =
 
 export interface IncomeLog {
   id: string;
+  user_id: string;
   date: string;
   source: string;
   paycheckLabel: string;
@@ -24,6 +27,7 @@ export interface IncomeLog {
 
 export interface ExpenseLog {
   id: string;
+  user_id: string;
   date: string;
   transactionType: TransactionType;
   category: ExpenseCategory;
@@ -62,6 +66,7 @@ export interface UnifiedTransaction {
 
 export interface Card {
   id: string;
+  user_id: string;
   cardName: string;
   creditLimit: number;
   currentBalance: number;
@@ -72,7 +77,7 @@ export interface Card {
   notes?: string;
   color?: string;
   type: 'Credit' | 'Debit';
-  dueDay?: string; // Renamed from statementDate
+  dueDay?: string;
   annualFee?: number;
   renewalMonth?: string;
   expiry?: string;
@@ -80,6 +85,7 @@ export interface Card {
 
 export interface Account {
   id: string;
+  user_id: string;
   institution: string;
   type: string;
   balance: number;
@@ -92,6 +98,7 @@ export interface Account {
 
 export interface Investment {
   id: string;
+  user_id: string;
   date: string;
   institution: string;
   accountType: string;
@@ -113,6 +120,8 @@ interface AppSummary {
 }
 
 interface AppContextType {
+  user: User | null;
+  loading: boolean;
   incomeLogs: IncomeLog[];
   expenseLogs: ExpenseLog[];
   transactions: UnifiedTransaction[];
@@ -122,49 +131,95 @@ interface AppContextType {
   summary: AppSummary;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
-  addIncome: (log: Omit<IncomeLog, 'id'>) => void;
-  addExpense: (log: Omit<ExpenseLog, 'id'>) => void;
-  updateExpense: (id: string, log: Partial<ExpenseLog>) => void;
-  deleteExpense: (id: string) => void;
-  deleteTransaction: (id: string) => void;
-  addCard: (card: Omit<Card, 'id'>) => void;
-  editCard: (id: string, card: Partial<Card>) => void;
-  deleteCard: (id: string) => void;
-  addAccount: (account: Omit<Account, 'id'>) => void;
-  editAccount: (id: string, account: Partial<Account>) => void;
-  deleteAccount: (id: string) => void;
-  addInvestment: (inv: Omit<Investment, 'id'>) => void;
+  refreshData: () => Promise<void>;
+  addIncome: (log: Omit<IncomeLog, 'id' | 'user_id'>) => Promise<void>;
+  addExpense: (log: Omit<ExpenseLog, 'id' | 'user_id'>) => Promise<void>;
+  updateExpense: (id: string, log: Partial<ExpenseLog>) => Promise<void>;
+  deleteExpense: (id: string) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  addCard: (card: Omit<Card, 'id' | 'user_id'>) => Promise<void>;
+  editCard: (id: string, card: Partial<Card>) => Promise<void>;
+  deleteCard: (id: string) => Promise<void>;
+  addAccount: (account: Omit<Account, 'id' | 'user_id'>) => Promise<void>;
+  editAccount: (id: string, account: Partial<Account>) => Promise<void>;
+  deleteAccount: (id: string) => Promise<void>;
+  addInvestment: (inv: Omit<Investment, 'id' | 'user_id'>) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [theme, setThemeState] = useState<'light' | 'dark'>('dark');
+  
   const [incomeLogs, setIncomeLogs] = useState<IncomeLog[]>([]);
   const [expenseLogs, setExpenseLogs] = useState<ExpenseLog[]>([]);
-  const [cards, setCards] = useState<Card[]>([
-    { 
-      id: '1', 
-      cardName: 'AMEX Platinum', 
-      creditLimit: 0, 
-      currentBalance: 0, 
-      totalCharges: 0, 
-      totalPayments: 0, 
-      availableCredit: 0, 
-      utilization: 0, 
-      color: '#C0C0C0', 
-      type: 'Credit', 
-      dueDay: '15',
-      annualFee: 695.00,
-      renewalMonth: 'January',
-      expiry: '12/28'
-    }
-  ]);
-  const [accounts, setAccounts] = useState<Account[]>([
-    { id: '1', institution: 'Chase Bank', type: 'Checking', balance: 5000 },
-    { id: '2', institution: 'Bank of America', type: 'Savings', balance: 4000.30 },
-  ]);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
+
+  // Helper to fetch all data
+  const fetchAllData = async () => {
+    if (!supabase) return;
+    setLoading(true);
+    try {
+      const [
+        { data: inc },
+        { data: exp },
+        { data: crd },
+        { data: acc },
+        { data: inv }
+      ] = await Promise.all([
+        supabase.from('income_log').select('*').order('date', { ascending: false }),
+        supabase.from('expense_log').select('*').order('date', { ascending: false }),
+        supabase.from('credit_cards').select('*').order('cardName'),
+        supabase.from('bank_accounts').select('*').order('institution'),
+        supabase.from('investments').select('*').order('date', { ascending: false })
+      ]);
+
+      setIncomeLogs(inc || []);
+      setExpenseLogs(exp || []);
+      setCards(crd || []);
+      setAccounts(acc || []);
+      setInvestments(inv || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auth Listener
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) fetchAllData();
+      else setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) fetchAllData();
+      else {
+        setIncomeLogs([]);
+        setExpenseLogs([]);
+        setCards([]);
+        setAccounts([]);
+        setInvestments([]);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const refreshData = fetchAllData;
 
   const transactions = useMemo(() => {
     const incomes: UnifiedTransaction[] = incomeLogs.map(log => ({
@@ -209,119 +264,142 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    
-    // 1. Income: All income logged this month
-    const incomeThisMonth = incomeLogs
-      .filter(log => log.monthKey === currentMonth)
-      .reduce((acc, log) => acc + log.amount, 0);
-    
-    // 2. Spending: All expenses this month EXCEPT 'Payment' and 'Investment'
-    const spendingThisMonth = expenseLogs
-      .filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.transactionType !== 'Investment' && log.category !== 'Credit Card')
-      .reduce((acc, log) => acc + log.amount, 0);
-    
-    // 3. Investment: All contributions logged this month (manual + payroll)
-    const investmentThisMonth = investments
-      .filter(inv => inv.monthKey === currentMonth)
-      .reduce((acc, inv) => acc + inv.contribution, 0);
-
-    // 4. Available Balance: Sum of all current bank balances (already updated by addExpense/addInvestment)
+    const incomeThisMonth = incomeLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => acc + log.amount, 0);
+    const spendingThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.transactionType !== 'Investment' && log.category !== 'Credit Card').reduce((acc, log) => acc + log.amount, 0);
+    const investmentThisMonth = investments.filter(inv => inv.monthKey === currentMonth).reduce((acc, inv) => acc + inv.contribution, 0);
     const availableBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
-
-    // 5. Card Outstanding: Sum of all current credit card balances
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
-
-    // 6. Investments Total: Sum of all current investment account balances
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
-    return {
-      availableBalance,
-      incomeThisMonth,
-      spendingThisMonth,
-      investmentThisMonth,
-      cardOutstanding,
-      investmentsTotal
-    };
+    return { availableBalance, incomeThisMonth, spendingThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
   }, [incomeLogs, expenseLogs, cards, accounts, investments]);
 
   // Actions
-  const addIncome = (log: Omit<IncomeLog, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setIncomeLogs(prev => [...prev, { ...log, id }]);
-    
-    // Add to bank balance
-    setAccounts(prev => prev.map(acc => acc.institution === log.depositBank ? { ...acc, balance: acc.balance + log.amount } : acc));
+  const addIncome = async (log: Omit<IncomeLog, 'id' | 'user_id'>) => {
+    if (!user || !supabase) return;
+    await supabase.from('income_log').insert([{ ...log, user_id: user.id }]);
+    await refreshData();
   };
 
-  const addExpense = (log: Omit<ExpenseLog, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setExpenseLogs(prev => [...prev, { ...log, id }]);
+  const addExpense = async (log: Omit<ExpenseLog, 'id' | 'user_id'>) => {
+    if (!user || !supabase) return;
+    await supabase.from('expense_log').insert([{ ...log, user_id: user.id }]);
     
-    // Purchase with Credit Card -> increase card balance
+    // Internal side effects (Updating balances)
     if (log.transactionType === 'Purchase' && log.paymentChannel === 'Credit Card' && log.creditCard) {
-      setCards(prev => prev.map(card => card.cardName === log.creditCard ? { ...card, currentBalance: card.currentBalance + log.amount, totalCharges: card.totalCharges + log.amount } : card));
-    }
-    
-    // Payment (Card Bill) -> decrease card balance AND reduce bank cash
-    if (log.transactionType === 'Payment' && log.creditCard) {
-      setCards(prev => prev.map(card => card.cardName === log.creditCard ? { ...card, currentBalance: card.currentBalance - log.amount, totalPayments: card.totalPayments + log.amount } : card));
-    }
-
-    // Any transaction that uses Bank/Autopay/Payment -> reduces bank balance
-    if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment') {
-      if (log.bank) {
-        setAccounts(prev => prev.map(acc => acc.institution === log.bank ? { ...acc, balance: acc.balance - log.amount } : acc));
+      const card = cards.find(c => c.cardName === log.creditCard);
+      if (card) {
+        await supabase.from('credit_cards').update({ 
+          currentBalance: card.currentBalance + log.amount,
+          totalCharges: card.totalCharges + log.amount
+        }).eq('id', card.id);
       }
     }
-  };
-
-  const updateExpense = (id: string, log: Partial<ExpenseLog>) => setExpenseLogs(prev => prev.map(item => item.id === id ? { ...item, ...log } : item));
-  const deleteExpense = (id: string) => setExpenseLogs(prev => prev.filter(t => t.id !== id));
-  
-  const deleteTransaction = (id: string) => {
-    setIncomeLogs(prev => prev.filter(t => t.id !== id));
-    setExpenseLogs(prev => prev.filter(t => t.id !== id));
-  };
-
-  const addCard = (card: Omit<Card, 'id'>) => setCards(prev => [...prev, { ...card, id: Math.random().toString(36).substr(2, 9) }]);
-  const editCard = (id: string, card: Partial<Card>) => setCards(prev => prev.map(item => item.id === id ? { ...item, ...card } : item));
-  const deleteCard = (id: string) => setCards(prev => prev.filter(c => c.id !== id));
-  
-  const addAccount = (account: Omit<Account, 'id'>) => setAccounts(prev => [...prev, { ...account, id: Math.random().toString(36).substr(2, 9) }]);
-  const editAccount = (id: string, account: Partial<Account>) => setAccounts(prev => prev.map(item => item.id === id ? { ...item, ...account } : item));
-  const deleteAccount = (id: string) => setAccounts(prev => prev.filter(a => a.id !== id));
-  
-  const addInvestment = (inv: Omit<Investment, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setInvestments(prev => [...prev, { ...inv, id }]);
     
-    // Reduce bank if it's a manual investment from bank
-    if (!inv.payrollDeduction && inv.fromBank) {
-      setAccounts(prev => prev.map(acc => acc.institution === inv.fromBank ? { ...acc, balance: acc.balance - inv.contribution } : acc));
+    if (log.transactionType === 'Payment' && log.creditCard) {
+      const card = cards.find(c => c.cardName === log.creditCard);
+      if (card) {
+        await supabase.from('credit_cards').update({ 
+          currentBalance: card.currentBalance - log.amount,
+          totalPayments: card.totalPayments + log.amount
+        }).eq('id', card.id);
+      }
     }
+
+    if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment') {
+      if (log.bank) {
+        const account = accounts.find(a => a.institution === log.bank);
+        if (account) {
+          await supabase.from('bank_accounts').update({ balance: account.balance - log.amount }).eq('id', account.id);
+        }
+      }
+    }
+    await refreshData();
+  };
+
+  const updateExpense = async (id: string, log: Partial<ExpenseLog>) => {
+    if (!supabase) return;
+    await supabase.from('expense_log').update(log).eq('id', id);
+    await refreshData();
+  };
+
+  const deleteExpense = async (id: string) => {
+    if (!supabase) return;
+    await supabase.from('expense_log').delete().eq('id', id);
+    await refreshData();
+  };
+
+  const deleteTransaction = async (id: string) => {
+    if (!supabase) return;
+    await Promise.all([
+      supabase.from('income_log').delete().eq('id', id),
+      supabase.from('expense_log').delete().eq('id', id)
+    ]);
+    await refreshData();
+  };
+
+  const addCard = async (card: Omit<Card, 'id' | 'user_id'>) => {
+    if (!user || !supabase) return;
+    await supabase.from('credit_cards').insert([{ ...card, user_id: user.id }]);
+    await refreshData();
+  };
+
+  const editCard = async (id: string, card: Partial<Card>) => {
+    if (!supabase) return;
+    await supabase.from('credit_cards').update(card).eq('id', id);
+    await refreshData();
+  };
+
+  const deleteCard = async (id: string) => {
+    if (!supabase) return;
+    await supabase.from('credit_cards').delete().eq('id', id);
+    await refreshData();
+  };
+
+  const addAccount = async (account: Omit<Account, 'id' | 'user_id'>) => {
+    if (!user || !supabase) return;
+    await supabase.from('bank_accounts').insert([{ ...account, user_id: user.id }]);
+    await refreshData();
+  };
+
+  const editAccount = async (id: string, account: Partial<Account>) => {
+    if (!supabase) return;
+    await supabase.from('bank_accounts').update(account).eq('id', id);
+    await refreshData();
+  };
+
+  const deleteAccount = async (id: string) => {
+    if (!supabase) return;
+    await supabase.from('bank_accounts').delete().eq('id', id);
+    await refreshData();
+  };
+
+  const addInvestment = async (inv: Omit<Investment, 'id' | 'user_id'>) => {
+    if (!user || !supabase) return;
+    await supabase.from('investments').insert([{ ...inv, user_id: user.id }]);
+    if (!inv.payrollDeduction && inv.fromBank) {
+      const account = accounts.find(a => a.institution === inv.fromBank);
+      if (account) {
+        await supabase.from('bank_accounts').update({ balance: account.balance - inv.contribution }).eq('id', account.id);
+      }
+    }
+    await refreshData();
   };
 
   const setTheme = (t: 'light' | 'dark') => {
     setThemeState(t);
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    if (t === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
   };
 
-  // Ensure initial theme is applied on mount
-  React.useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+  useEffect(() => {
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
   }, [theme]);
 
   return (
     <AppContext.Provider value={{ 
-      incomeLogs, expenseLogs, transactions, cards, accounts, investments, summary, theme, setTheme,
+      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, summary, theme, setTheme, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment
     }}>
