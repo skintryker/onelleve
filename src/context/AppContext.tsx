@@ -454,13 +454,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!user || !supabase) return;
-    const { error } = await supabase.from('user_settings').update(newSettings).eq('user_id', user.id);
+    
+    // Use upsert to handle case where row might not exist yet
+    const { error } = await supabase.from('user_settings').upsert({
+      user_id: user.id,
+      ...newSettings,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
     if (!error) {
-      setSettings(prev => prev ? { ...prev, ...newSettings } : null);
-      if (newSettings.theme) {
-        setThemeState(newSettings.theme);
-        applyTheme(newSettings.theme);
-      }
+      setSettings(prev => {
+        const updated = prev ? { ...prev, ...newSettings } : ({ ...newSettings, user_id: user.id } as UserSettings);
+        if (updated.theme) {
+          setThemeState(updated.theme);
+          applyTheme(updated.theme);
+        }
+        return updated;
+      });
     } else {
       console.error('Error updating settings:', error);
     }

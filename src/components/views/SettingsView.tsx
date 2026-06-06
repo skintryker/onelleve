@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Bell, Shield, Moon, Globe, Save, Check, Key, Mail, Trash2, Loader2 } from 'lucide-react';
+import { User, Bell, Shield, Moon, Globe, Save, Check, Key, Mail, Trash2, Loader2, Sun } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/utils/supabaseClient';
 
@@ -9,6 +9,7 @@ const SettingsView = () => {
   const { user, settings, updateSettings, loading: appLoading } = useAppContext();
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'language'>('profile');
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   
   // Local form states
   const [fullName, setFullName] = useState('');
@@ -52,6 +53,7 @@ const SettingsView = () => {
 
   const handleSaveAll = async () => {
     setSaving(true);
+    setSaveStatus(null);
     try {
       await updateSettings({
         full_name: fullName,
@@ -66,10 +68,10 @@ const SettingsView = () => {
         region: langSettings.region,
         date_format: langSettings.dateFormat
       });
-      alert('Settings saved successfully!');
+      setSaveStatus({ type: 'success', message: 'Settings updated successfully!' });
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('Failed to save settings.');
+      setSaveStatus({ type: 'error', message: 'Failed to save settings.' });
     } finally {
       setSaving(false);
     }
@@ -139,13 +141,14 @@ const SettingsView = () => {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setLocalTheme('light')}
-                    className={`flex-1 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'light' ? 'bg-white text-blue-600 border-blue-600 shadow-sm' : 'bg-slate-50 dark:bg-slate-950 border-transparent text-slate-400'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'light' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-100 dark:bg-slate-950 border-transparent text-slate-500'}`}
                   >
+                    <Sun size={14} />
                     Light
                   </button>
                   <button 
                     onClick={() => setLocalTheme('dark')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'dark' ? 'bg-slate-800 text-blue-400 border-blue-600 shadow-sm' : 'bg-slate-50 dark:bg-slate-950 border-transparent text-slate-400'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'dark' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-100 dark:bg-slate-950 border-transparent text-slate-500'}`}
                   >
                     <Moon size={14} />
                     Dark
@@ -153,11 +156,17 @@ const SettingsView = () => {
                 </div>
               </div>
             </div>
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {saveStatus && (
+                <p className={`text-sm font-bold ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {saveStatus.message}
+                </p>
+              )}
+              <div className="flex-1" />
               <button 
                 disabled={saving}
                 onClick={handleSaveAll} 
-                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50"
               >
                 {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 Save Changes
@@ -191,11 +200,17 @@ const SettingsView = () => {
                 </div>
               ))}
             </div>
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {saveStatus && (
+                <p className={`text-sm font-bold ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {saveStatus.message}
+                </p>
+              )}
+              <div className="flex-1" />
               <button 
                 disabled={saving}
                 onClick={handleSaveAll} 
-                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
               >
                 {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 Save Preferences
@@ -278,11 +293,17 @@ const SettingsView = () => {
                 </select>
               </div>
             </div>
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {saveStatus && (
+                <p className={`text-sm font-bold ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {saveStatus.message}
+                </p>
+              )}
+              <div className="flex-1" />
               <button 
                 disabled={saving}
                 onClick={handleSaveAll} 
-                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
               >
                 {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 Save Changes
@@ -307,7 +328,7 @@ const SettingsView = () => {
             <button 
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
-              className={`w-full flex items-center justify-between px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all group whitespace-nowrap min-w-fit lg:w-full ${activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:border-blue-200'}`}
+              className={`flex items-center justify-between px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all group whitespace-nowrap min-w-fit lg:w-full ${activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:border-blue-200'}`}
             >
               <div className="flex items-center gap-3">
                  <item.icon size={20} />
