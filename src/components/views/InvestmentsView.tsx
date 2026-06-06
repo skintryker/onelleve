@@ -145,7 +145,7 @@ const InvestmentsView = () => {
         ))}
         {/* Placeholder States if empty */}
         {investments.length === 0 && (
-          ['Stocks/ETF', '401k', 'Roth IRA', 'Savings'].map(label => (
+          ['Stocks/ETF', '401k', 'Roth IRA', 'CD'].map(label => (
             <div key={label} className="bg-slate-50/50 dark:bg-slate-950 p-8 rounded-[32px] border-2 border-dashed border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center text-center opacity-60">
               <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 mb-4 italic font-black text-lg">?</div>
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</h3>
@@ -158,43 +158,43 @@ const InvestmentsView = () => {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="New Portfolio Investment">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Institution</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Investment Type</label>
             <select 
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
-              className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white"
+              className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
               required
             >
-              <option value="">Select Institution</option>
+              <option value="">Select Type</option>
               <option value="Stocks/ETF">Stocks/ETF</option>
               <option value="401k">401k</option>
               <option value="Roth IRA">Roth IRA</option>
               <option value="HSA">HSA</option>
               <option value="HYSA">HYSA</option>
-              <option value="Savings">Savings</option>
+              <option value="CD">CD</option>
             </select>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Current Balance</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Balance</label>
               <input 
                 type="number" 
                 required
                 value={balance}
                 onChange={(e) => setBalance(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
                 placeholder="0.00"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Monthly Contribution</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Monthly Contribution</label>
               <input 
                 type="number" 
                 required
                 value={contribution}
                 onChange={(e) => setContribution(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
                 placeholder="0.00"
               />
             </div>
@@ -213,12 +213,14 @@ const InvestmentsView = () => {
              </label>
           </div>
 
-          <button 
-            type="submit"
-            className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl transition-all active:scale-95"
-          >
-            Confirm Investment
-          </button>
+          <div className="pt-2 flex justify-center">
+            <button 
+              type="submit"
+              className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs"
+            >
+              Confirm Investment
+            </button>
+          </div>
         </form>
       </Modal>
     </div>
