@@ -40,19 +40,19 @@ const Auth = () => {
   return (
     // Forced Light Mode for Login Screen
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-900">
-      <div className="w-full max-w-md bg-white rounded-[40px] p-8 md:p-12 border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-500">
+      <div className="w-full max-w-md bg-white rounded-[40px] px-8 py-10 md:px-12 md:py-14 border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-500 flex flex-col justify-center">
         
         {/* BRANDING BLOCK: Logo and Tagline */}
-        <div className="flex flex-col items-center mb-6">
-          {/* Increased logo size and removed byline. Tighter spacing. */}
-          <div className="w-full max-w-[340px] -mb-4">
+        <div className="flex flex-col items-center mb-10">
+          {/* Logo container with tighter vertical spacing to counteract hidden asset padding */}
+          <div className="w-full max-w-[360px] -mb-7">
             <img 
               src="/logo-onelleve.jpg" 
               alt="onelleve" 
               className="w-full h-auto object-contain mix-blend-multiply"
             />
           </div>
-          <p className="text-slate-500 font-medium italic text-[13px] tracking-tight">
+          <p className="text-slate-500 font-medium italic text-[15px] tracking-tight">
             Premium Financial Intelligence
           </p>
         </div>
@@ -105,7 +105,7 @@ const Auth = () => {
           </div>
         </form>
 
-        <div className="mt-8 text-center border-t border-slate-50 pt-6">
+        <div className="mt-6 text-center border-t border-slate-50 pt-4">
           <button 
             onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
             className="text-[10px] font-bold text-slate-400 hover:text-blue-600 uppercase tracking-widest transition-colors"
