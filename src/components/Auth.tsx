@@ -40,16 +40,17 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-900">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[40px] p-10 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-500">
-        <div className="flex flex-col items-center mb-10">
-          {/* OFFICIAL BRANDING: Adjusted size and spacing for premium feel */}
-          <div className="w-full max-w-[300px] mb-3">
+        <div className="flex flex-col items-center mb-8">
+          {/* OFFICIAL BRANDING: Refined size, byline and spacing for premium feel */}
+          <div className="w-full max-w-[350px] mb-2">
             <img 
               src="/logo-onelleve.jpg" 
               alt="onelleve" 
-              className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:bg-white dark:rounded-2xl dark:p-2.5"
+              className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:bg-white dark:rounded-2xl dark:p-3"
             />
           </div>
-          <p className="text-slate-500 font-medium italic">Premium Financial Intelligence</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">by Reggie Martins</p>
+          <p className="text-slate-500 font-medium italic text-sm">Premium Financial Intelligence</p>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-6">
@@ -89,13 +90,15 @@ const Auth = () => {
             </div>
           </div>
 
-          <button 
-            type="submit"
-            disabled={loading}
-            className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/25 active:scale-95 flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
-          </button>
+          <div className="pt-2">
+            <button 
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-95 flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="animate-spin" size={20} /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
+            </button>
+          </div>
         </form>
 
         <div className="mt-8 text-center">
