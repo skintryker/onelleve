@@ -1,60 +1,78 @@
 'use client';
 
-import React, { useState } from 'react';
-import { User, Bell, Shield, Moon, Globe, Save, Check, Key, Mail, Trash2 } from 'lucide-react';
-import { useAppContext, UserSettings } from '@/context/AppContext';
+import React, { useState, useEffect } from 'react';
+import { User, Bell, Shield, Moon, Globe, Save, Check, Key, Mail, Trash2, Loader2 } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/utils/supabaseClient';
 
 const SettingsView = () => {
-  const { user, settings, theme, setTheme, updateSettings } = useAppContext();
+  const { user, settings, updateSettings, loading: appLoading } = useAppContext();
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'language'>('profile');
+  const [saving, setSaving] = useState(false);
   
   // Local form states
-  const [fullName, setFullName] = useState(settings?.full_name || '');
-  const [currency, setCurrency] = useState(settings?.preferred_currency || 'USD');
-  const [localTheme, setLocalTheme] = useState(settings?.theme || 'dark');
+  const [fullName, setFullName] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [localTheme, setLocalTheme] = useState<'light' | 'dark'>('dark');
 
   const [notifs, setNotifs] = useState({
-    email: settings?.email_notifications ?? true,
-    payments: settings?.payment_reminders ?? true,
-    dueDays: settings?.due_day_reminders ?? true,
-    summary: settings?.monthly_summary ?? true,
-    investments: settings?.investment_reminders ?? true,
+    email: true,
+    payments: true,
+    dueDays: true,
+    summary: true,
+    investments: true,
   });
 
   const [langSettings, setLangSettings] = useState({
-    language: settings?.language || 'en',
-    region: settings?.region || 'United States',
-    dateFormat: settings?.date_format || 'MM/DD/YYYY',
+    language: 'en',
+    region: 'United States',
+    dateFormat: 'MM/DD/YYYY',
   });
 
-  const handleSaveProfile = async () => {
-    await updateSettings({
-      full_name: fullName,
-      preferred_currency: currency,
-      theme: localTheme as 'light' | 'dark'
-    });
-    alert('Profile updated successfully!');
-  };
+  // Sync local state with settings from context
+  useEffect(() => {
+    if (settings) {
+      setFullName(settings.full_name || '');
+      setCurrency(settings.preferred_currency || 'USD');
+      setLocalTheme(settings.theme || 'dark');
+      setNotifs({
+        email: settings.email_notifications,
+        payments: settings.payment_reminders,
+        dueDays: settings.due_day_reminders,
+        summary: settings.monthly_summary,
+        investments: settings.investment_reminders,
+      });
+      setLangSettings({
+        language: settings.language || 'en',
+        region: settings.region || 'United States',
+        dateFormat: settings.date_format || 'MM/DD/YYYY',
+      });
+    }
+  }, [settings]);
 
-  const handleSaveNotifications = async () => {
-    await updateSettings({
-      email_notifications: notifs.email,
-      payment_reminders: notifs.payments,
-      due_day_reminders: notifs.dueDays,
-      monthly_summary: notifs.summary,
-      investment_reminders: notifs.investments,
-    });
-    alert('Notifications updated successfully!');
-  };
-
-  const handleSaveLanguage = async () => {
-    await updateSettings({
-      language: langSettings.language,
-      region: langSettings.region,
-      date_format: langSettings.dateFormat,
-    });
-    alert('Region settings updated successfully!');
+  const handleSaveAll = async () => {
+    setSaving(true);
+    try {
+      await updateSettings({
+        full_name: fullName,
+        preferred_currency: currency,
+        theme: localTheme,
+        email_notifications: notifs.email,
+        payment_reminders: notifs.payments,
+        due_day_reminders: notifs.dueDays,
+        monthly_summary: notifs.summary,
+        investment_reminders: notifs.investments,
+        language: langSettings.language,
+        region: langSettings.region,
+        date_format: langSettings.dateFormat
+      });
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Failed to save settings.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -67,11 +85,19 @@ const SettingsView = () => {
     }
   };
 
+  if (appLoading && !settings) {
+    return (
+      <div className="flex items-center justify-center p-20">
+        <Loader2 className="animate-spin text-blue-600" size={32} />
+      </div>
+    );
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'profile':
         return (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Profile Settings</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -80,7 +106,8 @@ const SettingsView = () => {
                   type="text" 
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold text-slate-900 dark:text-white"
+                  placeholder="Your Name"
                 />
               </div>
               <div className="space-y-2">
@@ -100,7 +127,7 @@ const SettingsView = () => {
                 <select 
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold text-slate-900 dark:text-white"
                 >
                   <option value="USD">USD - US Dollar</option>
                   <option value="BRL">BRL - Brazilian Real</option>
@@ -127,8 +154,12 @@ const SettingsView = () => {
               </div>
             </div>
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <button onClick={handleSaveProfile} className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
-                <Save size={16} />
+              <button 
+                disabled={saving}
+                onClick={handleSaveAll} 
+                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 Save Changes
               </button>
             </div>
@@ -136,7 +167,7 @@ const SettingsView = () => {
         );
       case 'notifications':
         return (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Notification Preferences</h3>
             <div className="space-y-4">
               {[
@@ -148,7 +179,7 @@ const SettingsView = () => {
               ].map(item => (
                 <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
                    <div>
-                      <p className="text-sm font-bold">{item.label}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">{item.label}</p>
                       <p className="text-xs text-slate-400">{item.desc}</p>
                    </div>
                    <button 
@@ -161,8 +192,12 @@ const SettingsView = () => {
               ))}
             </div>
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <button onClick={handleSaveNotifications} className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all">
-                <Save size={16} />
+              <button 
+                disabled={saving}
+                onClick={handleSaveAll} 
+                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 Save Preferences
               </button>
             </div>
@@ -170,18 +205,18 @@ const SettingsView = () => {
         );
       case 'security':
         return (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Security & Privacy</h3>
             <div className="space-y-6">
                <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-4 mb-4">
                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl"><Key size={20} /></div>
                      <div>
-                        <p className="text-sm font-bold">Password Management</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">Password Management</p>
                         <p className="text-xs text-slate-400">Secure your account with a strong password</p>
                      </div>
                   </div>
-                  <button onClick={handleResetPassword} className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
+                  <button onClick={handleResetPassword} className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all text-slate-900 dark:text-white">
                     Request Password Reset
                   </button>
                </div>
@@ -207,18 +242,16 @@ const SettingsView = () => {
         );
       case 'language':
         return (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Language & Region</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Language</label>
                 <select 
-                  value={langSettings.language}
-                  onChange={(e) => setLangSettings({...langSettings, language: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold"
+                  disabled
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-400 text-sm font-bold cursor-not-allowed"
                 >
-                  <option value="en">English (US)</option>
-                  <option value="pt">Portuguese (BR)</option>
+                  <option value="en">English only for now</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -226,7 +259,7 @@ const SettingsView = () => {
                 <select 
                   value={langSettings.region}
                   onChange={(e) => setLangSettings({...langSettings, region: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold text-slate-900 dark:text-white"
                 >
                   <option value="United States">United States</option>
                   <option value="Brazil">Brazil</option>
@@ -238,7 +271,7 @@ const SettingsView = () => {
                 <select 
                   value={langSettings.dateFormat}
                   onChange={(e) => setLangSettings({...langSettings, dateFormat: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold text-slate-900 dark:text-white"
                 >
                   <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                   <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -246,8 +279,12 @@ const SettingsView = () => {
               </div>
             </div>
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <button onClick={handleSaveLanguage} className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all">
-                <Save size={16} />
+              <button 
+                disabled={saving}
+                onClick={handleSaveAll} 
+                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 Save Changes
               </button>
             </div>

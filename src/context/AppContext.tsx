@@ -177,8 +177,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
 
+  // Helper to apply theme to document
+  const applyTheme = (t: 'light' | 'dark') => {
+    if (t === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.style.colorScheme = 'light';
+    }
+  };
+
   // Helper to fetch all data
-  const fetchAllData = async () => {
+  const fetchAllData = async (currentUser: User) => {
     if (!supabase) return;
     setLoading(true);
     try {
@@ -195,7 +206,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('credit_cards').select('*').order('cardName'),
         supabase.from('bank_accounts').select('*').order('institution'),
         supabase.from('investments').select('*').order('date', { ascending: false }),
-        supabase.from('user_settings').select('*').single()
+        supabase.from('user_settings').select('*').eq('user_id', currentUser.id).maybeSingle()
       ]);
 
       setIncomeLogs(inc || []);
@@ -208,11 +219,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSettings(set);
         setThemeState(set.theme);
         applyTheme(set.theme);
-      } else if (user) {
+      } else {
         // Create default settings if not exists
         const defaultSettings: Omit<UserSettings, 'id'> = {
-          user_id: user.id,
-          full_name: user.user_metadata?.full_name || '',
+          user_id: currentUser.id,
+          full_name: currentUser.user_metadata?.full_name || '',
           preferred_currency: 'USD',
           theme: 'dark',
           email_notifications: true,
@@ -224,8 +235,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           region: 'United States',
           date_format: 'MM/DD/YYYY'
         };
-        const { data: newSet } = await supabase.from('user_settings').insert([defaultSettings]).select().single();
-        if (newSet) setSettings(newSet);
+        const { data: newSet, error: insertError } = await supabase.from('user_settings').insert([defaultSettings]).select().single();
+        if (newSet) {
+          setSettings(newSet);
+          setThemeState(newSet.theme);
+          applyTheme(newSet.theme);
+        } else if (insertError) {
+          console.error('Error creating default settings:', insertError);
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -234,14 +251,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const applyTheme = (t: 'light' | 'dark') => {
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
-    }
+  const refreshData = async () => {
+    if (user) await fetchAllData(user);
   };
 
   // Auth Listener
@@ -252,14 +263,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchAllData();
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) fetchAllData(u);
       else setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchAllData();
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) fetchAllData(u);
       else {
         setIncomeLogs([]);
         setExpenseLogs([]);
@@ -273,8 +286,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const refreshData = fetchAllData;
 
   const transactions = useMemo(() => {
     const incomes: UnifiedTransaction[] = incomeLogs.map(log => ({
@@ -450,6 +461,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setThemeState(newSettings.theme);
         applyTheme(newSettings.theme);
       }
+    } else {
+      console.error('Error updating settings:', error);
     }
   };
 
