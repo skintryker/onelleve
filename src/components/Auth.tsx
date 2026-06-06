@@ -41,12 +41,12 @@ const Auth = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-900">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[40px] p-10 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-500">
         <div className="flex flex-col items-center mb-10">
-          {/* OFFICIAL BRANDING: Replacing generic icon and text with official logo */}
-          <div className="w-full max-w-[220px] mb-8">
+          {/* OFFICIAL BRANDING: Adjusted size and spacing for premium feel */}
+          <div className="w-full max-w-[300px] mb-3">
             <img 
               src="/logo-onelleve.jpg" 
               alt="onelleve" 
-              className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:bg-white dark:rounded-2xl dark:p-2"
+              className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:bg-white dark:rounded-2xl dark:p-2.5"
             />
           </div>
           <p className="text-slate-500 font-medium italic">Premium Financial Intelligence</p>
