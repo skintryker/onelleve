@@ -26,7 +26,7 @@ const AccountsView = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Bank Accounts</h2>
-          <p className="text-sm text-slate-500 font-medium tracking-tight">Manage your connected financial institutions</p>
+          <p className="text-sm text-slate-500 font-medium tracking-tight">Manage your bank accounts</p>
         </div>
         <button 
           onClick={() => { setEditingAccount(null); setIsModalOpen(true); }}

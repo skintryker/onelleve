@@ -106,12 +106,14 @@ const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) =>
           </div>
         </div>
 
-        <button 
-          type="submit"
-          className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
-        >
-          {editingAccount ? 'Update Account' : 'Connect Account'}
-        </button>
+        <div className="pt-2 flex justify-center">
+          <button 
+            type="submit"
+            className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs"
+          >
+            {editingAccount ? 'Update Account' : 'Add Account'}
+          </button>
+        </div>
       </form>
     </Modal>
   );
