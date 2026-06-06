@@ -18,7 +18,7 @@ import { supabase } from '@/utils/supabaseClient';
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard' },
   { icon: Wallet, label: 'Accounts' },
-  { icon: CreditCard, label: 'Cards' },
+  { icon: CreditCard, label: 'Credit Cards' },
   { icon: Building2, label: 'Investments' },
   { icon: ArrowUpRight, label: 'Income' },
   { icon: ArrowDownLeft, label: 'Expenses' },
@@ -45,9 +45,9 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
 
   return (
     <div className="w-64 md:w-64 bg-white dark:bg-slate-900 h-full md:h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-2xl md:shadow-none relative z-[60]">
-      {/* LOGO AREA: REFINED SCALE */}
-      <div className="w-full h-24 flex items-center justify-center overflow-hidden pt-2 shrink-0">
-        <div className="relative w-full h-full flex items-center justify-center px-6">
+      {/* LOGO AREA: REFINED SCALE - INCREASED SIZE */}
+      <div className="w-full h-28 flex items-center justify-center overflow-hidden pt-2 shrink-0">
+        <div className="relative w-full h-full flex items-center justify-center px-4">
           <img 
             src="/logo-onelleve.jpg" 
             alt="onelleve" 

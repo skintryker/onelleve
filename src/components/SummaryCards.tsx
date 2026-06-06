@@ -37,7 +37,7 @@ const SummaryCards = () => {
       subtitle: 'Monthly contributions'
     },
     {
-      title: 'Card Outstanding',
+      title: 'Credit Cards Outstanding',
       amount: summary.cardOutstanding,
       icon: CreditCard,
       color: 'amber',
