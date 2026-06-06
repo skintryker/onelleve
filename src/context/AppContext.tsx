@@ -322,7 +322,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const incomeThisMonth = incomeLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => acc + log.amount, 0);
     const spendingThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.transactionType !== 'Investment' && log.category !== 'Credit Card').reduce((acc, log) => acc + log.amount, 0);
     const investmentThisMonth = investments.filter(inv => inv.monthKey === currentMonth).reduce((acc, inv) => acc + inv.contribution, 0);
-    const availableBalance = accounts.reduce((acc, account) => acc + account.balance, 0);
+    
+    // Available Balance is the net cash flow for the month: Income - Spending - Manual Investments
+    const manualInvestmentThisMonth = investments
+      .filter(inv => inv.monthKey === currentMonth && !inv.payrollDeduction)
+      .reduce((acc, inv) => acc + inv.contribution, 0);
+    
+    const availableBalance = incomeThisMonth - spendingThisMonth - manualInvestmentThisMonth;
+    
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
@@ -333,6 +340,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addIncome = async (log: Omit<IncomeLog, 'id' | 'user_id'>) => {
     if (!user || !supabase) return;
     await supabase.from('income_log').insert([{ ...log, user_id: user.id }]);
+    
+    // Update Bank Balance
+    if (log.depositBank) {
+      const account = accounts.find(a => a.institution === log.depositBank);
+      if (account) {
+        await supabase.from('bank_accounts').update({ balance: account.balance + log.amount }).eq('id', account.id);
+      }
+    }
+    
     await refreshData();
   };
 

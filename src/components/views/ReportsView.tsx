@@ -267,6 +267,13 @@ export default function ReportsView() {
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
+                         <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
+                         <p className="text-sm font-bold">Manual Investments</p>
+                      </div>
+                      <p className="text-sm font-black">${viewingReport.data.manualInvestments.toLocaleString()}</p>
+                   </div>
+                   <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600"><Wallet size={14} /></div>
                          <p className="text-sm font-bold">Net Position</p>
                       </div>

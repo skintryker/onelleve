@@ -6,7 +6,7 @@ import { TrendingUp, Plus, Wallet, CreditCard, Banknote, Loader2, Calendar, Perc
 import Modal from '../modals/Modal';
 
 const InvestmentsView = () => {
-  const { investments, addInvestment } = useAppContext();
+  const { investments, addInvestment, accounts } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -15,6 +15,7 @@ const InvestmentsView = () => {
   const [contribution, setContribution] = useState('');
   const [balance, setBalance] = useState('');
   const [payrollDeduction, setPayrollDeduction] = useState(false);
+  const [fromBank, setFromBank] = useState('');
 
   // CD Specific State
   const [tenor, setTenor] = useState('');
@@ -33,6 +34,7 @@ const InvestmentsView = () => {
         contribution: institution === 'CD' ? (contribution ? parseFloat(contribution) : 0) : parseFloat(contribution),
         currentBalance: institution === 'CD' ? (balance ? parseFloat(balance) : 0) : parseFloat(balance),
         payrollDeduction,
+        fromBank: !payrollDeduction ? fromBank : undefined,
         monthKey: new Date().toISOString().slice(0, 7),
         // CD fields
         ...(institution === 'CD' ? {
@@ -49,6 +51,7 @@ const InvestmentsView = () => {
       setContribution('');
       setBalance('');
       setPayrollDeduction(false);
+      setFromBank('');
       setTenor('');
       setRate('');
       setValueDate('');
@@ -310,6 +313,21 @@ const InvestmentsView = () => {
                Payroll Deduction? (Directly from paycheck)
              </label>
           </div>
+
+          {!payrollDeduction && (
+            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Source Bank Account</label>
+              <select 
+                value={fromBank}
+                onChange={(e) => setFromBank(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
+                required={!payrollDeduction}
+              >
+                <option value="">Select Bank Account</option>
+                {accounts.map(acc => <option key={acc.id} value={acc.institution}>{acc.institution}</option>)}
+              </select>
+            </div>
+          )}
 
           <div className="pt-2 flex justify-center">
             <button 
