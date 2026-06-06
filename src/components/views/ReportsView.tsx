@@ -236,8 +236,8 @@ export default function ReportsView() {
                    <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${viewingReport.data.totalIncome.toLocaleString()}</p>
                 </div>
                 <div className="bg-rose-50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/20">
-                   <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Total Spending</p>
-                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${viewingReport.data.totalSpending.toLocaleString()}</p>
+                   <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Total Cash Out This Month</p>
+                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${viewingReport.data.totalCashOut.toLocaleString()}</p>
                 </div>
              </div>
 
@@ -247,7 +247,7 @@ export default function ReportsView() {
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><TrendingUp size={14} /></div>
-                         <p className="text-sm font-bold">Total Cash Out</p>
+                         <p className="text-sm font-bold">Actual Cash Out</p>
                       </div>
                       <p className="text-sm font-black">${viewingReport.data.totalCashOut.toLocaleString()}</p>
                    </div>
@@ -265,19 +265,12 @@ export default function ReportsView() {
                       </div>
                       <p className="text-sm font-black">${viewingReport.data.payrollDeduction.toLocaleString()}</p>
                    </div>
-                   <div className="flex justify-between items-center">
+                   <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
-                         <p className="text-sm font-bold">Manual Investments</p>
+                         <p className="text-sm font-bold">Investments Total</p>
                       </div>
-                      <p className="text-sm font-black">${viewingReport.data.manualInvestments.toLocaleString()}</p>
-                   </div>
-                   <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                         <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600"><Wallet size={14} /></div>
-                         <p className="text-sm font-bold">Net Position</p>
-                      </div>
-                      <p className="text-sm font-black text-blue-600">${viewingReport.data.netPosition.toLocaleString()}</p>
+                      <p className="text-sm font-black text-blue-600">${viewingReport.data.investmentsTotal.toLocaleString()}</p>
                    </div>
                 </div>
              </div>
