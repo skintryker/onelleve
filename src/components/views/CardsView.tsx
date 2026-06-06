@@ -60,6 +60,7 @@ const CardsView = () => {
   const [selectedColor, setSelectedColor] = useState('#0B1220');
   const [annualFee, setAnnualFee] = useState('');
   const [renewalMonth, setRenewalMonth] = useState('');
+  const [outstandingBalance, setOutstandingBalance] = useState('');
 
   const handleOpenModal = (card: Card | null = null) => {
     if (card) {
@@ -70,6 +71,7 @@ const CardsView = () => {
       setSelectedColor(card.color || getThemeForCard(card.cardName));
       setAnnualFee(card.annualFee?.toString() || '');
       setRenewalMonth(card.renewalMonth || '');
+      setOutstandingBalance(card.currentBalance.toString());
     } else {
       setEditingCard(null);
       setCardName('');
@@ -78,6 +80,7 @@ const CardsView = () => {
       setSelectedColor('#0B1220');
       setAnnualFee('');
       setRenewalMonth('');
+      setOutstandingBalance('');
     }
     setIsModalOpen(true);
   };
@@ -96,7 +99,7 @@ const CardsView = () => {
       type: 'Credit' as const,
       expiry,
       creditLimit: 0,
-      currentBalance: editingCard ? editingCard.currentBalance : 0,
+      currentBalance: outstandingBalance ? parseFloat(outstandingBalance) : 0,
       totalCharges: editingCard ? editingCard.totalCharges : 0,
       totalPayments: editingCard ? editingCard.totalPayments : 0,
       availableCredit: 0,
@@ -258,6 +261,17 @@ const CardsView = () => {
 
           <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
             <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Outstanding Balance ($)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                placeholder="0.00"
+                value={outstandingBalance}
+                onChange={(e) => setOutstandingBalance(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Annual Fee ($)</label>
               <input 
                 type="number" 
@@ -268,17 +282,18 @@ const CardsView = () => {
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Renewal Month</label>
-              <select 
-                value={renewalMonth}
-                onChange={(e) => setRenewalMonth(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold appearance-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="">e.g. January</option>
-                {months.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
+          </div>
+
+          <div className="space-y-2 text-slate-900 dark:text-white">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Renewal Month</label>
+            <select 
+              value={renewalMonth}
+              onChange={(e) => setRenewalMonth(e.target.value)}
+              className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold appearance-none focus:ring-2 focus:ring-blue-500/20"
+            >
+              <option value="">e.g. January</option>
+              {months.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
           </div>
 
           <div className="space-y-2 text-slate-900 dark:text-white">
@@ -302,12 +317,15 @@ const CardsView = () => {
               ))}
             </div>
           </div>
-          <button 
-            type="submit"
-            className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
-          >
-            {editingCard ? 'Update Card' : 'Add Card'}
-          </button>
+
+          <div className="pt-2 flex justify-center">
+            <button 
+              type="submit"
+              className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
+            >
+              {editingCard ? 'Update Card' : 'Add Card'}
+            </button>
+          </div>
         </form>
       </Modal>
     </div>
