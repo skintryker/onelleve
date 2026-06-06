@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { TrendingUp, Plus, Wallet, CreditCard, Banknote } from 'lucide-react';
+import { TrendingUp, Plus, Wallet, CreditCard, Banknote, Loader2, Calendar, Percent, Clock } from 'lucide-react';
 import Modal from '../modals/Modal';
 
 const InvestmentsView = () => {
   const { investments, addInvestment } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   
   // Form State
   const [institution, setInstitution] = useState('');
@@ -15,24 +16,48 @@ const InvestmentsView = () => {
   const [balance, setBalance] = useState('');
   const [payrollDeduction, setPayrollDeduction] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // CD Specific State
+  const [tenor, setTenor] = useState('');
+  const [rate, setRate] = useState('');
+  const [valueDate, setValueDate] = useState('');
+  const [maturityDate, setMaturityDate] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = {
-      date: new Date().toISOString().split('T')[0],
-      institution,
-      accountType: 'Investment',
-      contribution: parseFloat(contribution),
-      currentBalance: parseFloat(balance),
-      payrollDeduction,
-      monthKey: new Date().toISOString().slice(0, 7)
-    };
-    addInvestment(data);
-    setIsModalOpen(false);
-    // Reset form
-    setInstitution('');
-    setContribution('');
-    setBalance('');
-    setPayrollDeduction(false);
+    setSaving(true);
+    try {
+      const data = {
+        date: new Date().toISOString().split('T')[0],
+        institution,
+        accountType: 'Investment',
+        contribution: parseFloat(contribution),
+        currentBalance: parseFloat(balance),
+        payrollDeduction,
+        monthKey: new Date().toISOString().slice(0, 7),
+        // CD fields
+        ...(institution === 'CD' ? {
+          tenor,
+          rate: parseFloat(rate),
+          value_date: valueDate,
+          maturity_date: maturityDate
+        } : {})
+      };
+      await addInvestment(data);
+      setIsModalOpen(false);
+      // Reset form
+      setInstitution('');
+      setContribution('');
+      setBalance('');
+      setPayrollDeduction(false);
+      setTenor('');
+      setRate('');
+      setValueDate('');
+      setMaturityDate('');
+    } catch (error) {
+      console.error('Error adding investment:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -66,14 +91,13 @@ const InvestmentsView = () => {
         </button>
       </div>
 
-      {/* REFINED: Premium Manual Tracking Summary Card with Consistent Typography */}
+      {/* Manual Tracking Summary Card */}
       <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50/30 dark:bg-blue-900/5 rounded-full -mr-32 -mt-32 blur-3xl" />
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="space-y-1">
             <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Total Investment Balance</p>
-            {/* FIXED: Reduced font size to match standard Dashboard KPI scale (text-3xl) */}
             <h3 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
               ${totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </h3>
@@ -136,10 +160,29 @@ const InvestmentsView = () => {
               <h3 className="text-2xl font-black tracking-tight mb-1">
                 ${inv.currentBalance.toLocaleString()}
               </h3>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 italic uppercase tracking-widest leading-none border-t border-slate-100 dark:border-slate-800 pt-3 inline-block w-full">{inv.accountType}</p>
-              {inv.payrollDeduction && (
-                <span className="inline-block mt-3 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[8px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/30">Payroll</span>
-              )}
+              <div className="mt-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-bold text-slate-400 italic uppercase tracking-widest leading-none mb-2">{inv.accountType}</p>
+                
+                {/* CD Info if available */}
+                {inv.institution === 'CD' && inv.rate && (
+                  <div className="space-y-1 mt-2">
+                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                      <Percent size={10} />
+                      <span>{inv.rate}% APY</span>
+                    </div>
+                    {inv.maturity_date && (
+                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        <Calendar size={10} />
+                        <span>Matures: {inv.maturity_date}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {inv.payrollDeduction && (
+                  <span className="inline-block mt-3 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[8px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/30">Payroll</span>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -174,6 +217,59 @@ const InvestmentsView = () => {
               <option value="CD">CD</option>
             </select>
           </div>
+
+          {/* CD Specific Fields */}
+          {institution === 'CD' && (
+            <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Clock size={12} /> Tenor
+                </label>
+                <input 
+                  type="text" 
+                  value={tenor}
+                  onChange={(e) => setTenor(e.target.value)}
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
+                  placeholder="Ex: 12 Months"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Percent size={12} /> Rate (%)
+                </label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Calendar size={12} /> Value Date
+                </label>
+                <input 
+                  type="date" 
+                  value={valueDate}
+                  onChange={(e) => setValueDate(e.target.value)}
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <Calendar size={12} /> Maturity Date
+                </label>
+                <input 
+                  type="date" 
+                  value={maturityDate}
+                  onChange={(e) => setMaturityDate(e.target.value)}
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
+                />
+              </div>
+            </div>
+          )}
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -216,9 +312,10 @@ const InvestmentsView = () => {
           <div className="pt-2 flex justify-center">
             <button 
               type="submit"
-              className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs"
+              disabled={saving}
+              className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
             >
-              Confirm Investment
+              {saving ? <Loader2 className="animate-spin" size={16} /> : 'Confirm Investment'}
             </button>
           </div>
         </form>

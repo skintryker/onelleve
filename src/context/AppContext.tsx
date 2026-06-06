@@ -108,6 +108,10 @@ export interface Investment {
   payrollDeduction: boolean;
   notes?: string;
   monthKey: string;
+  tenor?: string;
+  rate?: number;
+  value_date?: string;
+  maturity_date?: string;
 }
 
 export interface UserSettings {

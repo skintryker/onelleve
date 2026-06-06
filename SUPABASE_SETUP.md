@@ -94,6 +94,10 @@ create table if not exists public.investments (
   payrollDeduction boolean default false,
   monthKey text,
   notes text,
+  tenor text,
+  rate numeric,
+  value_date date,
+  maturity_date date,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
