@@ -59,7 +59,7 @@ const CardsView = () => {
   const [expiry, setExpiry] = useState('');
   const [selectedColor, setSelectedColor] = useState('#0B1220');
   const [annualFee, setAnnualFee] = useState('');
-  const [renewalMonth, setRenewalMonth] = useState('January');
+  const [renewalMonth, setRenewalMonth] = useState('');
 
   const handleOpenModal = (card: Card | null = null) => {
     if (card) {
@@ -69,7 +69,7 @@ const CardsView = () => {
       setExpiry(card.expiry || '');
       setSelectedColor(card.color || getThemeForCard(card.cardName));
       setAnnualFee(card.annualFee?.toString() || '');
-      setRenewalMonth(card.renewalMonth || 'January');
+      setRenewalMonth(card.renewalMonth || '');
     } else {
       setEditingCard(null);
       setCardName('');
@@ -77,7 +77,7 @@ const CardsView = () => {
       setExpiry('');
       setSelectedColor('#0B1220');
       setAnnualFee('');
-      setRenewalMonth('January');
+      setRenewalMonth('');
     }
     setIsModalOpen(true);
   };
@@ -237,7 +237,7 @@ const CardsView = () => {
                 min="1" 
                 max="31"
                 required
-                placeholder="15"
+                placeholder="e.g. 15"
                 value={dueDay}
                 onChange={(e) => setDueDay(e.target.value)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
@@ -248,7 +248,7 @@ const CardsView = () => {
               <input 
                 type="text" 
                 required
-                placeholder="12/28"
+                placeholder="e.g. 12/28"
                 value={expiry}
                 onChange={(e) => setExpiry(e.target.value)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
@@ -262,7 +262,7 @@ const CardsView = () => {
               <input 
                 type="number" 
                 step="0.01"
-                placeholder="695.00"
+                placeholder="e.g. 695.00"
                 value={annualFee}
                 onChange={(e) => setAnnualFee(e.target.value)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
@@ -275,6 +275,7 @@ const CardsView = () => {
                 onChange={(e) => setRenewalMonth(e.target.value)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold appearance-none focus:ring-2 focus:ring-blue-500/20"
               >
+                <option value="">e.g. January</option>
                 {months.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
