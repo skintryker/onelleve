@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Bell, Shield, Globe, Save, Mail, Loader2, Key, LogOut, Check } from 'lucide-react';
+import { User, Bell, Shield, Globe, Save, Mail, Loader2, Key, LogOut, Check, Trash2 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/utils/supabaseClient';
 
@@ -138,9 +138,9 @@ const SettingsView = () => {
         );
       case 'notifications':
         return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-8">Notifications</h3>
-            <div className="space-y-4">
+          <div className="space-y-4 animate-in fade-in duration-300">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Notifications</h3>
+            <div className="grid grid-cols-1 gap-3">
               {[
                 { label: 'Email notifications', desc: 'Monthly summaries and important alerts' },
                 { label: 'Payment reminders', desc: 'Reminders for upcoming manual payments' },
@@ -148,13 +148,13 @@ const SettingsView = () => {
                 { label: 'Monthly summary', desc: 'Detailed report of your financial performance' },
                 { label: 'Investment reminders', desc: 'Notifications for manual investment contributions' }
               ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800">
                   <div>
-                    <p className="text-sm font-bold">{item.label}</p>
-                    <p className="text-xs text-slate-400">{item.desc}</p>
+                    <p className="text-xs font-bold">{item.label}</p>
+                    <p className="text-[10px] text-slate-400">{item.desc}</p>
                   </div>
-                  <div className="w-12 h-6 bg-slate-200 dark:bg-slate-800 rounded-full relative cursor-not-allowed opacity-50">
-                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                  <div className="w-10 h-5 bg-slate-200 dark:bg-slate-800 rounded-full relative cursor-not-allowed opacity-50">
+                    <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full shadow-sm" />
                   </div>
                 </div>
               ))}
@@ -163,38 +163,56 @@ const SettingsView = () => {
         );
       case 'security':
         return (
-          <div className="space-y-8 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-8">Security & Privacy</h3>
-            <div className="space-y-6">
-               <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-4 mb-6">
-                     <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl"><Key size={20} /></div>
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Security & Privacy</h3>
+            
+            <div className="space-y-4">
+               {/* Password Card */}
+               <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Key size={16} /></div>
                      <div>
-                        <p className="text-sm font-bold">Password Management</p>
-                        <p className="text-xs text-slate-400">Request a secure link to change your password</p>
+                        <p className="text-xs font-bold uppercase tracking-tight">Password Management</p>
+                        <p className="text-[10px] text-slate-400">Request a secure link to change your password</p>
                      </div>
                   </div>
-                  <button onClick={handleResetPassword} className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all text-slate-900 dark:text-white active:scale-95">
-                    Request Password Reset
+                  <button onClick={handleResetPassword} className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all text-slate-900 dark:text-white active:scale-95 shadow-sm">
+                    Reset Password
                   </button>
                </div>
 
-               <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center justify-between mb-4">
-                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-xl"><LogOut size={20} /></div>
-                        <div>
-                           <p className="text-sm font-bold">Session Control</p>
-                           <p className="text-xs text-slate-400">Log out from this device</p>
-                        </div>
+               {/* Session Card */}
+               <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-lg"><LogOut size={16} /></div>
+                     <div>
+                        <p className="text-xs font-bold uppercase tracking-tight">Session Control</p>
+                        <p className="text-[10px] text-slate-400">Log out from this device</p>
                      </div>
-                     <button onClick={handleLogout} className="px-6 py-2 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all active:scale-95">
-                        Logout
+                  </div>
+                  <button onClick={handleLogout} className="px-4 py-2 bg-rose-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all active:scale-95 shadow-sm">
+                     Logout
+                  </button>
+               </div>
+
+               {/* Danger Zone */}
+               <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-4 text-rose-500">
+                     <Trash2 size={16} />
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em]">Danger Zone</p>
+                  </div>
+                  <div className="p-4 bg-rose-50/30 dark:bg-rose-950/20 rounded-xl border border-rose-100/50 dark:border-rose-900/30 flex items-center justify-between">
+                     <div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">Delete Account</p>
+                        <p className="text-[10px] text-slate-400 italic">Delete Account coming soon</p>
+                     </div>
+                     <button disabled className="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-not-allowed opacity-50">
+                        Delete
                      </button>
                   </div>
                </div>
                
-               <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic mt-4">
+               <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">
                  Your financial data is stored securely and tied to your account.
                </p>
             </div>
@@ -202,29 +220,29 @@ const SettingsView = () => {
         );
       case 'region':
         return (
-          <div className="space-y-8 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-8">Language & Region</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Language</label>
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Language & Region</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Language</label>
                 <select 
                   disabled
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-400 text-sm font-bold cursor-not-allowed"
+                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 text-xs font-bold cursor-not-allowed"
                 >
                   <option value="en">English only for now</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Region</label>
-                <select className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold appearance-none outline-none">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Region</label>
+                <select className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white">
                   <option value="US">United States</option>
                   <option value="BR">Brazil</option>
                   <option value="EU">Europe</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date Format</label>
-                <select className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold appearance-none outline-none">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Date Format</label>
+                <select className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white">
                   <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                   <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                 </select>
