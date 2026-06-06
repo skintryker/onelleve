@@ -30,16 +30,16 @@ const InvestmentsView = () => {
         date: new Date().toISOString().split('T')[0],
         institution,
         accountType: 'Investment',
-        contribution: parseFloat(contribution),
-        currentBalance: parseFloat(balance),
+        contribution: institution === 'CD' ? (contribution ? parseFloat(contribution) : 0) : parseFloat(contribution),
+        currentBalance: institution === 'CD' ? (balance ? parseFloat(balance) : 0) : parseFloat(balance),
         payrollDeduction,
         monthKey: new Date().toISOString().slice(0, 7),
         // CD fields
         ...(institution === 'CD' ? {
           tenor,
-          rate: parseFloat(rate),
-          value_date: valueDate,
-          maturity_date: maturityDate
+          rate: rate ? parseFloat(rate) : 0,
+          value_date: valueDate || null,
+          maturity_date: maturityDate || null
         } : {})
       };
       await addInvestment(data);
@@ -271,30 +271,32 @@ const InvestmentsView = () => {
             </div>
           )}
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Balance</label>
-              <input 
-                type="number" 
-                required
-                value={balance}
-                onChange={(e) => setBalance(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                placeholder="0.00"
-              />
+          {institution !== 'CD' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Balance</label>
+                <input 
+                  type="number" 
+                  required
+                  value={balance}
+                  onChange={(e) => setBalance(e.target.value)}
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Monthly Contribution</label>
+                <input 
+                  type="number" 
+                  required
+                  value={contribution}
+                  onChange={(e) => setContribution(e.target.value)}
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
+                  placeholder="0.00"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Monthly Contribution</label>
-              <input 
-                type="number" 
-                required
-                value={contribution}
-                onChange={(e) => setContribution(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
+          )}
 
           <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
              <input 

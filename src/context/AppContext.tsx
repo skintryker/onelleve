@@ -110,8 +110,8 @@ export interface Investment {
   monthKey: string;
   tenor?: string;
   rate?: number;
-  value_date?: string;
-  maturity_date?: string;
+  value_date?: string | null;
+  maturity_date?: string | null;
 }
 
 export interface UserSettings {
