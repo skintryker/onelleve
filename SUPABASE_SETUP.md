@@ -6,7 +6,7 @@ Execute the following SQL in your Supabase SQL Editor to create the necessary ta
 
 ```sql
 -- Bank Accounts Table
-create table bank_accounts (
+create table if not exists public.bank_accounts (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
   institution text not null,
@@ -22,7 +22,7 @@ create table bank_accounts (
 );
 
 -- Credit Cards Table
-create table credit_cards (
+create table if not exists public.credit_cards (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
   cardName text not null,
@@ -44,7 +44,7 @@ create table credit_cards (
 );
 
 -- Income Log Table
-create table income_log (
+create table if not exists public.income_log (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
   date date not null,
@@ -58,7 +58,7 @@ create table income_log (
 );
 
 -- Expense Log Table
-create table expense_log (
+create table if not exists public.expense_log (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
   date date not null,
@@ -82,7 +82,7 @@ create table expense_log (
 );
 
 -- Investments Table
-create table investments (
+create table if not exists public.investments (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
   date date not null,
@@ -97,72 +97,64 @@ create table investments (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- User Settings Table
-create table user_settings (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users not null unique,
+-- User Settings Table (CORRECTED)
+create table if not exists public.user_settings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade unique,
   full_name text,
   preferred_currency text default 'USD',
-  theme text default 'dark',
-  email_notifications boolean default true,
-  payment_reminders boolean default true,
-  due_day_reminders boolean default true,
-  monthly_summary boolean default true,
-  investment_reminders boolean default true,
-  language text default 'en',
-  region text default 'United States',
-  date_format text default 'MM/DD/YYYY',
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 ```
 
 ## 2. Enable Row Level Security (RLS)
 
 ```sql
-alter table bank_accounts enable row level security;
-alter table credit_cards enable row level security;
-alter table income_log enable row level security;
-alter table expense_log enable row level security;
-alter table investments enable row level security;
-alter table user_settings enable row level security;
+alter table public.bank_accounts enable row level security;
+alter table public.credit_cards enable row level security;
+alter table public.income_log enable row level security;
+alter table public.expense_log enable row level security;
+alter table public.investments enable row level security;
+alter table public.user_settings enable row level security;
 ```
 
 ## 3. Create RLS Policies
 
 ```sql
 -- Policies for bank_accounts
-create policy "Users can view own bank_accounts" on bank_accounts for select using (auth.uid() = user_id);
-create policy "Users can insert own bank_accounts" on bank_accounts for insert with check (auth.uid() = user_id);
-create policy "Users can update own bank_accounts" on bank_accounts for update using (auth.uid() = user_id);
-create policy "Users can delete own bank_accounts" on bank_accounts for delete using (auth.uid() = user_id);
+create policy "Users can view own bank_accounts" on public.bank_accounts for select using (auth.uid() = user_id);
+create policy "Users can insert own bank_accounts" on public.bank_accounts for insert with check (auth.uid() = user_id);
+create policy "Users can update own bank_accounts" on public.bank_accounts for update using (auth.uid() = user_id);
+create policy "Users can delete own bank_accounts" on public.bank_accounts for delete using (auth.uid() = user_id);
 
 -- Policies for credit_cards
-create policy "Users can view own credit_cards" on credit_cards for select using (auth.uid() = user_id);
-create policy "Users can insert own credit_cards" on credit_cards for insert with check (auth.uid() = user_id);
-create policy "Users can update own credit_cards" on credit_cards for update using (auth.uid() = user_id);
-create policy "Users can delete own credit_cards" on credit_cards for delete using (auth.uid() = user_id);
+create policy "Users can view own credit_cards" on public.credit_cards for select using (auth.uid() = user_id);
+create policy "Users can insert own credit_cards" on public.credit_cards for insert with check (auth.uid() = user_id);
+create policy "Users can update own credit_cards" on public.credit_cards for update using (auth.uid() = user_id);
+create policy "Users can delete own credit_cards" on public.credit_cards for delete using (auth.uid() = user_id);
 
 -- Policies for income_log
-create policy "Users can view own income_log" on income_log for select using (auth.uid() = user_id);
-create policy "Users can insert own income_log" on income_log for insert with check (auth.uid() = user_id);
-create policy "Users can update own income_log" on income_log for update using (auth.uid() = user_id);
-create policy "Users can delete own income_log" on income_log for delete using (auth.uid() = user_id);
+create policy "Users can view own income_log" on public.income_log for select using (auth.uid() = user_id);
+create policy "Users can insert own income_log" on public.income_log for insert with check (auth.uid() = user_id);
+create policy "Users can update own income_log" on public.income_log for update using (auth.uid() = user_id);
+create policy "Users can delete own income_log" on public.income_log for delete using (auth.uid() = user_id);
 
 -- Policies for expense_log
-create policy "Users can view own expense_log" on expense_log for select using (auth.uid() = user_id);
-create policy "Users can insert own expense_log" on expense_log for insert with check (auth.uid() = user_id);
-create policy "Users can update own expense_log" on expense_log for update using (auth.uid() = user_id);
-create policy "Users can delete own expense_log" on expense_log for delete using (auth.uid() = user_id);
+create policy "Users can view own expense_log" on public.expense_log for select using (auth.uid() = user_id);
+create policy "Users can insert own expense_log" on public.expense_log for insert with check (auth.uid() = user_id);
+create policy "Users can update own expense_log" on public.expense_log for update using (auth.uid() = user_id);
+create policy "Users can delete own expense_log" on public.expense_log for delete using (auth.uid() = user_id);
 
 -- Policies for investments
-create policy "Users can view own investments" on investments for select using (auth.uid() = user_id);
-create policy "Users can insert own investments" on investments for insert with check (auth.uid() = user_id);
-create policy "Users can update own investments" on investments for update using (auth.uid() = user_id);
-create policy "Users can delete own investments" on investments for delete using (auth.uid() = user_id);
+create policy "Users can view own investments" on public.investments for select using (auth.uid() = user_id);
+create policy "Users can insert own investments" on public.investments for insert with check (auth.uid() = user_id);
+create policy "Users can update own investments" on public.investments for update using (auth.uid() = user_id);
+create policy "Users can delete own investments" on public.investments for delete using (auth.uid() = user_id);
 
 -- Policies for user_settings
-create policy "Users can view own settings" on user_settings for select using (auth.uid() = user_id);
-create policy "Users can insert own settings" on user_settings for insert with check (auth.uid() = user_id);
-create policy "Users can update own settings" on user_settings for update using (auth.uid() = user_id);
-create policy "Users can delete own settings" on user_settings for delete using (auth.uid() = user_id);
+create policy "Users can view own settings" on public.user_settings for select using (auth.uid() = user_id);
+create policy "Users can insert own settings" on public.user_settings for insert with check (auth.uid() = user_id);
+create policy "Users can update own settings" on public.user_settings for update using (auth.uid() = user_id);
+create policy "Users can delete own settings" on public.user_settings for delete using (auth.uid() = user_id);
 ```
