@@ -42,21 +42,18 @@ const Auth = () => {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-900">
       <div className="w-full max-w-md bg-white rounded-[40px] p-8 md:p-12 border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-500">
         
-        {/* BRANDING BLOCK: Logo, Tagline, Byline */}
-        <div className="flex flex-col items-center mb-8">
-          {/* Logo with mix-blend-multiply to remove white background surgically */}
-          <div className="w-full max-w-[280px] -mb-2">
+        {/* BRANDING BLOCK: Logo and Tagline */}
+        <div className="flex flex-col items-center mb-6">
+          {/* Increased logo size and removed byline. Tighter spacing. */}
+          <div className="w-full max-w-[340px] -mb-4">
             <img 
               src="/logo-onelleve.jpg" 
               alt="onelleve" 
               className="w-full h-auto object-contain mix-blend-multiply"
             />
           </div>
-          <p className="text-slate-500 font-medium italic text-sm mb-1 tracking-tight">
+          <p className="text-slate-500 font-medium italic text-[13px] tracking-tight">
             Premium Financial Intelligence
-          </p>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">
-            by Reggie Martins
           </p>
         </div>
 
@@ -108,10 +105,10 @@ const Auth = () => {
           </div>
         </form>
 
-        <div className="mt-10 text-center">
+        <div className="mt-8 text-center border-t border-slate-50 pt-6">
           <button 
             onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-            className="text-xs font-black text-blue-600 hover:underline uppercase tracking-widest"
+            className="text-[10px] font-bold text-slate-400 hover:text-blue-600 uppercase tracking-widest transition-colors"
           >
             {mode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
           </button>
