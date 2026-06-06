@@ -119,7 +119,7 @@ export default function Dashboard() {
         );
       case 'Accounts':
         return <AccountsView />;
-      case 'Cards':
+      case 'Credit Cards':
         return <CardsView />;
       case 'Investments':
         return <InvestmentsView />;
