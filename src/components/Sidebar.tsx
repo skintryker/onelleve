@@ -45,13 +45,13 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
 
   return (
     <div className="w-64 md:w-64 bg-white dark:bg-slate-900 h-full md:h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-2xl md:shadow-none relative z-[60]">
-      {/* LOGO AREA: OFFICIAL WORDMARK ASSET */}
-      <div className="w-full h-24 flex items-center justify-center overflow-hidden pt-4 shrink-0">
-        <div className="relative w-full h-full flex items-center justify-center px-6">
+      {/* LOGO AREA: OFFICIAL WORDMARK ASSET - INCREASED BY ~50% */}
+      <div className="w-full h-32 flex items-center justify-center overflow-hidden pt-4 shrink-0">
+        <div className="relative w-full h-full flex items-center justify-center px-4">
           <img 
             src="/logo-onelleve.jpg" 
             alt="onelleve" 
-            className="w-full h-auto max-h-full object-contain mix-blend-multiply dark:invert scale-125"
+            className="w-full h-auto max-h-full object-contain mix-blend-multiply dark:invert scale-[1.85]"
           />
           <button className="md:hidden absolute -right-2 top-2 p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" onClick={onClose}>
             <X size={22} />
