@@ -75,8 +75,8 @@ const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) =>
 
           <div className="space-y-2">
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-slate-900 dark:text-white">Account Type</label>
-            <div className="grid grid-cols-3 gap-2">
-              {['Checking', 'Savings', 'Investment'].map((t) => (
+            <div className="grid grid-cols-2 gap-2">
+              {['Checking', 'Savings'].map((t) => (
                 <button
                   key={t}
                   type="button"
