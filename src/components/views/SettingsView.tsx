@@ -141,14 +141,14 @@ const SettingsView = () => {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setLocalTheme('light')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'light' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-100 dark:bg-slate-950 border-transparent text-slate-500'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'light' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
                   >
                     <Sun size={14} />
                     Light
                   </button>
                   <button 
                     onClick={() => setLocalTheme('dark')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'dark' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-100 dark:bg-slate-950 border-transparent text-slate-500'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs uppercase tracking-widest transition-all ${localTheme === 'dark' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
                   >
                     <Moon size={14} />
                     Dark
@@ -328,7 +328,7 @@ const SettingsView = () => {
             <button 
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
-              className={`flex items-center justify-between px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all group whitespace-nowrap min-w-fit lg:w-full ${activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:border-blue-200'}`}
+              className={`flex items-center justify-between px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm transition-all group whitespace-nowrap min-w-fit lg:w-full ${activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:border-blue-200'}`}
             >
               <div className="flex items-center gap-3">
                  <item.icon size={20} />
@@ -340,7 +340,7 @@ const SettingsView = () => {
         </div>
 
         {/* Content Area */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[32px] md:rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px] md:min-h-[500px]">
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-8 md:p-10 rounded-[32px] md:rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px] md:min-h-[500px]">
           {renderContent()}
         </div>
       </div>

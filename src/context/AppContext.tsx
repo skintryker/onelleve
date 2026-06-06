@@ -179,6 +179,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Helper to apply theme to document
   const applyTheme = (t: 'light' | 'dark') => {
+    if (typeof window === 'undefined') return;
     if (t === 'dark') {
       document.documentElement.classList.add('dark');
       document.documentElement.style.colorScheme = 'dark';
@@ -455,7 +456,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!user || !supabase) return;
     
-    // Use upsert to handle case where row might not exist yet
     const { error } = await supabase.from('user_settings').upsert({
       user_id: user.id,
       ...newSettings,
@@ -465,14 +465,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!error) {
       setSettings(prev => {
         const updated = prev ? { ...prev, ...newSettings } : ({ ...newSettings, user_id: user.id } as UserSettings);
-        if (updated.theme) {
-          setThemeState(updated.theme);
-          applyTheme(updated.theme);
+        if (newSettings.theme) {
+          setThemeState(newSettings.theme);
+          applyTheme(newSettings.theme);
         }
         return updated;
       });
     } else {
       console.error('Error updating settings:', error);
+      throw error;
     }
   };
 
