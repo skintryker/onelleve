@@ -40,17 +40,17 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-900">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[40px] p-10 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-500">
-        <div className="flex flex-col items-center mb-8">
-          {/* OFFICIAL BRANDING: Refined size, byline and spacing for premium feel */}
-          <div className="w-full max-w-[350px] mb-2">
+        <div className="flex flex-col items-center mb-6">
+          {/* OFFICIAL BRANDING: Corrected order, larger logo, and compact block */}
+          <div className="w-full max-w-[550px] -mb-1">
             <img 
               src="/logo-onelleve.jpg" 
               alt="onelleve" 
-              className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:bg-white dark:rounded-2xl dark:p-3"
+              className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:bg-white dark:rounded-2xl dark:p-2"
             />
           </div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">by Reggie Martins</p>
-          <p className="text-slate-500 font-medium italic text-sm">Premium Financial Intelligence</p>
+          <p className="text-slate-500 font-medium italic text-sm mb-0.5">Premium Financial Intelligence</p>
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">by Reggie Martins</p>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-6">
@@ -90,13 +90,13 @@ const Auth = () => {
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center">
             <button 
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-95 flex items-center justify-center gap-2 text-xs"
             >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
+              {loading ? <Loader2 className="animate-spin" size={18} /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
             </button>
           </div>
         </form>
