@@ -110,6 +110,21 @@ export interface Investment {
   monthKey: string;
 }
 
+export interface UserSettings {
+  user_id: string;
+  full_name: string;
+  preferred_currency: string;
+  theme: 'light' | 'dark';
+  email_notifications: boolean;
+  payment_reminders: boolean;
+  due_day_reminders: boolean;
+  monthly_summary: boolean;
+  investment_reminders: boolean;
+  language: string;
+  region: string;
+  date_format: string;
+}
+
 interface AppSummary {
   availableBalance: number;
   incomeThisMonth: number;
@@ -128,9 +143,11 @@ interface AppContextType {
   cards: Card[];
   accounts: Account[];
   investments: Investment[];
+  settings: UserSettings | null;
   summary: AppSummary;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
+  updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   refreshData: () => Promise<void>;
   addIncome: (log: Omit<IncomeLog, 'id' | 'user_id'>) => Promise<void>;
   addExpense: (log: Omit<ExpenseLog, 'id' | 'user_id'>) => Promise<void>;
@@ -152,6 +169,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [theme, setThemeState] = useState<'light' | 'dark'>('dark');
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   
   const [incomeLogs, setIncomeLogs] = useState<IncomeLog[]>([]);
   const [expenseLogs, setExpenseLogs] = useState<ExpenseLog[]>([]);
@@ -169,13 +187,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { data: exp },
         { data: crd },
         { data: acc },
-        { data: inv }
+        { data: inv },
+        { data: set }
       ] = await Promise.all([
         supabase.from('income_log').select('*').order('date', { ascending: false }),
         supabase.from('expense_log').select('*').order('date', { ascending: false }),
         supabase.from('credit_cards').select('*').order('cardName'),
         supabase.from('bank_accounts').select('*').order('institution'),
-        supabase.from('investments').select('*').order('date', { ascending: false })
+        supabase.from('investments').select('*').order('date', { ascending: false }),
+        supabase.from('user_settings').select('*').single()
       ]);
 
       setIncomeLogs(inc || []);
@@ -183,10 +203,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCards(crd || []);
       setAccounts(acc || []);
       setInvestments(inv || []);
+      
+      if (set) {
+        setSettings(set);
+        setThemeState(set.theme);
+        applyTheme(set.theme);
+      } else if (user) {
+        // Create default settings if not exists
+        const defaultSettings: Omit<UserSettings, 'id'> = {
+          user_id: user.id,
+          full_name: user.user_metadata?.full_name || '',
+          preferred_currency: 'USD',
+          theme: 'dark',
+          email_notifications: true,
+          payment_reminders: true,
+          due_day_reminders: true,
+          monthly_summary: true,
+          investment_reminders: true,
+          language: 'en',
+          region: 'United States',
+          date_format: 'MM/DD/YYYY'
+        };
+        const { data: newSet } = await supabase.from('user_settings').insert([defaultSettings]).select().single();
+        if (newSet) setSettings(newSet);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const applyTheme = (t: 'light' | 'dark') => {
+    if (t === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.style.colorScheme = 'light';
     }
   };
 
@@ -212,6 +266,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCards([]);
         setAccounts([]);
         setInvestments([]);
+        setSettings(null);
         setLoading(false);
       }
     });
@@ -386,20 +441,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
   };
 
+  const updateSettings = async (newSettings: Partial<UserSettings>) => {
+    if (!user || !supabase) return;
+    const { error } = await supabase.from('user_settings').update(newSettings).eq('user_id', user.id);
+    if (!error) {
+      setSettings(prev => prev ? { ...prev, ...newSettings } : null);
+      if (newSettings.theme) {
+        setThemeState(newSettings.theme);
+        applyTheme(newSettings.theme);
+      }
+    }
+  };
+
   const setTheme = (t: 'light' | 'dark') => {
-    setThemeState(t);
-    if (t === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    updateSettings({ theme: t });
   };
 
   useEffect(() => {
-    if (theme === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    applyTheme(theme);
   }, [theme]);
 
   return (
     <AppContext.Provider value={{ 
-      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, summary, theme, setTheme, refreshData,
+      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, settings, summary, theme, setTheme, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment
     }}>

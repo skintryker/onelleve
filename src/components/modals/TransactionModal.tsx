@@ -16,7 +16,7 @@ const categories: ExpenseCategory[] = [
 ];
 
 const transactionTypes: TransactionType[] = [
-  'Purchase', 'Payment', 'Autopay', 'Investment', 'Other'
+  'Purchase', 'Payment', 'Autopay', 'Other'
 ];
 
 const paymentChannels: PaymentChannel[] = [

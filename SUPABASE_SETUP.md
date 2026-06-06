@@ -96,6 +96,24 @@ create table investments (
   notes text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- User Settings Table
+create table user_settings (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null unique,
+  full_name text,
+  preferred_currency text default 'USD',
+  theme text default 'dark',
+  email_notifications boolean default true,
+  payment_reminders boolean default true,
+  due_day_reminders boolean default true,
+  monthly_summary boolean default true,
+  investment_reminders boolean default true,
+  language text default 'en',
+  region text default 'United States',
+  date_format text default 'MM/DD/YYYY',
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
 ```
 
 ## 2. Enable Row Level Security (RLS)
@@ -106,6 +124,7 @@ alter table credit_cards enable row level security;
 alter table income_log enable row level security;
 alter table expense_log enable row level security;
 alter table investments enable row level security;
+alter table user_settings enable row level security;
 ```
 
 ## 3. Create RLS Policies
@@ -140,4 +159,10 @@ create policy "Users can view own investments" on investments for select using (
 create policy "Users can insert own investments" on investments for insert with check (auth.uid() = user_id);
 create policy "Users can update own investments" on investments for update using (auth.uid() = user_id);
 create policy "Users can delete own investments" on investments for delete using (auth.uid() = user_id);
+
+-- Policies for user_settings
+create policy "Users can view own settings" on user_settings for select using (auth.uid() = user_id);
+create policy "Users can insert own settings" on user_settings for insert with check (auth.uid() = user_id);
+create policy "Users can update own settings" on user_settings for update using (auth.uid() = user_id);
+create policy "Users can delete own settings" on user_settings for delete using (auth.uid() = user_id);
 ```
