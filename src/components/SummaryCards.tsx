@@ -23,7 +23,7 @@ const SummaryCards = () => {
       subtitle: 'Total money in'
     },
     {
-      title: 'Spending This Month',
+      title: 'Expenses This Month',
       amount: summary.spendingThisMonth,
       icon: Target,
       color: 'rose',

@@ -320,20 +320,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
     const incomeThisMonth = incomeLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => acc + log.amount, 0);
-    const spendingThisMonth = expenseLogs.filter(log => log.monthKey === currentMonth && log.transactionType !== 'Payment' && log.transactionType !== 'Investment' && log.category !== 'Credit Card').reduce((acc, log) => acc + log.amount, 0);
+    
+    // KPI: Sum of all expenses (Bank + Card)
+    const expensesThisMonth = expenseLogs.filter(log => 
+      log.monthKey === currentMonth && 
+      log.transactionType !== 'Payment' && 
+      log.transactionType !== 'Investment' && 
+      log.category !== 'Credit Card'
+    ).reduce((acc, log) => acc + log.amount, 0);
+
     const investmentThisMonth = investments.filter(inv => inv.monthKey === currentMonth).reduce((acc, inv) => acc + inv.contribution, 0);
     
-    // Available Balance is the net cash flow for the month: Income - Spending - Manual Investments
+    // Logic for Available Cash Balance:
+    // Only deduct money that actually left the bank/cash
+    const bankSpending = expenseLogs.filter(log => 
+      log.monthKey === currentMonth && 
+      log.transactionType !== 'Payment' && 
+      log.transactionType !== 'Investment' && 
+      log.category !== 'Credit Card' &&
+      log.paymentChannel !== 'Credit Card' // Ignore card purchases for cash flow
+    ).reduce((acc, log) => acc + log.amount, 0);
+
+    const cardPaymentsFromBank = expenseLogs.filter(log => 
+      log.monthKey === currentMonth && 
+      log.transactionType === 'Payment'
+    ).reduce((acc, log) => acc + log.amount, 0);
+
     const manualInvestmentThisMonth = investments
       .filter(inv => inv.monthKey === currentMonth && !inv.payrollDeduction)
       .reduce((acc, inv) => acc + inv.contribution, 0);
     
-    const availableBalance = incomeThisMonth - spendingThisMonth - manualInvestmentThisMonth;
+    // Available Balance = Total Income - (Bank Purchases + Card Payments + Manual Investments)
+    const availableBalance = incomeThisMonth - bankSpending - cardPaymentsFromBank - manualInvestmentThisMonth;
     
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
-    return { availableBalance, incomeThisMonth, spendingThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
+    return { availableBalance, incomeThisMonth, spendingThisMonth: expensesThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
   }, [incomeLogs, expenseLogs, cards, accounts, investments]);
 
   // Actions
