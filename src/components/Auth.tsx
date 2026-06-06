@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
-import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -41,10 +41,14 @@ const Auth = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-900">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[40px] p-10 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-500">
         <div className="flex flex-col items-center mb-10">
-          <div className="w-20 h-20 bg-blue-600 rounded-[28px] flex items-center justify-center mb-6 shadow-xl shadow-blue-500/30">
-            <Sparkles className="text-white" size={40} />
+          {/* OFFICIAL BRANDING: Replacing generic icon and text with official logo */}
+          <div className="w-full max-w-[220px] mb-8">
+            <img 
+              src="/logo-onelleve.jpg" 
+              alt="onelleve" 
+              className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:bg-white dark:rounded-2xl dark:p-2"
+            />
           </div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter uppercase mb-2">onelleve</h1>
           <p className="text-slate-500 font-medium italic">Premium Financial Intelligence</p>
         </div>
 
