@@ -15,13 +15,13 @@ import TransactionModal from '../modals/TransactionModal';
 import IncomeModal from '../modals/IncomeModal';
 
 interface TransactionsViewProps {
-  initialType?: 'income' | 'expense' | 'all' | 'investment';
+  initialType?: 'income' | 'expense' | 'all';
 }
 
 const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
   const { transactions, deleteTransaction, expenseLogs, incomeLogs } = useAppContext();
   const [searchTerm, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'income' | 'expense' | 'all' | 'investment'>(initialType);
+  const [filterType, setFilterType] = useState<'income' | 'expense' | 'all'>(initialType);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
   
@@ -85,21 +85,15 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
           </button>
           <button 
             onClick={() => setFilterType('income')}
-            className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'income' ? 'bg-emerald-50 text-white shadow-lg' : 'text-slate-500 hover:text-emerald-500'}`}
+            className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'income' ? 'bg-emerald-50 text-emerald-900 shadow-lg' : 'text-slate-500 hover:text-emerald-500'}`}
           >
             Income
           </button>
           <button 
             onClick={() => setFilterType('expense')}
-            className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'expense' ? 'bg-rose-50 text-white shadow-lg' : 'text-slate-500 hover:text-rose-500'}`}
+            className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'expense' ? 'bg-rose-50 text-rose-900 shadow-lg' : 'text-slate-500 hover:text-rose-500'}`}
           >
             Expenses
-          </button>
-          <button 
-            onClick={() => setFilterType('investment')}
-            className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'investment' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-indigo-600'}`}
-          >
-            Investments
           </button>
         </div>
 
@@ -116,10 +110,10 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
           </div>
           <button 
             onClick={handleAddNew}
-            className={`flex items-center gap-1.5 px-3 md:px-4 py-2 ${filterType === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : filterType === 'investment' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-bold transition-all shadow-lg text-nowrap text-xs md:text-sm`}
+            className={`flex items-center gap-1.5 px-3 md:px-4 py-2 ${filterType === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-bold transition-all shadow-lg text-nowrap text-xs md:text-sm`}
           >
             <Plus size={16} />
-            <span className="hidden sm:inline">{filterType === 'income' ? 'Add Income' : filterType === 'investment' ? 'Add Investment' : 'Add Expense'}</span>
+            <span className="hidden sm:inline">{filterType === 'income' ? 'Add Income' : 'Add Expense'}</span>
             <span className="sm:hidden">Add</span>
           </button>
         </div>

@@ -20,7 +20,6 @@ interface MonthlyData {
   name: string;
   income: number;
   expenses: number;
-  investment: number;
 }
 
 interface CategoryTotal {
@@ -35,7 +34,7 @@ interface CategoryData {
 
 const Charts = () => {
   const { transactions } = useAppContext();
-  const [pieFilter, setPieFilter] = useState<'income' | 'expense' | 'investment'>('expense');
+  const [pieFilter, setPieFilter] = useState<'income' | 'expense'>('expense');
 
   // 1. Process data for Monthly Bar Chart
   const last6Months = Array.from({ length: 6 }, (_, i) => {
@@ -57,12 +56,8 @@ const Charts = () => {
     const expenses = monthTransactions
       .filter(t => t.type === 'expense')
       .reduce((acc, t) => acc + Math.abs(t.amount), 0);
-      
-    const investment = monthTransactions
-      .filter(t => t.type === 'investment')
-      .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
-    return { name: month, income, expenses, investment };
+    return { name: month, income, expenses };
   });
 
   // 2. Process data for Category Pie Chart (Dynamic based on Filter)
@@ -150,7 +145,6 @@ const Charts = () => {
               />
               <Bar dataKey="income" fill="#10b981" radius={[6, 6, 0, 0]} barSize={10} />
               <Bar dataKey="expenses" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={10} />
-              <Bar dataKey="investment" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={10} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -165,7 +159,7 @@ const Charts = () => {
           </div>
           
           <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800">
-             {(['income', 'expense', 'investment'] as const).map(f => (
+             {(['income', 'expense'] as const).map(f => (
                <button
                 key={f}
                 onClick={() => setPieFilter(f)}
@@ -207,7 +201,7 @@ const Charts = () => {
           </ResponsiveContainer>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-12 text-center pointer-events-none">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
-            <p className={`text-xl font-black ${pieFilter === 'income' ? 'text-emerald-600' : pieFilter === 'investment' ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
+            <p className={`text-xl font-black ${pieFilter === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-white'}`}>
               ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
           </div>
