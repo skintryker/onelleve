@@ -12,7 +12,7 @@ interface TransactionModalProps {
 }
 
 const categories: ExpenseCategory[] = [
-  'Housing', 'Groceries', 'Dining', 'Leisure', 'Gifts', 'Travel', 'Memberships', 'Autopay', 'Credit Card', 'Health', 'Transport', 'Other'
+  'Housing', 'Groceries', 'Dining', 'Leisure', 'Gifts', 'Travel', 'Memberships', 'Autopay', 'Utility', 'Credit Card', 'Health', 'Transport', 'Other'
 ];
 
 const transactionTypes: TransactionType[] = [

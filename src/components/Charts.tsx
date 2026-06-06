@@ -78,6 +78,7 @@ const Charts = () => {
     'Travel': '#3b82f6',
     'Memberships': '#8b5cf6',
     'Autopay': '#6366f1',
+    'Utility': '#d946ef',
     'Health': '#06b6d4',
     'Transport': '#14b8a6',
     'Credit Card': '#475569',

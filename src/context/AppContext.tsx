@@ -10,7 +10,7 @@ export type TransactionType = 'Purchase' | 'Payment' | 'Autopay' | 'Investment' 
 export type PaymentChannel = 'Bank' | 'Credit Card' | 'Autopay' | 'Venmo' | 'Zelle' | 'Cash' | 'PayPal';
 export type ExpenseCategory = 
   | 'Housing' | 'Groceries' | 'Dining' | 'Leisure' | 'Gifts' 
-  | 'Travel' | 'Memberships' | 'Autopay' | 'Credit Card'
+  | 'Travel' | 'Memberships' | 'Autopay' | 'Utility' | 'Credit Card'
   | 'Health' | 'Transport' | 'Other' | 'Salary' | 'Investment';
 
 export interface IncomeLog {
