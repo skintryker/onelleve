@@ -44,22 +44,22 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
   };
 
   return (
-    <div className="w-64 bg-white dark:bg-slate-900 h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-xl md:shadow-none relative z-[60]">
+    <div className="w-64 md:w-64 bg-white dark:bg-slate-900 h-full md:h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-2xl md:shadow-none relative z-[60]">
       {/* LOGO AREA: REFINED SCALE */}
-      <div className="w-full h-24 flex items-center justify-center overflow-hidden pt-2">
-        <div className="relative w-full h-full flex items-center justify-center px-4">
+      <div className="w-full h-24 flex items-center justify-center overflow-hidden pt-2 shrink-0">
+        <div className="relative w-full h-full flex items-center justify-center px-6">
           <img 
             src="/logo-onelleve.jpg" 
             alt="onelleve" 
             className="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-normal"
           />
-          <button className="md:hidden absolute right-0 top-2 p-2 text-slate-500 bg-white/80 rounded-full" onClick={onClose}>
-            <X size={20} />
+          <button className="md:hidden absolute -right-2 top-2 p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" onClick={onClose}>
+            <X size={22} />
           </button>
         </div>
       </div>
 
-      <div className="p-6 pt-0">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pt-0">
         <nav className="space-y-1.5 mt-4">
           {menuItems.map((item, index) => (
             <button 

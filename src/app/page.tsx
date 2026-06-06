@@ -163,58 +163,58 @@ export default function Dashboard() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-full overflow-x-hidden">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden min-h-screen">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-3 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-3">
               <button 
-                className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400"
+                className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
-                <Menu size={24} />
+                <Menu size={22} />
               </button>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">{activeItem}</h1>
+                <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">{activeItem}</h1>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <Clock size={12} className="text-slate-400" />
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Updated: {lastUpdate}</p>
+                  <Clock size={10} className="text-slate-400" />
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">Updated: {lastUpdate}</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-4 flex-1 justify-end max-w-2xl">
-              <div className="relative w-full max-w-md hidden sm:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <div className="flex items-center gap-2 md:gap-4 flex-1 justify-end max-w-3xl">
+              <div className="relative w-full max-w-xs md:max-w-md hidden lg:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input 
                   type="text" 
                   placeholder="Global search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white"
+                  className="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-xs md:text-sm font-bold focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white"
                 />
               </div>
 
-              <div className="flex items-center gap-1 md:gap-2">
+              <div className="flex items-center gap-2">
                 <div className="relative">
                   <button 
                     onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                    className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 hover:scale-105 transition-all relative"
+                    className="p-2 md:p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 hover:scale-105 transition-all relative"
                   >
                     <Bell size={20} strokeWidth={2.5} />
                     {notifications.length > 0 && (
-                      <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900" />
+                      <span className="absolute top-1.5 right-1.5 md:top-2 md:right-2 w-2 h-2 md:w-2.5 md:h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900" />
                     )}
                   </button>
 
                   {isNotificationsOpen && (
-                    <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2">
-                      <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 px-2">Alerts & Notifications</h3>
-                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                    <div className="absolute right-0 mt-3 w-72 md:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2">
+                      <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 px-2">Alerts</h3>
+                      <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                         {notifications.map(n => (
                           <div key={n.id} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
-                             <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">{n.title}</p>
-                             <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{n.message}</p>
+                             <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-1">{n.title}</p>
+                             <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-tight">{n.message}</p>
                           </div>
                         ))}
                         {notifications.length === 0 && <p className="text-xs text-slate-500 italic p-4 text-center">No active alerts</p>}
@@ -223,11 +223,11 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                <div className="h-10 w-px bg-slate-200 dark:bg-slate-800 mx-1 md:mx-2" />
+                <div className="h-8 md:h-10 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
                 
                 <button 
                   onClick={() => setIsTransactionModalOpen(true)}
-                  className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20"
+                  className="p-2 md:p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20"
                 >
                   <Plus size={20} strokeWidth={3} />
                 </button>
@@ -236,7 +236,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="p-4 md:p-8">
+        <div className="p-4 md:p-8 max-w-full">
           {renderView()}
         </div>
       </main>

@@ -294,32 +294,32 @@ const SettingsView = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Navigation Sidebar */}
-        <div className="lg:col-span-1 space-y-2">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
+        {/* Navigation Sidebar: Horizontal scroll on mobile */}
+        <div className="lg:col-span-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 custom-scrollbar shrink-0">
           {[
-            { id: 'profile', label: 'Profile Settings', icon: User },
+            { id: 'profile', label: 'Profile', icon: User },
             { id: 'notifications', label: 'Notifications', icon: Bell },
-            { id: 'security', label: 'Security & Privacy', icon: Shield },
-            { id: 'language', label: 'Language & Region', icon: Globe },
+            { id: 'security', label: 'Security', icon: Shield },
+            { id: 'language', label: 'Region', icon: Globe },
           ].map(item => (
             <button 
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
-              className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl font-bold text-sm transition-all group ${activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:border-blue-200'}`}
+              className={`w-full flex items-center justify-between px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all group whitespace-nowrap min-w-fit lg:w-full ${activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:border-blue-200'}`}
             >
               <div className="flex items-center gap-3">
                  <item.icon size={20} />
                  {item.label}
               </div>
-              {activeTab === item.id && <Check size={16} />}
+              <Check size={16} className={`hidden lg:block ${activeTab === item.id ? 'opacity-100' : 'opacity-0'}`} />
             </button>
           ))}
         </div>
 
         {/* Content Area */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-8 md:p-10 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-sm min-h-[500px]">
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[32px] md:rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px] md:min-h-[500px]">
           {renderContent()}
         </div>
       </div>
