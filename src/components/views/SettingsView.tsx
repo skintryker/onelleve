@@ -25,14 +25,18 @@ const SettingsView = () => {
     setSaving(true);
     setSaveStatus(null);
     try {
+      // PROPER UPSERT: saving full_name and preferred_currency to Supabase
       await updateSettings({
         full_name: fullName,
         preferred_currency: currency
       });
       setSaveStatus({ type: 'success', message: 'Settings saved successfully!' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Supabase Save Error:', error);
-      setSaveStatus({ type: 'error', message: 'Failed to save settings.' });
+      setSaveStatus({ 
+        type: 'error', 
+        message: error.message || 'Failed to save settings. See console for details.' 
+      });
     } finally {
       setSaving(false);
     }
@@ -48,19 +52,19 @@ const SettingsView = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-8 px-1">Profile Settings</h3>
+      <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-200 shadow-sm">
+        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-8 px-1">Profile Settings</h3>
         
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* ROW 1: Full Name and Email */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
               <input 
                 type="text" 
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold text-slate-900 dark:text-white"
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold text-slate-900 transition-all"
                 placeholder="Enter your full name"
               />
             </div>
@@ -72,42 +76,46 @@ const SettingsView = () => {
                   type="email" 
                   value={user?.email || ''} 
                   disabled
-                  className="w-full px-12 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-400 text-sm font-bold cursor-not-allowed"
+                  className="w-full px-12 py-4 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm font-bold cursor-not-allowed"
                 />
               </div>
             </div>
           </div>
 
           {/* ROW 2: Preferred Currency and Save Changes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Currency</label>
-              <select 
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none appearance-none text-sm font-bold text-slate-900 dark:text-white"
-              >
-                <option value="USD">USD - US Dollar</option>
-                <option value="BRL">BRL - Brazilian Real</option>
-                <option value="EUR">EUR - Euro</option>
-              </select>
+              <div className="relative">
+                <select 
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none appearance-none text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                >
+                  <option value="USD">USD - US Dollar</option>
+                  <option value="BRL">BRL - Brazilian Real</option>
+                  <option value="EUR">EUR - Euro</option>
+                </select>
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-black">↓</div>
+              </div>
             </div>
+            
             <div className="flex flex-col gap-2 items-end">
                <button 
                 disabled={saving}
                 onClick={handleSaveAll} 
-                className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50"
+                className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/25 active:scale-95 hover:bg-blue-700 transition-all disabled:opacity-50"
               >
-                {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                 Save Changes
               </button>
             </div>
           </div>
 
           {saveStatus && (
-            <p className={`text-sm font-bold px-1 ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
-              {saveStatus.message}
-            </p>
+            <div className={`p-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 animate-in slide-in-from-top-2 ${saveStatus.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
+              <p>{saveStatus.message}</p>
+            </div>
           )}
         </div>
       </div>

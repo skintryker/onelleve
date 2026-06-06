@@ -114,15 +114,15 @@ export interface UserSettings {
   user_id: string;
   full_name: string;
   preferred_currency: string;
-  theme: 'light' | 'dark';
-  email_notifications: boolean;
-  payment_reminders: boolean;
-  due_day_reminders: boolean;
-  monthly_summary: boolean;
-  investment_reminders: boolean;
-  language: string;
-  region: string;
-  date_format: string;
+  // Optional/Advanced fields - keeping in interface but will be careful with saving
+  email_notifications?: boolean;
+  payment_reminders?: boolean;
+  due_day_reminders?: boolean;
+  monthly_summary?: boolean;
+  investment_reminders?: boolean;
+  language?: string;
+  region?: string;
+  date_format?: string;
 }
 
 interface AppSummary {
@@ -145,8 +145,6 @@ interface AppContextType {
   investments: Investment[];
   settings: UserSettings | null;
   summary: AppSummary;
-  theme: 'light' | 'dark';
-  setTheme: (theme: 'light' | 'dark') => void;
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   refreshData: () => Promise<void>;
   addIncome: (log: Omit<IncomeLog, 'id' | 'user_id'>) => Promise<void>;
@@ -168,7 +166,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setThemeState] = useState<'light' | 'dark'>('dark');
   const [settings, setSettings] = useState<UserSettings | null>(null);
   
   const [incomeLogs, setIncomeLogs] = useState<IncomeLog[]>([]);
@@ -177,30 +174,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
 
-  // Helper to apply theme to document
-  const applyTheme = (t: 'light' | 'dark') => {
-    if (typeof window === 'undefined') return;
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
-    }
-  };
-
   // Helper to fetch all data
   const fetchAllData = async (currentUser: User) => {
     if (!supabase) return;
     setLoading(true);
     try {
       const [
-        { data: inc },
-        { data: exp },
-        { data: crd },
-        { data: acc },
-        { data: inv },
-        { data: set }
+        incRes,
+        expRes,
+        crdRes,
+        accRes,
+        invRes,
+        setRes
       ] = await Promise.all([
         supabase.from('income_log').select('*').order('date', { ascending: false }),
         supabase.from('expense_log').select('*').order('date', { ascending: false }),
@@ -210,43 +195,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('user_settings').select('*').eq('user_id', currentUser.id).maybeSingle()
       ]);
 
-      setIncomeLogs(inc || []);
-      setExpenseLogs(exp || []);
-      setCards(crd || []);
-      setAccounts(acc || []);
-      setInvestments(inv || []);
+      if (incRes.error) console.error('Error fetching income:', incRes.error);
+      if (expRes.error) console.error('Error fetching expenses:', expRes.error);
+      if (crdRes.error) console.error('Error fetching cards:', crdRes.error);
+      if (accRes.error) console.error('Error fetching accounts:', accRes.error);
+      if (invRes.error) console.error('Error fetching investments:', invRes.error);
+      if (setRes.error) console.error('Error fetching settings:', setRes.error);
+
+      setIncomeLogs(incRes.data || []);
+      setExpenseLogs(expRes.data || []);
+      setCards(crdRes.data || []);
+      setAccounts(accRes.data || []);
+      setInvestments(invRes.data || []);
       
-      if (set) {
-        setSettings(set);
-        setThemeState(set.theme);
-        applyTheme(set.theme);
-      } else {
-        // Create default settings if not exists
+      if (setRes.data) {
+        setSettings(setRes.data);
+      } else if (!setRes.error) {
+        // Only attempt to create default if no record exists AND no error occurred
         const defaultSettings: Omit<UserSettings, 'id'> = {
           user_id: currentUser.id,
           full_name: currentUser.user_metadata?.full_name || '',
-          preferred_currency: 'USD',
-          theme: 'dark',
-          email_notifications: true,
-          payment_reminders: true,
-          due_day_reminders: true,
-          monthly_summary: true,
-          investment_reminders: true,
-          language: 'en',
-          region: 'United States',
-          date_format: 'MM/DD/YYYY'
+          preferred_currency: 'USD'
         };
-        const { data: newSet, error: insertError } = await supabase.from('user_settings').insert([defaultSettings]).select().single();
+        const { data: newSet, error: insertError } = await supabase
+          .from('user_settings')
+          .insert([defaultSettings])
+          .select()
+          .single();
+          
         if (newSet) {
           setSettings(newSet);
-          setThemeState(newSet.theme);
-          applyTheme(newSet.theme);
         } else if (insertError) {
           console.error('Error creating default settings:', insertError);
         }
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('General Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -456,38 +440,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!user || !supabase) return;
     
-    const { error } = await supabase.from('user_settings').upsert({
+    // STRICT UPSERT: Only sending full_name and preferred_currency to avoid DB errors
+    const payload: any = {
       user_id: user.id,
-      ...newSettings,
       updated_at: new Date().toISOString()
-    }, { onConflict: 'user_id' });
+    };
+    
+    if (newSettings.full_name !== undefined) payload.full_name = newSettings.full_name;
+    if (newSettings.preferred_currency !== undefined) payload.preferred_currency = newSettings.preferred_currency;
+
+    const { error } = await supabase.from('user_settings').upsert(payload, { onConflict: 'user_id' });
 
     if (!error) {
       setSettings(prev => {
         const updated = prev ? { ...prev, ...newSettings } : ({ ...newSettings, user_id: user.id } as UserSettings);
-        if (newSettings.theme) {
-          setThemeState(newSettings.theme);
-          applyTheme(newSettings.theme);
-        }
         return updated;
       });
     } else {
-      console.error('Error updating settings:', error);
+      console.error('Supabase updateSettings error:', error);
       throw error;
     }
   };
 
-  const setTheme = (t: 'light' | 'dark') => {
-    updateSettings({ theme: t });
-  };
-
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
-
   return (
     <AppContext.Provider value={{ 
-      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, settings, summary, theme, setTheme, updateSettings, refreshData,
+      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment
     }}>
