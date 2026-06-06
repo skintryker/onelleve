@@ -285,7 +285,7 @@ const InvestmentsView = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Monthly Contribution</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Biweekly Contribution</label>
                 <input 
                   type="number" 
                   required
