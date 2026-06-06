@@ -152,12 +152,14 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
           </div>
         </div>
 
-        <button 
-          type="submit"
-          className="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[24px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95"
-        >
-          {editingIncome ? 'Save Income Update' : 'Record Income'}
-        </button>
+        <div className="pt-2 flex justify-center">
+          <button 
+            type="submit"
+            className="w-full sm:max-w-[280px] py-3.5 bg-emerald-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
+          >
+            {editingIncome ? 'Update Income' : 'Record Income'}
+          </button>
+        </div>
       </form>
     </Modal>
   );

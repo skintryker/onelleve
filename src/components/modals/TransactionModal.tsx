@@ -333,14 +333,16 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
           </div>
         </div>
 
-        <button 
-          type="submit"
-          className={`w-full py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${
-            type === 'Payment' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-blue-600 hover:bg-blue-700'
-          } text-white`}
-        >
-          {editingTransaction ? 'Save Log Update' : 'Record Transaction'}
-        </button>
+        <div className="pt-2 flex justify-center">
+          <button 
+            type="submit"
+            className={`w-full sm:max-w-[280px] py-3.5 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-xs flex items-center justify-center gap-2 ${
+              type === 'Payment' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/25' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25'
+            } text-white`}
+          >
+            {editingTransaction ? 'Update Log' : 'Record Transaction'}
+          </button>
+        </div>
       </form>
     </Modal>
   );
