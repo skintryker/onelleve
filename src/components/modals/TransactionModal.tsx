@@ -336,7 +336,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
         <div className="pt-2 flex justify-center">
           <button 
             type="submit"
-            className={`w-full sm:max-w-[280px] py-3.5 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-xs flex items-center justify-center gap-2 ${
+            className={`w-full sm:max-w-[220px] py-2.5 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-[10px] flex items-center justify-center gap-2 ${
               type === 'Payment' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/25' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25'
             } text-white`}
           >
