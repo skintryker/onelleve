@@ -45,13 +45,13 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
 
   return (
     <div className="w-64 md:w-64 bg-white dark:bg-slate-900 h-full md:h-screen border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors shadow-2xl md:shadow-none relative z-[60]">
-      {/* LOGO AREA: REFINED SCALE - INCREASED SIZE BY ~20% */}
-      <div className="w-full h-36 flex items-center justify-center overflow-hidden pt-2 shrink-0">
-        <div className="relative w-full h-full flex items-center justify-center px-2">
+      {/* LOGO AREA: NEW TRANSPARENT SVG LOGO */}
+      <div className="w-full h-28 flex items-center justify-center overflow-hidden pt-4 shrink-0">
+        <div className="relative w-full h-full flex items-center justify-center px-6">
           <img 
-            src="/logo-onelleve.jpg" 
+            src="/logo-onelleve.svg" 
             alt="onelleve" 
-            className="w-full h-auto max-h-full object-contain mix-blend-multiply dark:mix-blend-normal"
+            className="w-full h-auto max-h-full object-contain text-slate-900 dark:text-white scale-110 dark:invert"
           />
           <button className="md:hidden absolute -right-2 top-2 p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" onClick={onClose}>
             <X size={22} />
