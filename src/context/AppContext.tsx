@@ -368,9 +368,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .filter(inv => inv.monthKey === currentMonth && !inv.payrollDeduction)
       .reduce((acc, inv) => acc + inv.contribution, 0);
     
-    // Available Balance = Total Income - (Bank Purchases + Card Payments + Manual Investments)
+    // Available Balance = Sum of all actual bank/cash account balances
+    const availableBalance = accounts.reduce((acc, accnt) => acc + accnt.balance, 0);
+    
+    // Monthly KPIs
     const cashOutThisMonth = bankSpending + cardPaymentsFromBank + manualInvestmentThisMonth;
-    const availableBalance = incomeThisMonth - cashOutThisMonth;
     
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
