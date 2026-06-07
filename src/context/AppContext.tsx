@@ -255,7 +255,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setReports(repRes.data || []);
       
       if (setRes.data) {
-        setSettings(setRes.data);
+        // Ensure all keys have default values to avoid UI bugs with missing columns
+        setSettings({
+          ...setRes.data,
+          language: setRes.data.language || 'en',
+          date_format: setRes.data.date_format || 'MM/DD/YYYY',
+          email_notifications: !!setRes.data.email_notifications,
+          payment_reminders: !!setRes.data.payment_reminders,
+          due_day_reminders: !!setRes.data.due_day_reminders,
+          monthly_summary: !!setRes.data.monthly_summary,
+          investment_reminders: !!setRes.data.investment_reminders
+        });
       } else if (!setRes.error) {
         // Only attempt to create default if no record exists AND no error occurred
         const defaultSettings: Omit<UserSettings, 'id'> = {

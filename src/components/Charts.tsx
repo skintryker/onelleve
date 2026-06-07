@@ -15,6 +15,7 @@ import {
   Legend
 } from 'recharts';
 import { useAppContext } from '@/context/AppContext';
+import { Language, translations } from '@/utils/translations';
 
 interface MonthlyData {
   name: string;
@@ -33,37 +34,40 @@ interface CategoryData {
 }
 
 const Charts = () => {
-  const { transactions, isPrivacyMode, maskValue } = useAppContext();
+  const { transactions, isPrivacyMode, maskValue, settings } = useAppContext();
   const [pieFilter, setPieFilter] = useState<'income' | 'expense'>('expense');
+
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
 
   // 1. Process data for Monthly Bar Chart
   const last6Months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date();
     d.setMonth(d.getMonth() - i);
-    return d.toLocaleString('en-US', { month: 'short' });
+    return d.toLocaleString(currentLang === 'en' ? 'en-US' : currentLang === 'pt' ? 'pt-BR' : 'es-ES', { month: 'short' });
   }).reverse();
 
   const monthlyData: MonthlyData[] = last6Months.map(month => {
-    const monthTransactions = transactions.filter(t => {
-      const tDate = new Date(t.date);
-      return tDate.toLocaleString('en-US', { month: 'short' }) === month;
+    const monthTransactions = transactions.filter(tr => {
+      const tDate = new Date(tr.date);
+      return tDate.toLocaleString(currentLang === 'en' ? 'en-US' : currentLang === 'pt' ? 'pt-BR' : 'es-ES', { month: 'short' }) === month;
     });
 
     const income = monthTransactions
-      .filter(t => t.type === 'income')
-      .reduce((acc, t) => acc + Math.abs(t.amount), 0);
+      .filter(tr => tr.type === 'income')
+      .reduce((acc, tr) => acc + Math.abs(tr.amount), 0);
     
     const expenses = monthTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((acc, t) => acc + Math.abs(t.amount), 0);
+      .filter(tr => tr.type === 'expense')
+      .reduce((acc, tr) => acc + Math.abs(tr.amount), 0);
 
     return { name: month, income, expenses };
   });
 
   // 2. Process data for Category Pie Chart (Dynamic based on Filter)
-  const categories = transactions.reduce((acc: CategoryTotal, t) => {
-    if (t.type === pieFilter) {
-      acc[t.category] = (acc[t.category] || 0) + Math.abs(t.amount);
+  const categories = transactions.reduce((acc: CategoryTotal, tr) => {
+    if (tr.type === pieFilter) {
+      acc[tr.category] = (acc[tr.category] || 0) + Math.abs(tr.amount);
     }
     return acc;
   }, {});
@@ -98,22 +102,22 @@ const Charts = () => {
   const totalValue = Object.values(categories).reduce((a: number, b: number) => a + b, 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 animate-in fade-in duration-1000">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 animate-in fade-in duration-1000 text-slate-900 dark:text-white">
       {/* Monthly Digest Chart */}
       <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h3 className="text-xl font-black text-slate-900 dark:white tracking-tight">Monthly Digest</h3>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Income vs Expenses</p>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Monthly Digest</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t.income} vs {t.expenses}</p>
           </div>
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Income</span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">{t.income}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Expenses</span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">{t.expenses}</span>
             </div>
           </div>
         </div>
@@ -167,7 +171,7 @@ const Charts = () => {
                 onClick={() => setPieFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all ${pieFilter === f ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                >
-                 {f}
+                 {f === 'income' ? t.income : t.expenses}
                </button>
              ))}
           </div>

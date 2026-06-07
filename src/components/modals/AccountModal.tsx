@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useAppContext, Account } from '@/context/AppContext';
 import { Building2, Wallet } from 'lucide-react';
+import { Language, translations } from '@/utils/translations';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -12,7 +13,10 @@ interface AccountModalProps {
 }
 
 const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) => {
-  const { addAccount, editAccount } = useAppContext();
+  const { addAccount, editAccount, settings } = useAppContext();
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
+
   const [institution, setInstitution] = useState('');
   const [type, setType] = useState('Checking');
   const [balance, setBalance] = useState('');
@@ -20,22 +24,15 @@ const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) =>
   useEffect(() => {
     if (isOpen) {
       if (editingAccount) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setInstitution(editingAccount.institution);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType(editingAccount.type);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBalance(editingAccount.balance.toString());
       } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setInstitution('');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType('Checking');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBalance('');
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingAccount]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,11 +52,11 @@ const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) =>
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={editingAccount ? 'Edit Bank Account' : 'Add New Bank Account'}>
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title={editingAccount ? (currentLang === 'pt' ? 'Editar Conta Bancária' : currentLang === 'es' ? 'Editar Cuenta Bancaria' : 'Edit Bank Account') : t.addAccount}>
+      <form onSubmit={handleSubmit} className="space-y-6 text-slate-900 dark:text-white">
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-slate-900 dark:text-white">Bank / Institution</label>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Banco / Instituição' : currentLang === 'es' ? 'Banco / Institución' : 'Bank / Institution'}</label>
             <div className="relative">
               <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
@@ -68,29 +65,29 @@ const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) =>
                 placeholder="Ex: Chase Bank, PayPal"
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white"
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white font-bold"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-slate-900 dark:text-white">Account Type</label>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Tipo de Conta' : currentLang === 'es' ? 'Tipo de Cuenta' : 'Account Type'}</label>
             <div className="grid grid-cols-2 gap-2">
-              {['Checking', 'Savings'].map((t) => (
+              {['Checking', 'Savings'].map((accType) => (
                 <button
-                  key={t}
+                  key={accType}
                   type="button"
-                  onClick={() => setType(t)}
-                  className={`py-3 rounded-xl border-2 transition-all font-bold text-xs ${type === t ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'border-transparent bg-slate-50 dark:bg-slate-950 text-slate-500'}`}
+                  onClick={() => setType(accType)}
+                  className={`py-3 rounded-xl border-2 transition-all font-bold text-xs ${type === accType ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'border-transparent bg-slate-50 dark:bg-slate-950 text-slate-500'}`}
                 >
-                  {t}
+                  {accType}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-slate-900 dark:text-white">Current Balance ($)</label>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Saldo Atual' : currentLang === 'es' ? 'Saldo Actual' : 'Current Balance'} ($)</label>
             <div className="relative">
               <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
@@ -111,7 +108,7 @@ const AccountModal = ({ isOpen, onClose, editingAccount }: AccountModalProps) =>
             type="submit"
             className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs"
           >
-            {editingAccount ? 'Update Account' : 'Add Account'}
+            {editingAccount ? (currentLang === 'pt' ? 'Atualizar Conta' : currentLang === 'es' ? 'Actualizar Cuenta' : 'Update Account') : t.addAccount}
           </button>
         </div>
       </form>

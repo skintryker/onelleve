@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useAppContext, ExpenseLog, TransactionType, PaymentChannel, ExpenseCategory } from '@/context/AppContext';
 import { DollarSign, Tag, AlertCircle } from 'lucide-react';
+import { Language, translations } from '@/utils/translations';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -24,7 +25,9 @@ const paymentChannels: PaymentChannel[] = [
 ];
 
 const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionModalProps) => {
-  const { addExpense, updateExpense, accounts, cards } = useAppContext();
+  const { addExpense, updateExpense, accounts, cards, settings } = useAppContext();
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
   
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -42,58 +45,33 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
   // Sync state with editing item safely
   useEffect(() => {
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(null);
       if (editingTransaction) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setName(editingTransaction.description);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAmount(Math.abs(editingTransaction.amount).toString());
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCategory(editingTransaction.category);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDate(editingTransaction.date);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType(editingTransaction.transactionType);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setChannel(editingTransaction.paymentChannel);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBank(editingTransaction.bank || '');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCard(editingTransaction.creditCard || '');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPaymentPlan(editingTransaction.paymentPlan || 'One-time');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentInstallment(editingTransaction.currentInstallment?.toString() || '');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTotalInstallments(editingTransaction.totalInstallments?.toString() || '');
       } else {
-        // RESET TO EMPTY/DEFAULT FOR NEW LOGS
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setName('');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAmount('');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCategory('');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDate(new Date().toISOString().split('T')[0]);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setType('');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setChannel('');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBank(''); 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCard(''); 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPaymentPlan('One-time');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentInstallment('');
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTotalInstallments('');
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingTransaction]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -142,7 +120,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
       paymentPlan,
       currentInstallment: paymentPlan === 'Installment' ? parseInt(currentInstallment) : undefined,
       totalInstallments: paymentPlan === 'Installment' ? parseInt(totalInstallments) : undefined,
-      status: 'Paid' as const, // Defaulting to Paid as per simplified logic
+      status: 'Paid' as const,
       amountPaid: parseFloat(amount),
       monthKey,
     };
@@ -159,9 +137,9 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title={editingTransaction ? 'Edit Log' : 'New Expense Log'}
+      title={editingTransaction ? t.editCard.replace('Card', 'Log') : t.addTransaction}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 text-slate-900 dark:text-white">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold border border-rose-100 animate-in shake duration-300">
             <AlertCircle size={14} />
@@ -170,16 +148,16 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
         )}
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Type</label>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.type}</label>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {transactionTypes.map(t => (
+            {transactionTypes.map(trType => (
               <button
-                key={t}
+                key={trType}
                 type="button"
-                onClick={() => setType(t)}
-                className={`py-2 px-1 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all ${type === t ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-950 text-slate-500'}`}
+                onClick={() => setType(trType)}
+                className={`py-2 px-1 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all ${type === trType ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-950 text-slate-500'}`}
               >
-                {t}
+                {trType}
               </button>
             ))}
           </div>
@@ -187,24 +165,24 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Descrição' : currentLang === 'es' ? 'Descripción' : 'Description'}</label>
             <div className="relative">
               <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 type="text" 
                 required
-                placeholder="Ex: Weekly Groceries"
+                placeholder={currentLang === 'pt' ? 'Ex: Compras Semanais' : currentLang === 'es' ? 'Ej: Compras Semanales' : 'Ex: Weekly Groceries'}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold pl-12"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold pl-12 text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
-            <div className="space-y-2 text-slate-900 dark:text-white">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Amount ($)</label>
-              <div className="relative text-slate-900 dark:text-white">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.amount} ($)</label>
+              <div className="relative">
                 <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
                   type="number" 
@@ -213,19 +191,19 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-black pl-12"
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-black pl-12 text-slate-900 dark:text-white"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.category}</label>
               <select 
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
                 required
               >
-                <option value="" disabled>Select Category</option>
+                <option value="" disabled>{currentLang === 'pt' ? 'Selecionar Categoria' : currentLang === 'es' ? 'Seleccionar Categoría' : 'Select Category'}</option>
                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
             </div>
@@ -233,32 +211,32 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Payment Channel</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Canal de Pagamento' : currentLang === 'es' ? 'Canal de Pago' : 'Payment Channel'}</label>
               <select 
                 value={channel}
                 onChange={(e) => setChannel(e.target.value as PaymentChannel)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
                 required
               >
-                <option value="" disabled>Select Channel</option>
+                <option value="" disabled>{currentLang === 'pt' ? 'Selecionar Canal' : currentLang === 'es' ? 'Seleccionar Canal' : 'Select Channel'}</option>
                 {paymentChannels.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="space-y-2 text-slate-900 dark:text-white">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date</label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.date}</label>
               <input 
                 type="date" 
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
           <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Payment Plan</label>
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Plano de Pagamento' : currentLang === 'es' ? 'Plan de Pago' : 'Payment Plan'}</label>
                <div className="grid grid-cols-2 gap-2">
                  {['One-time', 'Installment'].map(plan => (
                    <button
@@ -276,25 +254,25 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
             {paymentPlan === 'Installment' && (
               <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Installment</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Parcela Atual' : currentLang === 'es' ? 'Cuota Actual' : 'Current Installment'}</label>
                   <input 
                     type="number" 
                     min="1"
                     placeholder="1"
                     value={currentInstallment}
                     onChange={(e) => setCurrentInstallment(e.target.value)}
-                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold text-slate-900 dark:text-white"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Installments</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Total de Parcelas' : currentLang === 'es' ? 'Total de Cuotas' : 'Total Installments'}</label>
                   <input 
                     type="number" 
                     min="2"
                     placeholder="6"
                     value={totalInstallments}
                     onChange={(e) => setTotalInstallments(e.target.value)}
-                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold"
+                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -304,13 +282,13 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
           <div className="grid grid-cols-2 gap-4">
             {(channel === 'Bank' || channel === 'Autopay' || type === 'Payment') && (
                <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Source Bank</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.sourceBankAccount}</label>
                 <select 
                   value={bank}
                   onChange={(e) => setBank(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold border-l-4 border-l-blue-500"
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold border-l-4 border-l-blue-500 text-slate-900 dark:text-white text-sm"
                 >
-                  <option value="">Select Bank</option>
+                  <option value="">{t.selectBankAccount}</option>
                   {accounts.map(b => <option key={b.id} value={b.institution}>{b.institution}</option>)}
                   {accounts.length === 0 && <option disabled>No banks added yet</option>}
                 </select>
@@ -322,7 +300,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
                 <select 
                   value={card}
                   onChange={(e) => setCard(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold border-l-4 border-l-emerald-500"
+                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold border-l-4 border-l-emerald-500 text-slate-900 dark:text-white text-sm"
                 >
                   <option value="">Select Card</option>
                   {cards.map(c => <option key={c.id} value={c.cardName}>{c.cardName}</option>)}
@@ -340,7 +318,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
               type === 'Payment' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/25' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25'
             } text-white`}
           >
-            {editingTransaction ? 'Update Log' : 'Record Transaction'}
+            {editingTransaction ? t.updateCard.replace('Card', 'Log') : t.addTransaction}
           </button>
         </div>
       </form>
