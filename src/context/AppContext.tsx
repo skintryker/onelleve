@@ -647,6 +647,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user || !supabase) return;
     await supabase.from('expense_log').insert([{ ...log, user_id: user.id }]);
     
+    // Rule: If transaction is an Investment, update the Portfolio Card
+    if (log.transactionType === 'Investment' || log.category === 'Investment') {
+       await addInvestment({
+         date: log.date,
+         institution: log.description, // Use description as institution name for transactions
+         accountType: 'Investment',
+         contribution: log.amount,
+         currentBalance: 0, // addInvestment will calculate (existing + contribution)
+         payrollDeduction: log.paymentChannel === 'Autopay', // Assume Autopay might be payroll-deducted
+         monthKey: log.monthKey,
+         fromBank: log.bank
+       });
+       return; // addInvestment handles bank balance reduction
+    }
+
     // Rule 3: Credit Card Purchase increases Outstanding
     if (log.transactionType === 'Purchase' && log.paymentChannel === 'Credit Card' && log.creditCard) {
       const card = cards.find(c => c.cardName === log.creditCard);
@@ -784,7 +799,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addInvestment = async (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
-    await supabase.from('investments').insert([{ ...inv, user_id: user.id }]);
+
+    // 1. Portfolio Card Logic: Check if institution type exists for this user
+    const existing = investments.find(i => i.institution === inv.institution);
+
+    if (existing) {
+       // Update existing card (Cumulative contribution and updated balance)
+       await supabase.from('investments').update({
+         contribution: existing.contribution + inv.contribution,
+         currentBalance: inv.currentBalance > 0 ? inv.currentBalance : (existing.currentBalance + inv.contribution),
+         date: inv.date,
+         notes: inv.notes || existing.notes,
+         tenor: inv.tenor || existing.tenor,
+         rate: inv.rate || existing.rate,
+         value_date: inv.value_date || existing.value_date,
+         maturity_date: inv.maturity_date || existing.maturity_date
+       }).eq('id', existing.id);
+    } else {
+       // Create new card
+       await supabase.from('investments').insert([{ ...inv, user_id: user.id }]);
+    }
+
+    // 2. Bank Balance side effect (for manual investments)
     if (!inv.payrollDeduction && inv.fromBank) {
       const account = accounts.find(a => a.institution === inv.fromBank);
       if (account) {
