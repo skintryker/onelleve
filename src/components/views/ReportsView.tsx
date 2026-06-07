@@ -120,6 +120,20 @@ export default function ReportsView() {
         manualInvestments
       };
 
+      // Validation: Only generate if there is real data
+      const hasData = 
+        totalIncome > 0 || 
+        totalSpending > 0 || 
+        reportData.totalCashOut > 0 ||
+        investmentsTotal > 0 ||
+        bankBalances > 0 ||
+        cardOutstanding > 0;
+
+      if (!hasData) {
+        alert('No data available to generate a report.');
+        return;
+      }
+
       const newReportData = {
         title: `${periodLabel} Financial Summary`,
         period: periodLabel,

@@ -478,36 +478,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const period = `${month} ${year}`;
 
       // Capture current summary for archiving BEFORE cleaning up
-      // This summary already respects the current active month and last reset point
       const snapshotToArchive = { ...summary };
-      
-      // 1. Check for existing entries to avoid duplicates
-      const [archiveCheck, reportCheck] = await Promise.all([
-        supabase.from('monthly_archives').select('id').eq('user_id', user.id).eq('month', month).eq('year', year).maybeSingle(),
-        supabase.from('reports').select('id').eq('user_id', user.id).eq('period', period).maybeSingle()
-      ]);
 
-      // 2. Archive or Update current snapshot
-      if (archiveCheck.data) {
-        await supabase.from('monthly_archives').update({ snapshot_data: snapshotToArchive }).eq('id', archiveCheck.data.id);
-      } else {
-        await supabase.from('monthly_archives').insert([{
-          user_id: user.id,
-          month,
-          year,
-          snapshot_data: snapshotToArchive
-        }]);
-      }
-      
-      // 3. Save or Update report for UI visibility
-      if (reportCheck.data) {
-        await supabase.from('reports').update({ report_data: snapshotToArchive }).eq('id', reportCheck.data.id);
-      } else {
-        await addReport({
-          title: `${period} Financial Summary (Archived)`,
-          period,
-          report_data: snapshotToArchive
-        });
+      // Validation: Only archive if there is real data
+      const hasData = 
+        snapshotToArchive.incomeThisMonth > 0 || 
+        snapshotToArchive.cashOutThisMonth > 0 || 
+        snapshotToArchive.investmentThisMonth > 0 ||
+        snapshotToArchive.investmentsTotal > 0 ||
+        snapshotToArchive.availableBalance > 0 ||
+        snapshotToArchive.cardOutstanding > 0;
+
+      if (hasData) {
+        // 1. Check for existing entries to avoid duplicates
+        const [archiveCheck, reportCheck] = await Promise.all([
+          supabase.from('monthly_archives').select('id').eq('user_id', user.id).eq('month', month).eq('year', year).maybeSingle(),
+          supabase.from('reports').select('id').eq('user_id', user.id).eq('period', period).maybeSingle()
+        ]);
+
+        // 2. Archive or Update current snapshot
+        if (archiveCheck.data) {
+          await supabase.from('monthly_archives').update({ snapshot_data: snapshotToArchive }).eq('id', archiveCheck.data.id);
+        } else {
+          await supabase.from('monthly_archives').insert([{
+            user_id: user.id,
+            month,
+            year,
+            snapshot_data: snapshotToArchive
+          }]);
+        }
+        
+        // 3. Save or Update report for UI visibility
+        if (reportCheck.data) {
+          await supabase.from('reports').update({ report_data: snapshotToArchive }).eq('id', reportCheck.data.id);
+        } else {
+          await addReport({
+            title: `${period} Financial Summary (Archived)`,
+            period,
+            report_data: snapshotToArchive
+          });
+        }
       }
       
       // 4. Reset persistent balances and CLEAR active investments
