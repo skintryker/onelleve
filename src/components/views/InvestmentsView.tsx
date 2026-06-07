@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useAppContext } from '@/context/AppContext';
-import { TrendingUp, Plus, Wallet, CreditCard, Banknote, Loader2, Calendar, Percent, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useAppContext, Investment } from '@/context/AppContext';
+import { TrendingUp, Plus, Wallet, CreditCard, Banknote, Loader2, Calendar, Percent, Clock, Edit2, Trash2 } from 'lucide-react';
 import Modal from '../modals/Modal';
 import { translations, Language, formatDate } from '@/utils/translations';
 
 const InvestmentsView = () => {
-  const { investments, activeInvestments, addInvestment, accounts, settings, maskValue } = useAppContext();
+  const { investments, activeInvestments, addInvestment, editInvestment, deleteInvestment, accounts, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   
   // Form State
   const [institution, setInstitution] = useState('');
@@ -28,30 +29,19 @@ const InvestmentsView = () => {
   const dateFormat = settings?.date_format || 'MM/DD/YYYY';
   const t = translations[currentLang];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const data = {
-        date: new Date().toISOString().split('T')[0],
-        institution,
-        accountType: 'Investment',
-        contribution: institution === 'CD' ? (contribution ? parseFloat(contribution) : 0) : parseFloat(contribution),
-        currentBalance: institution === 'CD' ? (balance ? parseFloat(balance) : 0) : parseFloat(balance),
-        payrollDeduction,
-        fromBank: !payrollDeduction ? fromBank : undefined,
-        monthKey: new Date().toISOString().slice(0, 7),
-        // CD fields
-        ...(institution === 'CD' ? {
-          tenor,
-          rate: rate ? parseFloat(rate) : 0,
-          value_date: valueDate || null,
-          maturity_date: maturityDate || null
-        } : {})
-      };
-      await addInvestment(data);
-      setIsModalOpen(false);
-      // Reset form
+  // Sync form with editing item
+  useEffect(() => {
+    if (editingInvestment) {
+      setInstitution(editingInvestment.institution);
+      setContribution(editingInvestment.contribution.toString());
+      setBalance(editingInvestment.currentBalance.toString());
+      setPayrollDeduction(editingInvestment.payrollDeduction);
+      setFromBank(editingInvestment.fromBank || '');
+      setTenor(editingInvestment.tenor || '');
+      setRate(editingInvestment.rate?.toString() || '');
+      setValueDate(editingInvestment.value_date || '');
+      setMaturityDate(editingInvestment.maturity_date || '');
+    } else {
       setInstitution('');
       setContribution('');
       setBalance('');
@@ -61,10 +51,59 @@ const InvestmentsView = () => {
       setRate('');
       setValueDate('');
       setMaturityDate('');
+    }
+  }, [editingInvestment]);
+
+  const handleOpenModal = (inv: Investment | null = null) => {
+    setEditingInvestment(inv);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const data = {
+        date: editingInvestment ? editingInvestment.date : new Date().toISOString().split('T')[0],
+        institution,
+        accountType: 'Investment',
+        contribution: parseFloat(contribution) || 0,
+        currentBalance: parseFloat(balance) || 0,
+        payrollDeduction,
+        fromBank: !payrollDeduction ? fromBank : undefined,
+        monthKey: editingInvestment ? editingInvestment.monthKey : new Date().toISOString().slice(0, 7),
+        // CD fields
+        ...(institution === 'CD' ? {
+          tenor,
+          rate: rate ? parseFloat(rate) : 0,
+          value_date: valueDate || null,
+          maturity_date: maturityDate || null
+        } : {})
+      };
+
+      if (editingInvestment) {
+        await editInvestment(editingInvestment.id, data);
+      } else {
+        await addInvestment(data);
+      }
+      
+      setIsModalOpen(false);
+      setEditingInvestment(null);
     } catch (error) {
-      console.error('Error adding investment:', error);
+      console.error('Error saving investment:', error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm(currentLang === 'pt' ? 'Tem certeza que deseja excluir este investimento?' : currentLang === 'es' ? '¿Estás seguro de que quieres eliminar esta inversión?' : 'Are you sure you want to delete this investment?')) {
+      try {
+        await deleteInvestment(id);
+      } catch (error) {
+        console.error('Error deleting investment:', error);
+        alert('Failed to delete investment.');
+      }
     }
   };
 
@@ -90,7 +129,7 @@ const InvestmentsView = () => {
             {t.trackManualInvestments}
         </p>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => handleOpenModal()}
           className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs uppercase tracking-widest"
         >
           <Plus size={16} />
@@ -147,7 +186,22 @@ const InvestmentsView = () => {
       {/* Individual Investment Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {investments.map((inv) => (
-          <div key={inv.id} className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group text-slate-900 dark:text-white">
+          <div key={inv.id} className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group text-slate-900 dark:text-white relative">
+            <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button 
+                onClick={() => handleOpenModal(inv)}
+                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+              >
+                <Edit2 size={14} />
+              </button>
+              <button 
+                onClick={() => handleDelete(inv.id)}
+                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+
             <div className="flex justify-between items-start mb-6">
               <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-all">
                 <TrendingUp size={28} strokeWidth={2.5} />
@@ -209,7 +263,7 @@ const InvestmentsView = () => {
         )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t.newPortfolioInvestment}>
+      <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingInvestment(null); }} title={editingInvestment ? (currentLang === 'pt' ? 'Editar Investimento' : currentLang === 'es' ? 'Editar Inversión' : 'Edit Investment') : t.newPortfolioInvestment}>
         <form onSubmit={handleSubmit} className="space-y-6 text-slate-900 dark:text-white">
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.investmentType}</label>
@@ -338,7 +392,7 @@ const InvestmentsView = () => {
               disabled={saving}
               className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 className="animate-spin" size={16} /> : t.confirmInvestment}
+              {saving ? <Loader2 className="animate-spin" size={16} /> : (editingInvestment ? (currentLang === 'pt' ? 'Atualizar Investimento' : currentLang === 'es' ? 'Actualizar Inversión' : 'Update Investment') : t.confirmInvestment)}
             </button>
           </div>
         </form>

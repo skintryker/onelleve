@@ -180,6 +180,8 @@ interface AppContextType {
   editAccount: (id: string, account: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
   addInvestment: (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>, skipLog?: boolean) => Promise<void>;
+  editInvestment: (id: string, inv: Partial<Investment>) => Promise<void>;
+  deleteInvestment: (id: string) => Promise<void>;
   addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<SavedReport | null>;
   deleteReport: (id: string) => Promise<void>;
   startNewMonth: () => Promise<void>;
@@ -851,6 +853,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
   };
 
+  const editInvestment = async (id: string, inv: Partial<Investment>) => {
+    if (!supabase) return;
+    await supabase.from('investments').update(inv).eq('id', id);
+    await refreshData();
+  };
+
+  const deleteInvestment = async (id: string) => {
+    if (!supabase) return;
+    await supabase.from('investments').delete().eq('id', id);
+    await refreshData();
+  };
+
   const addReport = async (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>): Promise<SavedReport | null> => {
     if (!user || !supabase) return null;
     const { data, error } = await supabase.from('reports').insert([{ ...report, user_id: user.id }]).select().single();
@@ -905,7 +919,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{ 
       user, loading, incomeLogs, expenseLogs, activeIncomeLogs, activeExpenseLogs, activeInvestments, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
-      addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment,
+      addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment, editInvestment, deleteInvestment,
       addReport, deleteReport, startNewMonth, factoryReset, isPrivacyMode, togglePrivacyMode, maskValue, calculateSummary
     }}>
       {children}
