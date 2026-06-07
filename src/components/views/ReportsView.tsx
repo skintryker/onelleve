@@ -52,14 +52,6 @@ export default function ReportsView() {
     const totalIncome = monthIncome.reduce((acc, log) => acc + log.amount, 0);
     const totalSpending = monthExpense.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0);
     
-    // Logic for Cash Out (Bank/Autopay/Card Payments + Investments)
-    const cashOutExpenses = monthExpense.filter(log => 
-      log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment'
-    ).reduce((acc, log) => acc + log.amount, 0);
-    
-    const manualInvestments = monthInvestments.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
-    const totalCashOut = cashOutExpenses + manualInvestments;
-
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
     const bankBalances = accounts.reduce((acc, accnt) => acc + accnt.balance, 0);
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
@@ -71,17 +63,37 @@ export default function ReportsView() {
 
     const periodLabel = months.find(m => m.key === selectedMonth)?.label || selectedMonth;
 
+    // 1. Pure Bank/Cash Expenses (excluding CC payments and investments to avoid double counting)
+    const pureBankExpenses = monthExpense.filter(log => 
+      log.paymentChannel !== 'Credit Card' && 
+      log.transactionType !== 'Payment' && 
+      log.transactionType !== 'Investment' &&
+      log.category !== 'Investment'
+    ).reduce((acc, log) => acc + log.amount, 0);
+
+    // 2. Credit Card Payments
+    const cardPayments = monthExpense.filter(log => 
+      log.transactionType === 'Payment'
+    ).reduce((acc, log) => acc + log.amount, 0);
+    
+    // 3. Manual Investments (Contribution)
+    const manualInvestments = monthInvestments.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+    
+    // 4. Payroll Investments (Contribution)
+    const payrollDeduction = monthInvestments.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+
     const reportData = {
       totalIncome,
       totalSpending,
-      totalCashOut,
+      totalCashOut: pureBankExpenses + cardPayments + manualInvestments,
+      pureBankExpenses,
       cardOutstanding,
       bankBalances,
       investmentsTotal,
       netPosition: bankBalances + investmentsTotal - cardOutstanding,
       categories,
-      cardPayments: monthExpense.filter(e => e.transactionType === 'Payment').reduce((acc, e) => acc + e.amount, 0),
-      payrollDeduction: monthInvestments.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0),
+      cardPayments,
+      payrollDeduction,
       manualInvestments
     };
 
@@ -213,7 +225,7 @@ export default function ReportsView() {
                    <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${viewingReport.report_data.totalIncome.toLocaleString()}</p>
                 </div>
                 <div className="bg-rose-50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/20">
-                   <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Total Cash Out This Month</p>
+                   <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Total Cash Out</p>
                    <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${viewingReport.report_data.totalCashOut.toLocaleString()}</p>
                 </div>
              </div>
@@ -242,12 +254,19 @@ export default function ReportsView() {
                       </div>
                       <p className="text-sm font-black">${viewingReport.report_data.payrollDeduction.toLocaleString()}</p>
                    </div>
-                   <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
+                   <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
+                         <p className="text-sm font-bold">Manual Investments</p>
+                      </div>
+                      <p className="text-sm font-black">${(viewingReport.report_data.manualInvestments || 0).toLocaleString()}</p>
+                   </div>
+                   <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
+                      <div className="flex items-center gap-2">
+                         <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><Building2 size={14} /></div>
                          <p className="text-sm font-bold">Investments Total</p>
                       </div>
-                      <p className="text-sm font-black text-blue-600">${viewingReport.report_data.investmentsTotal.toLocaleString()}</p>
+                      <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">${viewingReport.report_data.investmentsTotal.toLocaleString()}</p>
                    </div>
                 </div>
              </div>
