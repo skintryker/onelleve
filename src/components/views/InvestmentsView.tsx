@@ -84,14 +84,11 @@ const InvestmentsView = () => {
     .reduce((acc, inv) => acc + inv.contribution, 0);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white">
-      <div className="flex justify-between items-center px-1">
-        <div>
-          <h2 className="text-xl font-black uppercase tracking-tight">{t.investments}</h2>
-          <p className="text-sm text-slate-500 font-medium tracking-tight italic">
-              {t.trackManualInvestments}
-          </p>
-        </div>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white">
+      <div className="flex justify-between items-center px-1 mb-2">
+        <p className="text-xs text-slate-500 font-medium tracking-tight italic">
+            {t.trackManualInvestments}
+        </p>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs uppercase tracking-widest"

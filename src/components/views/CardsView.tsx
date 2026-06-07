@@ -140,15 +140,12 @@ const CardsView = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white px-4">
+    <div className="max-w-[1400px] mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white px-4">
       {/* SECTION HEADER: FIXED ALIGNMENT */}
-      <div className="flex flex-row justify-between items-center">
-        <div>
-          <h2 className="text-xl font-black uppercase tracking-tight">{t.creditCards}</h2>
-          <p className="text-xs text-slate-500 font-medium tracking-tight italic">
-              {t.manageCards}
-          </p>
-        </div>
+      <div className="flex flex-row justify-between items-center mb-2">
+        <p className="text-xs text-slate-500 font-medium tracking-tight italic">
+            {t.manageCards}
+        </p>
         <button 
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-[10px] uppercase tracking-widest whitespace-nowrap"

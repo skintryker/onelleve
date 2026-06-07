@@ -175,7 +175,7 @@ export default function ReportsView() {
   }, [viewingReport]);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white pt-2">
       {/* Real-time Charts */}
       <Charts />
 

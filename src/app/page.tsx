@@ -198,9 +198,7 @@ export default function Dashboard() {
                 <Menu size={22} />
               </button>
               <div className="hidden sm:block">
-                {!['Accounts', 'Credit Cards', 'Investments'].includes(activeItem) && (
-                  <h1 className="text-lg md:text-xl font-black tracking-tighter uppercase">{getTranslatedActiveItem()}</h1>
-                )}
+                <h1 className="text-lg md:text-xl font-black tracking-tighter uppercase">{getTranslatedActiveItem()}</h1>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Clock size={10} className="text-slate-400" />
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">
@@ -274,7 +272,7 @@ export default function Dashboard() {
         </header>
 
         <div className="w-full flex-1 flex flex-col items-center">
-          <div className="w-full max-w-[1400px] p-4 md:p-8">
+          <div className="w-full max-w-[1400px] p-4 md:p-8 pt-2 md:pt-4">
             {renderView()}
           </div>
         </div>

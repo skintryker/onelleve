@@ -480,7 +480,7 @@ const SettingsView = () => {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-2">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
         {/* Navigation Sidebar */}
         <div className="lg:col-span-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 custom-scrollbar shrink-0">
