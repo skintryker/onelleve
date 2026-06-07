@@ -12,7 +12,8 @@ import {
   TrendingUp,
   CreditCard,
   Building2,
-  Wallet
+  Wallet,
+  Loader2
 } from 'lucide-react';
 import Charts from '@/components/Charts';
 import Modal from '../modals/Modal';
@@ -34,6 +35,7 @@ export default function ReportsView() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingReport, setViewingReport] = useState<SavedReport | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
@@ -51,63 +53,77 @@ export default function ReportsView() {
   }, [currentLang]);
 
   const handleGenerateReport = async () => {
-    const monthIncome = incomeLogs.filter(log => log.monthKey === selectedMonth);
-    const monthExpense = expenseLogs.filter(log => log.monthKey === selectedMonth);
-    const monthInvestments = investments.filter(inv => inv.monthKey === selectedMonth);
+    setIsGenerating(true);
+    try {
+      const monthIncome = incomeLogs.filter(log => log.monthKey === selectedMonth);
+      const monthExpense = expenseLogs.filter(log => log.monthKey === selectedMonth);
+      const monthInvestments = investments.filter(inv => inv.monthKey === selectedMonth);
 
-    const totalIncome = monthIncome.reduce((acc, log) => acc + log.amount, 0);
-    const totalSpending = monthExpense.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0);
-    
-    const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
-    const bankBalances = accounts.reduce((acc, accnt) => acc + accnt.balance, 0);
-    const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
+      const totalIncome = monthIncome.reduce((acc, log) => acc + log.amount, 0);
+      const totalSpending = monthExpense.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0);
+      
+      const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
+      const bankBalances = accounts.reduce((acc, accnt) => acc + accnt.balance, 0);
+      const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
-    const categories = monthExpense.reduce((acc: Record<string, number>, log) => {
-      acc[log.category] = (acc[log.category] || 0) + log.amount;
-      return acc;
-    }, {});
+      const categories = monthExpense.reduce((acc: Record<string, number>, log) => {
+        acc[log.category] = (acc[log.category] || 0) + log.amount;
+        return acc;
+      }, {});
 
-    const periodLabel = months.find(m => m.key === selectedMonth)?.label || selectedMonth;
+      const periodLabel = months.find(m => m.key === selectedMonth)?.label || selectedMonth;
 
-    // 1. Pure Bank/Cash Expenses (excluding CC payments and investments to avoid double counting)
-    const pureBankExpenses = monthExpense.filter(log => 
-      log.paymentChannel !== 'Credit Card' && 
-      log.transactionType !== 'Payment' && 
-      log.transactionType !== 'Investment' &&
-      log.category !== 'Investment'
-    ).reduce((acc, log) => acc + log.amount, 0);
+      // 1. Pure Bank/Cash Expenses (excluding CC payments and investments to avoid double counting)
+      const pureBankExpenses = monthExpense.filter(log => 
+        log.paymentChannel !== 'Credit Card' && 
+        log.transactionType !== 'Payment' && 
+        log.transactionType !== 'Investment' &&
+        log.category !== 'Investment'
+      ).reduce((acc, log) => acc + log.amount, 0);
 
-    // 2. Credit Card Payments
-    const cardPayments = monthExpense.filter(log => 
-      log.transactionType === 'Payment'
-    ).reduce((acc, log) => acc + log.amount, 0);
-    
-    // 3. Manual Investments (Contribution)
-    const manualInvestments = monthInvestments.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
-    
-    // 4. Payroll Investments (Contribution)
-    const payrollDeduction = monthInvestments.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+      // 2. Credit Card Payments
+      const cardPayments = monthExpense.filter(log => 
+        log.transactionType === 'Payment'
+      ).reduce((acc, log) => acc + log.amount, 0);
+      
+      // 3. Manual Investments (Contribution)
+      const manualInvestments = monthInvestments.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+      
+      // 4. Payroll Investments (Contribution)
+      const payrollDeduction = monthInvestments.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
 
-    const reportData = {
-      totalIncome,
-      totalSpending,
-      totalCashOut: pureBankExpenses + cardPayments + manualInvestments,
-      pureBankExpenses,
-      cardOutstanding,
-      bankBalances,
-      investmentsTotal,
-      netPosition: bankBalances + investmentsTotal - cardOutstanding,
-      categories,
-      cardPayments,
-      payrollDeduction,
-      manualInvestments
-    };
+      const reportData = {
+        totalIncome,
+        totalSpending,
+        totalCashOut: pureBankExpenses + cardPayments + manualInvestments,
+        pureBankExpenses,
+        cardOutstanding,
+        bankBalances,
+        investmentsTotal,
+        netPosition: bankBalances + investmentsTotal - cardOutstanding,
+        categories,
+        cardPayments,
+        payrollDeduction,
+        manualInvestments
+      };
 
-    await addReport({
-      title: `${periodLabel} Financial Summary`,
-      period: periodLabel,
-      report_data: reportData
-    });
+      const newReport = {
+        title: `${periodLabel} Financial Summary`,
+        period: periodLabel,
+        report_data: reportData
+      };
+
+      await addReport(newReport);
+      
+      // Open the modal immediately with the new data
+      setViewingReport(newReport as SavedReport);
+      setIsViewModalOpen(true);
+    } catch (error) {
+      console.error('Error generating report:', error);
+      alert('Failed to generate report. Please check your connection and try again.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleDeleteReport = async (id: string) => {
@@ -146,9 +162,10 @@ export default function ReportsView() {
           </select>
           <button 
             onClick={handleGenerateReport}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2"
+            disabled={isGenerating}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
           >
-            <Plus size={16} />
+            {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
             {t.generateReport}
           </button>
         </div>

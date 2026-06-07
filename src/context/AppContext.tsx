@@ -217,9 +217,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [reports, setReports] = useState<SavedReport[]>([]);
 
   // Helper to fetch all data
-  const fetchAllData = async (currentUser: User) => {
+  const fetchAllData = async (currentUser: User, silent = false) => {
     if (!supabase) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const [
         incRes,
@@ -290,7 +290,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const refreshData = async () => {
-    if (user) await fetchAllData(user);
+    if (user) await fetchAllData(user, true);
   };
 
   // Auth Listener
@@ -579,7 +579,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addReport = async (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
-    await supabase.from('reports').insert([{ ...report, user_id: user.id }]);
+    const { error } = await supabase.from('reports').insert([{ ...report, user_id: user.id }]);
+    if (error) throw error;
     await refreshData();
   };
 
