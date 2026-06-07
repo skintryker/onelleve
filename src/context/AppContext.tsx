@@ -258,7 +258,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCards(crdRes.data || []);
       setAccounts(accRes.data || []);
       setInvestments(invRes.data || []);
-      setReports(repRes.data || []);
+      
+      // Deduplicate reports by period for the UI (keeping the most recent)
+      const uniqueReports: SavedReport[] = [];
+      const seenPeriods = new Set();
+      (repRes.data || []).forEach(report => {
+        if (!seenPeriods.has(report.period)) {
+          uniqueReports.push(report);
+          seenPeriods.add(report.period);
+        }
+      });
+      setReports(uniqueReports);
       
       if (setRes.data) {
         // Ensure all keys have default values to avoid UI bugs with missing columns
@@ -464,29 +474,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const month = d.toLocaleString('en-US', { month: 'long' });
       const year = d.getFullYear().toString();
       const nowISO = d.toISOString();
+      const period = `${month} ${year}`;
       
-      // 1. Archive current snapshot
-      await supabase.from('monthly_archives').insert([{
-        user_id: user.id,
-        month,
-        year,
-        snapshot_data: summary
-      }]);
+      // 1. Check for existing entries to avoid duplicates
+      const [archiveCheck, reportCheck] = await Promise.all([
+        supabase.from('monthly_archives').select('id').eq('user_id', user.id).eq('month', month).eq('year', year).maybeSingle(),
+        supabase.from('reports').select('id').eq('user_id', user.id).eq('period', period).maybeSingle()
+      ]);
+
+      // 2. Archive or Update current snapshot
+      if (archiveCheck.data) {
+        await supabase.from('monthly_archives').update({ snapshot_data: summary }).eq('id', archiveCheck.data.id);
+      } else {
+        await supabase.from('monthly_archives').insert([{
+          user_id: user.id,
+          month,
+          year,
+          snapshot_data: summary
+        }]);
+      }
       
-      // 2. Save as report for UI visibility
-      await addReport({
-        title: `${month} ${year} Financial Summary (Archived)`,
-        period: `${month} ${year}`,
-        report_data: summary
-      });
+      // 3. Save or Update report for UI visibility
+      if (reportCheck.data) {
+        await supabase.from('reports').update({ report_data: summary }).eq('id', reportCheck.data.id);
+      } else {
+        await addReport({
+          title: `${period} Financial Summary (Archived)`,
+          period,
+          report_data: summary
+        });
+      }
       
-      // 3. Reset persistent balances
+      // 4. Reset persistent balances
       await Promise.all([
         supabase.from('bank_accounts').update({ balance: 0 }).eq('user_id', user.id),
         supabase.from('credit_cards').update({ currentBalance: 0 }).eq('user_id', user.id)
       ]);
       
-      // 4. Record reset date to clear dashboard monthly KPIs
+      // 5. Record reset date to clear dashboard monthly KPIs
       await updateSettings({ last_reset_date: nowISO });
       
       await refreshData();
