@@ -136,6 +136,7 @@ export interface UserSettings {
   language?: string;
   region?: string;
   date_format?: string;
+  last_reset_date?: string;
 }
 
 interface AppSummary {
@@ -175,6 +176,7 @@ interface AppContextType {
   addInvestment: (inv: Omit<Investment, 'id' | 'user_id'>) => Promise<void>;
   addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   deleteReport: (id: string) => Promise<void>;
+  startNewMonth: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -339,35 +341,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const incomeThisMonth = incomeLogs.filter(log => log.monthKey === currentMonth).reduce((acc, log) => acc + log.amount, 0);
+    const lastReset = settings?.last_reset_date || '1970-01-01';
+
+    // Monthly KPIs: Filter by month AND ensure date is after the last reset
+    const activeIncomes = incomeLogs.filter(log => log.monthKey === currentMonth && log.date > lastReset);
+    const activeExpenses = expenseLogs.filter(log => log.monthKey === currentMonth && log.date > lastReset);
+    const activeInvestments = investments.filter(inv => inv.monthKey === currentMonth && inv.date > lastReset);
+
+    const incomeThisMonth = activeIncomes.reduce((acc, log) => acc + log.amount, 0);
     
     // KPI: Sum of all expenses (Bank + Card)
-    const expensesThisMonth = expenseLogs.filter(log => 
-      log.monthKey === currentMonth && 
+    const expensesThisMonth = activeExpenses.filter(log => 
       log.transactionType !== 'Payment' && 
       log.transactionType !== 'Investment' && 
       log.category !== 'Credit Card'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const investmentThisMonth = investments.filter(inv => inv.monthKey === currentMonth).reduce((acc, inv) => acc + inv.contribution, 0);
+    const investmentThisMonth = activeInvestments.reduce((acc, inv) => acc + inv.contribution, 0);
     
     // Logic for Available Cash Balance:
     // Only deduct money that actually left the bank/cash
-    const bankSpending = expenseLogs.filter(log => 
-      log.monthKey === currentMonth && 
+    const bankSpending = activeExpenses.filter(log => 
       log.transactionType !== 'Payment' && 
       log.transactionType !== 'Investment' && 
       log.category !== 'Credit Card' &&
       log.paymentChannel !== 'Credit Card' // Ignore card purchases for cash flow
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const cardPaymentsFromBank = expenseLogs.filter(log => 
+    const cardPaymentsFromBank = activeExpenses.filter(log => 
       log.monthKey === currentMonth && 
       log.transactionType === 'Payment'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const manualInvestmentThisMonth = investments
-      .filter(inv => inv.monthKey === currentMonth && !inv.payrollDeduction)
+    const manualInvestmentThisMonth = activeInvestments
+      .filter(inv => !inv.payrollDeduction)
       .reduce((acc, inv) => acc + inv.contribution, 0);
     
     // Available Balance = Sum of all actual bank/cash account balances
@@ -380,9 +387,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
     return { availableBalance, incomeThisMonth, cashOutThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
-  }, [incomeLogs, expenseLogs, cards, accounts, investments]);
+  }, [incomeLogs, expenseLogs, cards, accounts, investments, settings]);
 
   // Actions
+  const startNewMonth = async () => {
+    if (!user || !supabase) return;
+    
+    try {
+      const d = new Date();
+      const month = d.toLocaleString('en-US', { month: 'long' });
+      const year = d.getFullYear().toString();
+      
+      // 1. Archive current snapshot
+      await supabase.from('monthly_archives').insert([{
+        user_id: user.id,
+        month,
+        year,
+        snapshot_data: summary
+      }]);
+      
+      // 2. Save as report for UI visibility
+      await addReport({
+        title: `${month} ${year} Financial Summary (Archived)`,
+        period: `${month} ${year}`,
+        report_data: summary
+      });
+      
+      // 3. Reset persistent balances
+      await Promise.all([
+        supabase.from('bank_accounts').update({ balance: 0 }).eq('user_id', user.id),
+        supabase.from('credit_cards').update({ currentBalance: 0 }).eq('user_id', user.id)
+      ]);
+      
+      // 4. Record reset date to clear dashboard monthly KPIs
+      const todayStr = new Date().toISOString().split('T')[0];
+      await updateSettings({ last_reset_date: todayStr });
+      
+      await refreshData();
+    } catch (error) {
+      console.error('Error starting new month:', error);
+      throw error;
+    }
+  };
   const addIncome = async (log: Omit<IncomeLog, 'id' | 'user_id'>) => {
     if (!user || !supabase) return;
     await supabase.from('income_log').insert([{ ...log, user_id: user.id }]);
@@ -528,6 +574,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (newSettings.preferred_currency !== undefined) payload.preferred_currency = newSettings.preferred_currency;
     if (newSettings.language !== undefined) payload.language = newSettings.language;
     if (newSettings.date_format !== undefined) payload.date_format = newSettings.date_format;
+    if (newSettings.last_reset_date !== undefined) payload.last_reset_date = newSettings.last_reset_date;
 
     const { error } = await supabase.from('user_settings').upsert(payload, { onConflict: 'user_id' });
 
@@ -547,7 +594,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment,
-      addReport, deleteReport
+      addReport, deleteReport, startNewMonth
     }}>
       {children}
     </AppContext.Provider>

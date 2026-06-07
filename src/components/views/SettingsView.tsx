@@ -5,12 +5,14 @@ import { User, Bell, Shield, Globe, Save, Mail, Loader2, Key, LogOut, Check, Tra
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/utils/supabaseClient';
 import { translations, Language } from '@/utils/translations';
+import Modal from '../modals/Modal';
 
 const SettingsView = () => {
-  const { user, settings, updateSettings, loading: appLoading } = useAppContext();
+  const { user, settings, updateSettings, startNewMonth, loading: appLoading } = useAppContext();
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'region'>('profile');
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [isStartMonthModalOpen, setIsStartMonthModalOpen] = useState(false);
   
   // Local form states
   const [fullName, setFullName] = useState('');
@@ -66,6 +68,20 @@ const SettingsView = () => {
         type: 'error', 
         message: error.message || 'Failed to save region settings.' 
       });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStartNewMonth = async () => {
+    setSaving(true);
+    try {
+      await startNewMonth();
+      setSaveStatus({ type: 'success', message: 'New month started successfully!' });
+      setIsStartMonthModalOpen(false);
+    } catch (error: any) {
+      console.error('Start New Month Error:', error);
+      alert('Failed to start new month.');
     } finally {
       setSaving(false);
     }
@@ -161,7 +177,52 @@ const SettingsView = () => {
                   {saveStatus.message}
                 </p>
               )}
+
+              <div className="pt-10 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col md:flex-row items-center justify-between p-6 bg-blue-50/50 dark:bg-blue-900/5 rounded-3xl border border-blue-100/50 dark:border-blue-900/20 gap-6">
+                   <div className="flex-1 text-center md:text-left">
+                      <h4 className="text-lg font-black text-slate-900 dark:text-white">{t.startNewMonth}</h4>
+                      <p className="text-xs text-slate-500 mt-1">Archive current data and reset monthly totals for a fresh start.</p>
+                   </div>
+                   <button 
+                    onClick={() => setIsStartMonthModalOpen(true)}
+                    className="px-8 py-3 bg-white dark:bg-slate-900 border-2 border-blue-600 text-blue-600 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm"
+                   >
+                     {t.startNewMonth}
+                   </button>
+                </div>
+              </div>
             </div>
+
+            <Modal 
+              isOpen={isStartMonthModalOpen} 
+              onClose={() => setIsStartMonthModalOpen(false)} 
+              title={t.startNewMonth}
+            >
+               <div className="space-y-6">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-700 dark:text-blue-300">
+                     <p className="text-sm font-bold leading-relaxed">
+                        {t.startNewMonthConfirm}
+                     </p>
+                  </div>
+                  
+                  <div className="flex flex-col gap-3">
+                    <button 
+                      disabled={saving}
+                      onClick={handleStartNewMonth}
+                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/25 active:scale-95 flex items-center justify-center gap-3"
+                    >
+                      {saving ? <Loader2 className="animate-spin" size={18} /> : 'Confirm & Start New Month'}
+                    </button>
+                    <button 
+                      onClick={() => setIsStartMonthModalOpen(false)}
+                      className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-xs"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+               </div>
+            </Modal>
           </div>
         );
       case 'notifications':

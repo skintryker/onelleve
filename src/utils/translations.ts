@@ -47,6 +47,8 @@ export const translations = {
     type: 'Type',
     status: 'Status',
     actions: 'Actions',
+    startNewMonth: 'Start New Month',
+    startNewMonthConfirm: 'Start a new month? Your current month data will be archived for reports, and active monthly values will reset to zero. Bank accounts, credit cards, settings, and historical reports will not be deleted.',
   },
   pt: {
     dashboard: 'Painel',
@@ -94,6 +96,8 @@ export const translations = {
     type: 'Tipo',
     status: 'Status',
     actions: 'Ações',
+    startNewMonth: 'Iniciar Novo Mês',
+    startNewMonthConfirm: 'Iniciar um novo mês? Os dados do mês atual serão arquivados para relatórios e os valores mensais ativos serão redefinidos para zero. Contas bancárias, cartões de crédito, configurações e relatórios históricos não serão excluídos.',
   },
   es: {
     dashboard: 'Panel',
@@ -141,6 +145,8 @@ export const translations = {
     type: 'Tipo',
     status: 'Estado',
     actions: 'Acciones',
+    startNewMonth: 'Iniciar Nuevo Mes',
+    startNewMonthConfirm: '¿Iniciar un nuevo mes? Los datos del mes actual se archivarán para informes y los valores mensuales activos se restablecerán a cero. Las cuentas bancarias, tarjetas de crédito, ajustes e informes históricos no se eliminarán.',
   }
 };
 
