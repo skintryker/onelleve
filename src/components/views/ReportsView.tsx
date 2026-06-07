@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useAppContext, SavedReport } from '@/context/AppContext';
 import { 
   FileText, 
   Plus, 
@@ -17,34 +17,20 @@ import {
 import Charts from '@/components/Charts';
 import Modal from '../modals/Modal';
 
-interface GeneratedReport {
-  id: string;
-  name: string;
-  period: string;
-  createdDate: string;
-  type: string;
-  status: 'Ready' | 'Draft' | 'Generating' | 'Failed';
-  data: {
-    totalIncome: number;
-    totalSpending: number;
-    totalCashOut: number;
-    cardOutstanding: number;
-    bankBalances: number;
-    investmentsTotal: number;
-    netPosition: number;
-    categories: Record<string, number>;
-    cardPayments: number;
-    payrollDeduction: number;
-    manualInvestments: number;
-  };
-}
-
 export default function ReportsView() {
-  const { incomeLogs, expenseLogs, cards, accounts, investments } = useAppContext();
-  const [reports, setReports] = useState<GeneratedReport[]>([]);
+  const { 
+    incomeLogs, 
+    expenseLogs, 
+    cards, 
+    accounts, 
+    investments, 
+    reports, 
+    addReport, 
+    deleteReport 
+  } = useAppContext();
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingReport, setViewingReport] = useState<GeneratedReport | null>(null);
+  const [viewingReport, setViewingReport] = useState<SavedReport | null>(null);
 
   const months = useMemo(() => {
     const opts = [];
@@ -58,7 +44,7 @@ export default function ReportsView() {
     return opts;
   }, []);
 
-  const handleGenerateReport = () => {
+  const handleGenerateReport = async () => {
     const monthIncome = incomeLogs.filter(log => log.monthKey === selectedMonth);
     const monthExpense = expenseLogs.filter(log => log.monthKey === selectedMonth);
     const monthInvestments = investments.filter(inv => inv.monthKey === selectedMonth);
@@ -83,36 +69,34 @@ export default function ReportsView() {
       return acc;
     }, {});
 
-    const newReport: GeneratedReport = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: `Monthly Financial Summary`,
-      period: months.find(m => m.key === selectedMonth)?.label || selectedMonth,
-      createdDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'Summary',
-      status: 'Ready',
-      data: {
-        totalIncome,
-        totalSpending,
-        totalCashOut,
-        cardOutstanding,
-        bankBalances,
-        investmentsTotal,
-        netPosition: bankBalances + investmentsTotal - cardOutstanding,
-        categories,
-        cardPayments: monthExpense.filter(e => e.transactionType === 'Payment').reduce((acc, e) => acc + e.amount, 0),
-        payrollDeduction: monthInvestments.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0),
-        manualInvestments
-      }
+    const periodLabel = months.find(m => m.key === selectedMonth)?.label || selectedMonth;
+
+    const reportData = {
+      totalIncome,
+      totalSpending,
+      totalCashOut,
+      cardOutstanding,
+      bankBalances,
+      investmentsTotal,
+      netPosition: bankBalances + investmentsTotal - cardOutstanding,
+      categories,
+      cardPayments: monthExpense.filter(e => e.transactionType === 'Payment').reduce((acc, e) => acc + e.amount, 0),
+      payrollDeduction: monthInvestments.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0),
+      manualInvestments
     };
 
-    setReports([newReport, ...reports]);
+    await addReport({
+      title: `${periodLabel} Financial Summary`,
+      period: periodLabel,
+      report_data: reportData
+    });
   };
 
-  const handleDeleteReport = (id: string) => {
-    setReports(reports.filter(r => r.id !== id));
+  const handleDeleteReport = async (id: string) => {
+    await deleteReport(id);
   };
 
-  const handleViewReport = (report: GeneratedReport) => {
+  const handleViewReport = (report: SavedReport) => {
     setViewingReport(report);
     setIsViewModalOpen(true);
   };
@@ -167,7 +151,6 @@ export default function ReportsView() {
                   <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Report Name</th>
                   <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Period</th>
                   <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Type</th>
-                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Status</th>
                   <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                 </tr>
               </thead>
@@ -179,17 +162,11 @@ export default function ReportsView() {
                         <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg">
                           <FileText size={18} />
                         </div>
-                        <span className="font-bold text-sm">{report.name}</span>
+                        <span className="font-bold text-sm">{report.title}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500 font-medium">{report.period}</td>
-                    <td className="px-6 py-4 text-[10px] font-black uppercase text-slate-400">{report.type}</td>
-                    <td className="px-6 py-4">
-                      <span className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
-                        <CheckCircle2 size={12} />
-                        {report.status}
-                      </span>
-                    </td>
+                    <td className="px-6 py-4 text-[10px] font-black uppercase text-slate-400">Summary</td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">
                         <button 
@@ -233,11 +210,11 @@ export default function ReportsView() {
              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Total Income</p>
-                   <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${viewingReport.data.totalIncome.toLocaleString()}</p>
+                   <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${viewingReport.report_data.totalIncome.toLocaleString()}</p>
                 </div>
                 <div className="bg-rose-50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/20">
                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Total Cash Out This Month</p>
-                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${viewingReport.data.totalCashOut.toLocaleString()}</p>
+                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${viewingReport.report_data.totalCashOut.toLocaleString()}</p>
                 </div>
              </div>
 
@@ -249,28 +226,28 @@ export default function ReportsView() {
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><TrendingUp size={14} /></div>
                          <p className="text-sm font-bold">Actual Cash Out</p>
                       </div>
-                      <p className="text-sm font-black">${viewingReport.data.totalCashOut.toLocaleString()}</p>
+                      <p className="text-sm font-black">${viewingReport.report_data.totalCashOut.toLocaleString()}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><CreditCard size={14} /></div>
                          <p className="text-sm font-bold">Credit Card Payments</p>
                       </div>
-                      <p className="text-sm font-black">${viewingReport.data.cardPayments.toLocaleString()}</p>
+                      <p className="text-sm font-black">${viewingReport.report_data.cardPayments.toLocaleString()}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600"><Building2 size={14} /></div>
                          <p className="text-sm font-bold">Payroll Investments</p>
                       </div>
-                      <p className="text-sm font-black">${viewingReport.data.payrollDeduction.toLocaleString()}</p>
+                      <p className="text-sm font-black">${viewingReport.report_data.payrollDeduction.toLocaleString()}</p>
                    </div>
                    <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
                          <p className="text-sm font-bold">Investments Total</p>
                       </div>
-                      <p className="text-sm font-black text-blue-600">${viewingReport.data.investmentsTotal.toLocaleString()}</p>
+                      <p className="text-sm font-black text-blue-600">${viewingReport.report_data.investmentsTotal.toLocaleString()}</p>
                    </div>
                 </div>
              </div>
@@ -278,18 +255,18 @@ export default function ReportsView() {
              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Spending by Category</p>
                 <div className="space-y-2">
-                   {Object.entries(viewingReport.data.categories).map(([cat, val]) => (
+                   {Object.entries(viewingReport.report_data.categories).map(([cat, val]: [string, any]) => (
                       <div key={cat} className="flex justify-between items-center">
                          <p className="text-xs font-bold">{cat}</p>
                          <div className="flex items-center gap-2">
                             <div className="w-24 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                               <div className="h-full bg-blue-500" style={{ width: `${(val / viewingReport.data.totalSpending * 100)}%` }} />
+                               <div className="h-full bg-blue-500" style={{ width: `${(val / (viewingReport.report_data.totalSpending || 1) * 100)}%` }} />
                             </div>
                             <p className="text-xs font-black w-12 text-right">${val.toLocaleString()}</p>
                          </div>
                       </div>
                    ))}
-                   {Object.keys(viewingReport.data.categories).length === 0 && <p className="text-xs text-slate-400 italic">No spending data for this period.</p>}
+                   {Object.keys(viewingReport.report_data.categories).length === 0 && <p className="text-xs text-slate-400 italic">No spending data for this period.</p>}
                 </div>
              </div>
 

@@ -114,6 +114,15 @@ export interface Investment {
   maturity_date?: string | null;
 }
 
+export interface SavedReport {
+  id: string;
+  user_id: string;
+  period: string;
+  title: string;
+  report_data: any;
+  created_at: string;
+}
+
 export interface UserSettings {
   user_id: string;
   full_name: string;
@@ -147,6 +156,7 @@ interface AppContextType {
   cards: Card[];
   accounts: Account[];
   investments: Investment[];
+  reports: SavedReport[];
   settings: UserSettings | null;
   summary: AppSummary;
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
@@ -163,6 +173,8 @@ interface AppContextType {
   editAccount: (id: string, account: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
   addInvestment: (inv: Omit<Investment, 'id' | 'user_id'>) => Promise<void>;
+  addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+  deleteReport: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -177,6 +189,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cards, setCards] = useState<Card[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [reports, setReports] = useState<SavedReport[]>([]);
 
   // Helper to fetch all data
   const fetchAllData = async (currentUser: User) => {
@@ -189,14 +202,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         crdRes,
         accRes,
         invRes,
-        setRes
+        setRes,
+        repRes
       ] = await Promise.all([
         supabase.from('income_log').select('*').order('date', { ascending: false }),
         supabase.from('expense_log').select('*').order('date', { ascending: false }),
         supabase.from('credit_cards').select('*').order('cardName'),
         supabase.from('bank_accounts').select('*').order('institution'),
         supabase.from('investments').select('*').order('date', { ascending: false }),
-        supabase.from('user_settings').select('*').eq('user_id', currentUser.id).maybeSingle()
+        supabase.from('user_settings').select('*').eq('user_id', currentUser.id).maybeSingle(),
+        supabase.from('reports').select('*').order('created_at', { ascending: false })
       ]);
 
       if (incRes.error) console.error('Error fetching income:', incRes.error);
@@ -205,12 +220,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (accRes.error) console.error('Error fetching accounts:', accRes.error);
       if (invRes.error) console.error('Error fetching investments:', invRes.error);
       if (setRes.error) console.error('Error fetching settings:', setRes.error);
+      if (repRes.error) console.error('Error fetching reports:', repRes.error);
 
       setIncomeLogs(incRes.data || []);
       setExpenseLogs(expRes.data || []);
       setCards(crdRes.data || []);
       setAccounts(accRes.data || []);
       setInvestments(invRes.data || []);
+      setReports(repRes.data || []);
       
       if (setRes.data) {
         setSettings(setRes.data);
@@ -268,6 +285,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCards([]);
         setAccounts([]);
         setInvestments([]);
+        setReports([]);
         setSettings(null);
         setLoading(false);
       }
@@ -480,6 +498,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
   };
 
+  const addReport = async (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => {
+    if (!user || !supabase) return;
+    await supabase.from('reports').insert([{ ...report, user_id: user.id }]);
+    await refreshData();
+  };
+
+  const deleteReport = async (id: string) => {
+    if (!supabase) return;
+    await supabase.from('reports').delete().eq('id', id);
+    await refreshData();
+  };
+
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!user || !supabase) return;
     
@@ -507,9 +537,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{ 
-      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, settings, summary, updateSettings, refreshData,
+      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
-      addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment
+      addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment,
+      addReport, deleteReport
     }}>
       {children}
     </AppContext.Provider>
