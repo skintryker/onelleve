@@ -149,6 +149,14 @@ interface AppSummary {
   investmentThisMonth: number;
   cardOutstanding: number;
   investmentsTotal: number;
+  categories: Record<string, number>;
+  cardPayments: number;
+  payrollDeduction: number;
+  manualInvestments: number;
+  totalIncome: number;
+  totalSpending: number;
+  actualCashOut: number;
+  creditCardsOutstanding: number;
 }
 
 interface AppContextType {
@@ -447,19 +455,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const activeExpenses = expenses.filter(log => 
       log.monthKey === targetMonthKey && (!filterByReset || log.created_at >= lastReset)
     );
-    const activeInv = investmentLogs.filter(inv => 
+    // For contributions, we use the specific month and reset filter
+    const activeInvLogs = investmentLogs.filter(inv => 
       inv.monthKey === targetMonthKey && (!filterByReset || inv.created_at >= lastReset)
     );
 
     // 2. Income This Month
     const incomeThisMonth = activeIncomes.reduce((acc, log) => acc + log.amount, 0);
 
-    // 3. Cash Out Calculation Rules
-    // Rule: Money that actually left the bank/cash
+    // 3. Cash Out Calculation Rules (Rule 9: Money that actually left the bank/cash)
     const pureBankSpending = activeExpenses.filter(log => 
       log.transactionType !== 'Payment' && 
       log.transactionType !== 'Investment' && 
       log.category !== 'Credit Card' &&
+      log.category !== 'Investment' &&
       log.paymentChannel !== 'Credit Card'
     ).reduce((acc, log) => acc + log.amount, 0);
 
@@ -467,23 +476,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       log.transactionType === 'Payment'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const manualInvestments = investmentLogs.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
-    const payrollDeduction = investmentLogs.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+    // Contributions from active records for the month
+    const manualInvestmentsMonthly = activeInvLogs.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+    const payrollInvestmentsMonthly = activeInvLogs.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
 
-    const cashOutThisMonth = pureBankSpending + cardPayments + manualInvestments;
+    const cashOutThisMonth = pureBankSpending + cardPayments + manualInvestmentsMonthly;
 
-    // 4. Investment This Month
-    const investmentThisMonth = manualInvestments + payrollDeduction;
+    // 4. Investment This Month (Rule 10)
+    const investmentThisMonth = manualInvestmentsMonthly + payrollInvestmentsMonthly;
 
-    // 5. Category Breakdown
+    // 5. Category Breakdown (Excluding internal payments)
     const categories = activeExpenses.filter(log => log.transactionType !== 'Payment').reduce((acc: Record<string, number>, log) => {
       acc[log.category] = (acc[log.category] || 0) + log.amount;
       return acc;
     }, {});
 
-    // 6. Global State (Current snapshot of cards/investments)
+    // 6. Global State (Rule 8, 11, 3)
     const bankBalances = bankAccounts.reduce((acc, accnt) => acc + accnt.balance, 0);
     const cardOutstanding = creditCards.reduce((acc, card) => acc + card.currentBalance, 0);
+    // Total is sum of (base balance + total contributions) across all cards
     const investmentsTotal = investmentLogs.reduce((acc, inv) => acc + inv.currentBalance + inv.contribution, 0);
 
     return {
@@ -495,24 +506,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       investmentsTotal,
       categories,
       cardPayments,
-      payrollDeduction,
-      manualInvestments,
-      bankBalances
+      payrollDeduction: payrollInvestmentsMonthly,
+      manualInvestments: manualInvestmentsMonthly,
+      bankBalances,
+      totalIncome: incomeThisMonth,
+      totalSpending: activeExpenses.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0),
+      actualCashOut: cashOutThisMonth,
+      creditCardsOutstanding: cardOutstanding
     };
   };
 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const res = calculateSummary(currentMonth, true, incomeLogs, expenseLogs, investments, accounts, cards);
-    
-    return {
-      availableBalance: res.availableBalance,
-      incomeThisMonth: res.incomeThisMonth,
-      cashOutThisMonth: res.cashOutThisMonth,
-      investmentThisMonth: res.investmentThisMonth,
-      cardOutstanding: res.cardOutstanding,
-      investmentsTotal: res.investmentsTotal
-    };
+    return calculateSummary(currentMonth, true, incomeLogs, expenseLogs, investments, accounts, cards);
   }, [incomeLogs, expenseLogs, investments, accounts, cards, settings]);
 
   // Actions
@@ -727,6 +733,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     
     if (expense) {
+       // Rule: Revert Investment contribution
+       if (expense.transactionType === 'Investment' || expense.category === 'Investment') {
+          const inv = investments.find(i => i.institution === expense.description);
+          if (inv) {
+             await supabase.from('investments').update({
+                contribution: Math.max(0, inv.contribution - expense.amount)
+             }).eq('id', inv.id);
+          }
+       }
+
        // Revert CC outstanding if applicable
        if (expense.transactionType === 'Purchase' && expense.paymentChannel === 'Credit Card' && expense.creditCard) {
          const card = cards.find(c => c.cardName === expense.creditCard);
