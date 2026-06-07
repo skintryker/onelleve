@@ -179,7 +179,7 @@ interface AppContextType {
   addAccount: (account: Omit<Account, 'id' | 'user_id'>) => Promise<void>;
   editAccount: (id: string, account: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
-  addInvestment: (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+  addInvestment: (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>, skipLog?: boolean) => Promise<void>;
   addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<SavedReport | null>;
   deleteReport: (id: string) => Promise<void>;
   startNewMonth: () => Promise<void>;
@@ -479,7 +479,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return acc;
     }, {});
 
-    // 6. Global State (Not filtered by month for available balance and outstanding)
+    // 6. Global State (Current snapshot of cards/investments)
     const bankBalances = bankAccounts.reduce((acc, accnt) => acc + accnt.balance, 0);
     const cardOutstanding = creditCards.reduce((acc, card) => acc + card.currentBalance, 0);
     const investmentsTotal = investmentLogs.reduce((acc, inv) => acc + inv.currentBalance, 0);
@@ -647,7 +647,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user || !supabase) return;
     await supabase.from('expense_log').insert([{ ...log, user_id: user.id }]);
     
-    // Rule: If transaction is an Investment, update the Portfolio Card
+    // Rule: If transaction is an Investment, update the Portfolio Card and handle bank balance
     if (log.transactionType === 'Investment' || log.category === 'Investment') {
        await addInvestment({
          date: log.date,
@@ -655,11 +655,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
          accountType: 'Investment',
          contribution: log.amount,
          currentBalance: 0, // addInvestment will calculate (existing + contribution)
-         payrollDeduction: log.paymentChannel === 'Autopay', // Assume Autopay might be payroll-deducted
+         payrollDeduction: !log.bank, // If no bank selected, it's payroll-deducted
          monthKey: log.monthKey,
          fromBank: log.bank
-       });
-       return; // addInvestment handles bank balance reduction
+       }, true); // skipLog = true to avoid double entry
+       return; 
     }
 
     // Rule 3: Credit Card Purchase increases Outstanding
@@ -797,7 +797,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
   };
 
-  const addInvestment = async (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>) => {
+  const addInvestment = async (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>, skipLog = false) => {
     if (!user || !supabase) return;
 
     // 1. Portfolio Card Logic: Check if institution type exists for this user
@@ -805,9 +805,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (existing) {
        // Update existing card (Cumulative contribution and updated balance)
+       const newContribution = existing.contribution + inv.contribution;
+       const newBalance = inv.currentBalance > 0 ? inv.currentBalance : (existing.currentBalance + inv.contribution);
+       
        await supabase.from('investments').update({
-         contribution: existing.contribution + inv.contribution,
-         currentBalance: inv.currentBalance > 0 ? inv.currentBalance : (existing.currentBalance + inv.contribution),
+         contribution: newContribution,
+         currentBalance: newBalance,
          date: inv.date,
          notes: inv.notes || existing.notes,
          tenor: inv.tenor || existing.tenor,
@@ -820,7 +823,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
        await supabase.from('investments').insert([{ ...inv, user_id: user.id }]);
     }
 
-    // 2. Bank Balance side effect (for manual investments)
+    // 2. Log Entry: Create an expense log record so it's visible in history and search
+    // We only do this if it's a contribution (not a direct balance update) and log is not skipped
+    if (inv.contribution > 0 && !skipLog) {
+       await supabase.from('expense_log').insert([{
+         user_id: user.id,
+         date: inv.date,
+         description: inv.institution,
+         amount: inv.contribution,
+         category: 'Investment',
+         transactionType: 'Investment',
+         paymentChannel: inv.payrollDeduction ? 'Autopay' : 'Bank',
+         bank: inv.fromBank,
+         status: 'Paid',
+         amountPaid: inv.contribution,
+         monthKey: inv.monthKey
+       }]);
+    }
+
+    // 3. Bank Balance side effect (for manual investments)
     if (!inv.payrollDeduction && inv.fromBank) {
       const account = accounts.find(a => a.institution === inv.fromBank);
       if (account) {
