@@ -236,17 +236,17 @@ const SettingsView = () => {
                      </p>
                   </div>
                   
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col items-center gap-3">
                     <button 
                       disabled={saving}
                       onClick={handleStartNewMonth}
-                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/25 active:scale-95 flex items-center justify-center gap-3"
+                      className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/25 active:scale-95 flex items-center justify-center gap-3 hover:bg-blue-700 transition-all disabled:opacity-50"
                     >
-                      {saving ? <Loader2 className="animate-spin" size={18} /> : 'Confirm & Start New Month'}
+                      {saving ? <Loader2 className="animate-spin" size={16} /> : 'Confirm & Start New Month'}
                     </button>
                     <button 
                       onClick={() => setIsStartMonthModalOpen(false)}
-                      className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-xs"
+                      className="w-full sm:max-w-[280px] py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
                     >
                       Cancel
                     </button>
