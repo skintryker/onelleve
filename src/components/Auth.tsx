@@ -40,12 +40,12 @@ const Auth = () => {
   return (
     // Forced Light Mode for Login Screen
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-blue-100 selection:text-blue-900">
-      <div className="w-full max-w-md bg-white rounded-[40px] px-8 py-10 md:px-12 md:py-14 border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-500 flex flex-col justify-center">
+      <div className="w-full max-w-md bg-white rounded-[40px] p-10 md:p-14 border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-500">
         
         {/* BRANDING BLOCK: Logo and Tagline */}
         <div className="flex flex-col items-center mb-10">
           {/* Logo container with tighter vertical spacing to counteract hidden asset padding */}
-          <div className="w-full max-w-[360px] -mb-7">
+          <div className="w-full max-w-[360px] -mb-10">
             <img 
               src="/logo-onelleve.jpg" 
               alt="onelleve" 
@@ -105,7 +105,7 @@ const Auth = () => {
           </div>
         </form>
 
-        <div className="mt-6 text-center border-t border-slate-50 pt-4">
+        <div className="mt-10 text-center border-t border-slate-50 pt-6">
           <button 
             onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
             className="text-[10px] font-bold text-slate-400 hover:text-blue-600 uppercase tracking-widest transition-colors"
