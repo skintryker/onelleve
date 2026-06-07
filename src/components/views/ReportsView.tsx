@@ -107,20 +107,23 @@ export default function ReportsView() {
         manualInvestments
       };
 
-      const newReport = {
+      const newReportData = {
         title: `${periodLabel} Financial Summary`,
         period: periodLabel,
         report_data: reportData
       };
 
-      await addReport(newReport);
+      const savedReport = await addReport(newReportData);
       
-      // Open the modal immediately with the new data
-      setViewingReport(newReport as SavedReport);
-      setIsViewModalOpen(true);
-    } catch (error) {
-      console.error('Error generating report:', error);
-      alert('Failed to generate report. Please check your connection and try again.');
+      // Open the modal immediately with the real data from DB
+      if (savedReport) {
+        setViewingReport(savedReport);
+        setIsViewModalOpen(true);
+      }
+    } catch (error: any) {
+      console.error('Full Error Object:', error);
+      const errorMessage = error?.message || error?.details || 'Unknown error';
+      alert(`Failed to generate report: ${errorMessage}`);
     } finally {
       setIsGenerating(false);
     }

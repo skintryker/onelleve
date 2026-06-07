@@ -174,7 +174,7 @@ interface AppContextType {
   editAccount: (id: string, account: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
   addInvestment: (inv: Omit<Investment, 'id' | 'user_id'>) => Promise<void>;
-  addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+  addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<SavedReport | null>;
   deleteReport: (id: string) => Promise<void>;
   startNewMonth: () => Promise<void>;
   isPrivacyMode: boolean;
@@ -587,11 +587,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
   };
 
-  const addReport = async (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => {
-    if (!user || !supabase) return;
-    const { error } = await supabase.from('reports').insert([{ ...report, user_id: user.id }]);
-    if (error) throw error;
+  const addReport = async (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>): Promise<SavedReport | null> => {
+    if (!user || !supabase) return null;
+    const { data, error } = await supabase.from('reports').insert([{ ...report, user_id: user.id }]).select().single();
+    if (error) {
+      console.error('Supabase addReport error:', error);
+      throw error;
+    }
     await refreshData();
+    return data;
   };
 
   const deleteReport = async (id: string) => {
