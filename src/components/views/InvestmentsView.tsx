@@ -187,22 +187,22 @@ const InvestmentsView = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {investments.map((inv) => (
           <div key={inv.id} className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group text-slate-900 dark:text-white relative">
-            <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
               <button 
                 onClick={() => handleOpenModal(inv)}
-                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
               >
                 <Edit2 size={14} />
               </button>
               <button 
                 onClick={() => handleDelete(inv.id)}
-                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all"
+                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all"
               >
                 <Trash2 size={14} />
               </button>
             </div>
 
-            <div className="flex justify-between items-start mb-6">
+            <div className="flex justify-between items-center mb-6">
               <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-all">
                 <TrendingUp size={28} strokeWidth={2.5} />
               </div>
