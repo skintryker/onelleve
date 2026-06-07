@@ -20,7 +20,7 @@ interface TransactionsViewProps {
 }
 
 const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
-  const { transactions, deleteTransaction, expenseLogs, incomeLogs, settings, maskValue } = useAppContext();
+  const { transactions, deleteTransaction, activeExpenseLogs, activeIncomeLogs, settings, maskValue } = useAppContext();
   const [searchTerm, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'income' | 'expense' | 'all'>(initialType);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -54,13 +54,13 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
 
   const handleEdit = (tr: UnifiedTransaction) => {
     if (tr.type === 'expense' || tr.type === 'investment') {
-      const log = expenseLogs.find(e => e.id === tr.id);
+      const log = activeExpenseLogs.find(e => e.id === tr.id);
       if (log) {
         setEditingExpense(log);
         setIsExpenseModalOpen(true);
       }
     } else {
-      const log = incomeLogs.find(i => i.id === tr.id);
+      const log = activeIncomeLogs.find(i => i.id === tr.id);
       if (log) {
         setEditingIncome(log);
         setIsIncomeModalOpen(true);

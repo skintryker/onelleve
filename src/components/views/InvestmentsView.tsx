@@ -7,7 +7,7 @@ import Modal from '../modals/Modal';
 import { translations, Language, formatDate } from '@/utils/translations';
 
 const InvestmentsView = () => {
-  const { investments, addInvestment, accounts, settings, maskValue } = useAppContext();
+  const { investments, activeInvestments, addInvestment, accounts, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -71,15 +71,15 @@ const InvestmentsView = () => {
   const currentMonth = new Date().toISOString().slice(0, 7);
   const totalInvested = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
   
-  const totalContributionsMonth = investments
+  const totalContributionsMonth = activeInvestments
     .filter(inv => inv.monthKey === currentMonth)
     .reduce((acc, inv) => acc + inv.contribution, 0);
 
-  const payrollContributions = investments
+  const payrollContributions = activeInvestments
     .filter(inv => inv.monthKey === currentMonth && inv.payrollDeduction)
     .reduce((acc, inv) => acc + inv.contribution, 0);
 
-  const manualContributions = investments
+  const manualContributions = activeInvestments
     .filter(inv => inv.monthKey === currentMonth && !inv.payrollDeduction)
     .reduce((acc, inv) => acc + inv.contribution, 0);
 

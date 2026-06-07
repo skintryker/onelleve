@@ -156,6 +156,9 @@ interface AppContextType {
   loading: boolean;
   incomeLogs: IncomeLog[];
   expenseLogs: ExpenseLog[];
+  activeIncomeLogs: IncomeLog[];
+  activeExpenseLogs: ExpenseLog[];
+  activeInvestments: Investment[];
   transactions: UnifiedTransaction[];
   cards: Card[];
   accounts: Account[];
@@ -339,8 +342,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => subscription.unsubscribe();
   }, []);
 
+  const activeIncomeLogs = useMemo(() => {
+    const currentMonthStart = new Date();
+    currentMonthStart.setDate(1);
+    currentMonthStart.setHours(0, 0, 0, 0);
+    const lastReset = settings?.last_reset_date || currentMonthStart.toISOString();
+    return incomeLogs.filter(log => log.created_at >= lastReset);
+  }, [incomeLogs, settings]);
+
+  const activeExpenseLogs = useMemo(() => {
+    const currentMonthStart = new Date();
+    currentMonthStart.setDate(1);
+    currentMonthStart.setHours(0, 0, 0, 0);
+    const lastReset = settings?.last_reset_date || currentMonthStart.toISOString();
+    return expenseLogs.filter(log => log.created_at >= lastReset);
+  }, [expenseLogs, settings]);
+
+  const activeInvestments = useMemo(() => {
+    const currentMonthStart = new Date();
+    currentMonthStart.setDate(1);
+    currentMonthStart.setHours(0, 0, 0, 0);
+    const lastReset = settings?.last_reset_date || currentMonthStart.toISOString();
+    return investments.filter(inv => inv.created_at >= lastReset);
+  }, [investments, settings]);
+
   const transactions = useMemo(() => {
-    const incomes: UnifiedTransaction[] = incomeLogs.map(log => ({
+    const incomes: UnifiedTransaction[] = activeIncomeLogs.map(log => ({
       id: log.id,
       name: log.source,
       category: 'Income',
@@ -350,7 +377,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       type: 'income'
     }));
 
-    const expenses: UnifiedTransaction[] = expenseLogs.map(log => ({
+    const expenses: UnifiedTransaction[] = activeExpenseLogs.map(log => ({
       id: log.id,
       name: log.description,
       category: log.category,
@@ -367,7 +394,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       totalInstallments: log.totalInstallments
     }));
 
-    const unifiedInvestments: UnifiedTransaction[] = investments.map(inv => ({
+    const unifiedInvestments: UnifiedTransaction[] = activeInvestments.map(inv => ({
       id: inv.id,
       name: inv.institution,
       category: 'Investment',
@@ -378,42 +405,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
 
     return [...incomes, ...expenses, ...unifiedInvestments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [incomeLogs, expenseLogs, investments]);
+  }, [activeIncomeLogs, activeExpenseLogs, activeInvestments]);
 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const lastReset = settings?.last_reset_date || '1970-01-01T00:00:00.000Z';
+    
+    // Monthly KPIs: Filter by month (active logs are already filtered by last_reset_date in their own memos)
+    const monthIncomes = activeIncomeLogs.filter(log => log.monthKey === currentMonth);
+    const monthExpenses = activeExpenseLogs.filter(log => log.monthKey === currentMonth);
+    const monthInvestments = activeInvestments.filter(inv => inv.monthKey === currentMonth);
 
-    // Monthly KPIs: Filter by month AND ensure created_at is after the last reset
-    const activeIncomes = incomeLogs.filter(log => log.monthKey === currentMonth && log.created_at > lastReset);
-    const activeExpenses = expenseLogs.filter(log => log.monthKey === currentMonth && log.created_at > lastReset);
-    const activeInvestments = investments.filter(inv => inv.monthKey === currentMonth && inv.created_at > lastReset);
-
-    const incomeThisMonth = activeIncomes.reduce((acc, log) => acc + log.amount, 0);
+    const incomeThisMonth = monthIncomes.reduce((acc, log) => acc + log.amount, 0);
     
     // KPI: Sum of all expenses (Bank + Card)
-    const expensesThisMonth = activeExpenses.filter(log => 
+    const expensesThisMonth = monthExpenses.filter(log => 
       log.transactionType !== 'Payment' && 
       log.transactionType !== 'Investment' && 
       log.category !== 'Credit Card'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const investmentThisMonth = activeInvestments.reduce((acc, inv) => acc + inv.contribution, 0);
+    const investmentThisMonth = monthInvestments.reduce((acc, inv) => acc + inv.contribution, 0);
     
     // Logic for Available Cash Balance:
     // Only deduct money that actually left the bank/cash
-    const bankSpending = activeExpenses.filter(log => 
+    const bankSpending = monthExpenses.filter(log => 
       log.transactionType !== 'Payment' && 
       log.transactionType !== 'Investment' && 
       log.category !== 'Credit Card' &&
       log.paymentChannel !== 'Credit Card' // Ignore card purchases for cash flow
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const cardPaymentsFromBank = activeExpenses.filter(log => 
+    const cardPaymentsFromBank = monthExpenses.filter(log => 
       log.transactionType === 'Payment'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const manualInvestmentThisMonth = activeInvestments
+    const manualInvestmentThisMonth = monthInvestments
       .filter(inv => !inv.payrollDeduction)
       .reduce((acc, inv) => acc + inv.contribution, 0);
     
@@ -427,7 +453,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
     return { availableBalance, incomeThisMonth, cashOutThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
-  }, [incomeLogs, expenseLogs, cards, accounts, investments, settings]);
+  }, [activeIncomeLogs, activeExpenseLogs, activeInvestments, accounts, cards, investments]);
 
   // Actions
   const startNewMonth = async () => {
@@ -641,7 +667,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{ 
-      user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
+      user, loading, incomeLogs, expenseLogs, activeIncomeLogs, activeExpenseLogs, activeInvestments, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment,
       addReport, deleteReport, startNewMonth, isPrivacyMode, togglePrivacyMode, maskValue

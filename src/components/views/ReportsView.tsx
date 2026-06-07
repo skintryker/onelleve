@@ -55,9 +55,22 @@ export default function ReportsView() {
   const handleGenerateReport = async () => {
     setIsGenerating(true);
     try {
-      const monthIncome = incomeLogs.filter(log => log.monthKey === selectedMonth);
-      const monthExpense = expenseLogs.filter(log => log.monthKey === selectedMonth);
-      const monthInvestments = investments.filter(inv => inv.monthKey === selectedMonth);
+      const currentMonthKey = new Date().toISOString().slice(0, 7);
+      const lastReset = settings?.last_reset_date || '1970-01-01T00:00:00.000Z';
+
+      // Filtering logic: If selected month is current, apply lastReset filter.
+      // Otherwise (past months), use all records for that month.
+      const isSelectedCurrent = selectedMonth === currentMonthKey;
+
+      const monthIncome = incomeLogs.filter(log => 
+        log.monthKey === selectedMonth && (!isSelectedCurrent || log.created_at >= lastReset)
+      );
+      const monthExpense = expenseLogs.filter(log => 
+        log.monthKey === selectedMonth && (!isSelectedCurrent || log.created_at >= lastReset)
+      );
+      const monthInvestments = investments.filter(inv => 
+        inv.monthKey === selectedMonth && (!isSelectedCurrent || inv.created_at >= lastReset)
+      );
 
       const totalIncome = monthIncome.reduce((acc, log) => acc + log.amount, 0);
       const totalSpending = monthExpense.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0);
