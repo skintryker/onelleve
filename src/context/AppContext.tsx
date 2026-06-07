@@ -460,10 +460,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const cashOutThisMonth = bankSpending + cardPaymentsFromBank + manualInvestmentThisMonth;
     
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
-    const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
+    const investmentsTotal = activeInvestments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
     return { availableBalance, incomeThisMonth, cashOutThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
-  }, [activeIncomeLogs, activeExpenseLogs, activeInvestments, accounts, cards, investments]);
+  }, [activeIncomeLogs, activeExpenseLogs, activeInvestments, accounts, cards]);
 
   // Actions
   const startNewMonth = async () => {
@@ -475,6 +475,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const year = d.getFullYear().toString();
       const nowISO = d.toISOString();
       const period = `${month} ${year}`;
+
+      // Capture current summary for archiving BEFORE cleaning up
+      // This summary already respects the current active month and last reset point
+      const snapshotToArchive = { ...summary };
       
       // 1. Check for existing entries to avoid duplicates
       const [archiveCheck, reportCheck] = await Promise.all([
@@ -484,33 +488,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 2. Archive or Update current snapshot
       if (archiveCheck.data) {
-        await supabase.from('monthly_archives').update({ snapshot_data: summary }).eq('id', archiveCheck.data.id);
+        await supabase.from('monthly_archives').update({ snapshot_data: snapshotToArchive }).eq('id', archiveCheck.data.id);
       } else {
         await supabase.from('monthly_archives').insert([{
           user_id: user.id,
           month,
           year,
-          snapshot_data: summary
+          snapshot_data: snapshotToArchive
         }]);
       }
       
       // 3. Save or Update report for UI visibility
       if (reportCheck.data) {
-        await supabase.from('reports').update({ report_data: summary }).eq('id', reportCheck.data.id);
+        await supabase.from('reports').update({ report_data: snapshotToArchive }).eq('id', reportCheck.data.id);
       } else {
         await addReport({
           title: `${period} Financial Summary (Archived)`,
           period,
-          report_data: summary
+          report_data: snapshotToArchive
         });
       }
       
-      // 4. Reset persistent balances
-      await Promise.all([
-        supabase.from('bank_accounts').update({ balance: 0 }).eq('user_id', user.id),
-        supabase.from('credit_cards').update({ currentBalance: 0 }).eq('user_id', user.id),
-        supabase.from('investments').delete().eq('user_id', user.id)
-      ]);
+      // 4. Reset persistent balances and CLEAR active investments
+      const { error: resetError } = await supabase.rpc('start_new_month_cleanup', { p_user_id: user.id });
+      
+      if (resetError) {
+        // Fallback to manual if RPC doesn't exist
+        await Promise.all([
+          supabase.from('bank_accounts').update({ balance: 0 }).eq('user_id', user.id),
+          supabase.from('credit_cards').update({ currentBalance: 0 }).eq('user_id', user.id),
+          supabase.from('investments').delete().eq('user_id', user.id)
+        ]);
+      }
       
       // 5. Record reset date to clear dashboard monthly KPIs
       await updateSettings({ last_reset_date: nowISO });
