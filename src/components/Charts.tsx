@@ -107,8 +107,8 @@ const Charts = () => {
       <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Monthly Digest</h3>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t.income} vs {t.expenses}</p>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t.monthlyDigest}</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t.incomeVsExpenses}</p>
           </div>
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
@@ -160,8 +160,8 @@ const Charts = () => {
       <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Flow Analysis</h3>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Distribution by Category</p>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">{t.flowAnalysis}</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t.distributionByCategory}</p>
           </div>
           
           <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800">

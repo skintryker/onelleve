@@ -178,7 +178,6 @@ export default function ReportsView() {
       <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
           <h3 className="text-lg font-black tracking-tight">{t.recentReports}</h3>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Export coming soon</p>
         </div>
         
         <div className="overflow-x-auto">
