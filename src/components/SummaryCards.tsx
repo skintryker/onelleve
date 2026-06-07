@@ -33,18 +33,18 @@ const SummaryCards = () => {
       subtitle: t.actualCashOutDesc
     },
     {
-      title: t.investmentThisMonth,
-      amount: summary.investmentThisMonth,
-      icon: Banknote,
-      color: 'blue',
-      subtitle: t.contribThisMonth
-    },
-    {
       title: t.creditCardsOutstanding,
       amount: summary.cardOutstanding,
       icon: CreditCard,
       color: 'amber',
       subtitle: currentLang === 'pt' ? 'Saldo devedor total' : currentLang === 'es' ? 'Saldo pendiente total' : 'Remaining unpaid balance'
+    },
+    {
+      title: t.investmentThisMonth,
+      amount: summary.investmentThisMonth,
+      icon: Banknote,
+      color: 'blue',
+      subtitle: t.contribThisMonth
     },
     {
       title: t.investmentsTotal,
