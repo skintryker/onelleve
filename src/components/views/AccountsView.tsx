@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppContext, Account } from '@/context/AppContext';
 import { Building2, Plus, Edit2, Trash2 } from 'lucide-react';
 import AccountModal from '../modals/AccountModal';
+import { translations, Language } from '@/utils/translations';
 
 const AccountsView = () => {
-  const { accounts, deleteAccount } = useAppContext();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const { accounts, deleteAccount, settings } = useAppContext();
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingAccount, setEditingAccount] = React.useState<Account | null>(null);
+
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this account?')) {
+    if (confirm(currentLang === 'pt' ? 'Tem certeza que deseja excluir esta conta?' : currentLang === 'es' ? '¿Estás seguro de que quieres eliminar esta cuenta?' : 'Are you sure you want to delete this account?')) {
       deleteAccount(id);
     }
   };
@@ -23,17 +27,19 @@ const AccountsView = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center px-1">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Bank Accounts</h2>
-          <p className="text-sm text-slate-500 font-medium tracking-tight">Manage your bank accounts</p>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{t.accounts}</h2>
+          <p className="text-sm text-slate-500 font-medium tracking-tight">
+              {currentLang === 'pt' ? 'Gerencie suas contas bancárias' : currentLang === 'es' ? 'Administra tus cuentas bancarias' : 'Manage your bank accounts'}
+          </p>
         </div>
         <button 
           onClick={() => { setEditingAccount(null); setIsModalOpen(true); }}
-          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-sm"
+          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs uppercase tracking-widest"
         >
-          <Plus size={18} />
-          Add Account
+          <Plus size={16} />
+          {t.addAccount}
         </button>
       </div>
 
@@ -66,7 +72,7 @@ const AccountsView = () => {
               <h3 className="text-3xl font-black tracking-tighter mb-1">
                 ${account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h3>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 italic uppercase tracking-widest leading-none border-t border-slate-100 dark:border-slate-800 pt-3 inline-block w-full">{account.type} Account</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 italic uppercase tracking-widest leading-none border-t border-slate-100 dark:border-slate-800 pt-3 inline-block w-full">{account.type} {currentLang === 'pt' ? 'Conta' : currentLang === 'es' ? 'Cuenta' : 'Account'}</p>
             </div>
           </div>
         ))}

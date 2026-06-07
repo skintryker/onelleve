@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import Charts from '@/components/Charts';
 import Modal from '../modals/Modal';
+import { translations, Language } from '@/utils/translations';
 
 export default function ReportsView() {
   const { 
@@ -26,23 +27,27 @@ export default function ReportsView() {
     investments, 
     reports, 
     addReport, 
-    deleteReport 
+    deleteReport,
+    settings
   } = useAppContext();
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingReport, setViewingReport] = useState<SavedReport | null>(null);
+
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
 
   const months = useMemo(() => {
     const opts = [];
     const d = new Date();
     for (let i = 0; i < 12; i++) {
       const key = d.toISOString().slice(0, 7);
-      const label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      const label = d.toLocaleString(currentLang === 'en' ? 'en-US' : currentLang === 'pt' ? 'pt-BR' : 'es-ES', { month: 'long', year: 'numeric' });
       opts.push({ key, label });
       d.setMonth(d.getMonth() - 1);
     }
     return opts;
-  }, []);
+  }, [currentLang]);
 
   const handleGenerateReport = async () => {
     const monthIncome = incomeLogs.filter(log => log.monthKey === selectedMonth);
@@ -125,8 +130,8 @@ export default function ReportsView() {
             <Calendar size={24} />
           </div>
           <div>
-            <h3 className="text-xl font-black tracking-tight">Report Generator</h3>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Select a period to analyze</p>
+            <h3 className="text-xl font-black tracking-tight">{currentLang === 'pt' ? 'Gerador de Relatórios' : currentLang === 'es' ? 'Generador de Informes' : 'Report Generator'}</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{currentLang === 'pt' ? 'Selecione um período para analisar' : currentLang === 'es' ? 'Seleccione un período para analizar' : 'Select a period to analyze'}</p>
           </div>
         </div>
 
@@ -143,7 +148,7 @@ export default function ReportsView() {
             className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
           >
             <Plus size={16} />
-            Generate Report
+            {t.generateReport}
           </button>
         </div>
       </div>
@@ -151,7 +156,7 @@ export default function ReportsView() {
       {/* Generated Reports List */}
       <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-          <h3 className="text-lg font-black tracking-tight">Recent Reports</h3>
+          <h3 className="text-lg font-black tracking-tight">{t.recentReports}</h3>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Export coming soon</p>
         </div>
         
@@ -160,10 +165,10 @@ export default function ReportsView() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 dark:bg-white/5">
-                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Report Name</th>
-                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Period</th>
-                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Type</th>
-                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Nome do Relatório' : currentLang === 'es' ? 'Nombre del Informe' : 'Report Name'}</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">{t.period}</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">{t.type}</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">{t.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -204,8 +209,10 @@ export default function ReportsView() {
               <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
                 <FileText size={32} />
               </div>
-              <h4 className="text-xl font-black text-slate-900 dark:text-white">No reports generated yet</h4>
-              <p className="text-sm text-slate-400 font-medium mt-2 italic">Select a month above to generate your first financial summary.</p>
+              <h4 className="text-xl font-black text-slate-900 dark:text-white">{t.noReports}</h4>
+              <p className="text-sm text-slate-400 font-medium mt-2 italic">
+                  {currentLang === 'pt' ? 'Selecione um mês acima para gerar seu primeiro resumo financeiro.' : currentLang === 'es' ? 'Seleccione un mes arriba para generar su primer resumen financiero.' : 'Select a month above to generate your first financial summary.'}
+              </p>
             </div>
           )}
         </div>
@@ -221,50 +228,50 @@ export default function ReportsView() {
           <div className="space-y-6">
              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
-                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Total Income</p>
+                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">{t.totalIncome}</p>
                    <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${viewingReport.report_data.totalIncome.toLocaleString()}</p>
                 </div>
                 <div className="bg-rose-50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/20">
-                   <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Total Cash Out</p>
+                   <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">{t.totalCashOut}</p>
                    <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${viewingReport.report_data.totalCashOut.toLocaleString()}</p>
                 </div>
              </div>
 
              <div className="space-y-4">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">Cash Flow Breakdown</h4>
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">{t.cashFlowBreakdown}</h4>
                 <div className="space-y-3">
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><TrendingUp size={14} /></div>
-                         <p className="text-sm font-bold">Actual Cash Out</p>
+                         <p className="text-sm font-bold">{t.actualCashOut}</p>
                       </div>
                       <p className="text-sm font-black">${viewingReport.report_data.totalCashOut.toLocaleString()}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><CreditCard size={14} /></div>
-                         <p className="text-sm font-bold">Credit Card Payments</p>
+                         <p className="text-sm font-bold">{t.cardPayments}</p>
                       </div>
                       <p className="text-sm font-black">${viewingReport.report_data.cardPayments.toLocaleString()}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600"><Building2 size={14} /></div>
-                         <p className="text-sm font-bold">Payroll Investments</p>
+                         <p className="text-sm font-bold">{t.payrollInvestments}</p>
                       </div>
                       <p className="text-sm font-black">${viewingReport.report_data.payrollDeduction.toLocaleString()}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
-                         <p className="text-sm font-bold">Manual Investments</p>
+                         <p className="text-sm font-bold">{t.manualInvestments}</p>
                       </div>
                       <p className="text-sm font-black">${(viewingReport.report_data.manualInvestments || 0).toLocaleString()}</p>
                    </div>
                    <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><Building2 size={14} /></div>
-                         <p className="text-sm font-bold">Investments Total</p>
+                         <p className="text-sm font-bold">{t.investmentsTotal}</p>
                       </div>
                       <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">${viewingReport.report_data.investmentsTotal.toLocaleString()}</p>
                    </div>
@@ -272,7 +279,9 @@ export default function ReportsView() {
              </div>
 
              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Spending by Category</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
+                    {currentLang === 'pt' ? 'Gastos por Categoria' : currentLang === 'es' ? 'Gastos por Categoría' : 'Spending by Category'}
+                </p>
                 <div className="space-y-2">
                    {Object.entries(viewingReport.report_data.categories).map(([cat, val]: [string, any]) => (
                       <div key={cat} className="flex justify-between items-center">
@@ -293,7 +302,7 @@ export default function ReportsView() {
                onClick={() => setIsViewModalOpen(false)}
                className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest text-[10px]"
              >
-               Close Summary
+               {t.closeSummary}
              </button>
           </div>
         </Modal>

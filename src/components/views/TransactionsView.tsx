@@ -13,13 +13,14 @@ import {
 } from 'lucide-react';
 import TransactionModal from '../modals/TransactionModal';
 import IncomeModal from '../modals/IncomeModal';
+import { translations, Language, formatDate } from '@/utils/translations';
 
 interface TransactionsViewProps {
   initialType?: 'income' | 'expense' | 'all';
 }
 
 const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
-  const { transactions, deleteTransaction, expenseLogs, incomeLogs } = useAppContext();
+  const { transactions, deleteTransaction, expenseLogs, incomeLogs, settings } = useAppContext();
   const [searchTerm, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'income' | 'expense' | 'all'>(initialType);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -27,6 +28,10 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
   
   const [editingExpense, setEditingExpense] = useState<ExpenseLog | null>(null);
   const [editingIncome, setEditingIncome] = useState<IncomeLog | null>(null);
+
+  const currentLang = (settings?.language as Language) || 'en';
+  const dateFormat = settings?.date_format || 'MM/DD/YYYY';
+  const t = translations[currentLang];
 
   // Sync internal state when initialType changes from sidebar clicks
   useEffect(() => {
@@ -81,19 +86,19 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
             onClick={() => setFilterType('all')}
             className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'all' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-blue-600'}`}
           >
-            All
+            {currentLang === 'pt' ? 'Todos' : currentLang === 'es' ? 'Todos' : 'All'}
           </button>
           <button 
             onClick={() => setFilterType('income')}
             className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'income' ? 'bg-emerald-50 text-emerald-900 shadow-lg' : 'text-slate-500 hover:text-emerald-500'}`}
           >
-            Income
+            {t.income}
           </button>
           <button 
             onClick={() => setFilterType('expense')}
             className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'expense' ? 'bg-rose-50 text-rose-900 shadow-lg' : 'text-slate-500 hover:text-rose-500'}`}
           >
-            Expenses
+            {t.expenses}
           </button>
         </div>
 
@@ -102,7 +107,7 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
             <input 
               type="text" 
-              placeholder="Search..."
+              placeholder={currentLang === 'pt' ? 'Buscar...' : currentLang === 'es' ? 'Buscar...' : 'Search...'}
               value={searchTerm}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full md:w-64 pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs md:text-sm font-bold text-slate-900 dark:text-white"
@@ -113,8 +118,13 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
             className={`flex items-center gap-1.5 px-3 md:px-4 py-2 ${filterType === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-bold transition-all shadow-lg text-nowrap text-xs md:text-sm`}
           >
             <Plus size={16} />
-            <span className="hidden sm:inline">{filterType === 'income' ? 'Add Income' : 'Add Expense'}</span>
-            <span className="sm:hidden">Add</span>
+            <span className="hidden sm:inline">
+                {filterType === 'income' 
+                    ? (currentLang === 'pt' ? 'Adicionar Renda' : currentLang === 'es' ? 'Agregar Ingreso' : 'Add Income')
+                    : (currentLang === 'pt' ? 'Adicionar Despesa' : currentLang === 'es' ? 'Agregar Gasto' : 'Add Expense')
+                }
+            </span>
+            <span className="sm:hidden">{currentLang === 'pt' ? 'Add' : currentLang === 'es' ? 'Add' : 'Add'}</span>
           </button>
         </div>
       </div>
@@ -125,14 +135,22 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
             <thead>
               <tr className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-slate-800">
                 <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {filterType === 'income' ? 'Source' : 'Transaction'}
+                  {filterType === 'income' 
+                    ? (currentLang === 'pt' ? 'Fonte' : currentLang === 'es' ? 'Fuente' : 'Source')
+                    : (currentLang === 'pt' ? 'Transação' : currentLang === 'es' ? 'Transacción' : 'Transaction')}
                 </th>
                 <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {filterType === 'income' ? 'Label' : 'Category'}
+                  {filterType === 'income' 
+                    ? 'Label' 
+                    : (currentLang === 'pt' ? 'Categoria' : currentLang === 'es' ? 'Categoría' : 'Category')}
                 </th>
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {currentLang === 'pt' ? 'Data' : currentLang === 'es' ? 'Fecha' : 'Date'}
+                </th>
+                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {currentLang === 'pt' ? 'Valor' : currentLang === 'es' ? 'Monto' : 'Amount'}
+                </th>
+                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-900 dark:text-white">
@@ -167,7 +185,7 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
                     </span>
                   </td>
                   <td className="px-4 md:px-6 py-3 md:py-4 text-[10px] md:text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
-                    {t.date}
+                    {formatDate(t.date, dateFormat)}
                   </td>
                   <td className="px-4 md:px-6 py-3 md:py-4">
                     <span className={`font-black text-xs md:text-base ${
@@ -205,8 +223,12 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 mx-auto mb-4 text-slate-900 dark:text-white">
               <Search size={32} />
             </div>
-            <h3 className="text-lg font-bold">No transactions found</h3>
-            <p className="text-slate-500 font-medium text-sm">Try adjusting your filters or search term.</p>
+            <h3 className="text-lg font-bold">
+                {currentLang === 'pt' ? 'Nenhuma transação encontrada' : currentLang === 'es' ? 'No se encontraron transacciones' : 'No transactions found'}
+            </h3>
+            <p className="text-slate-500 font-medium text-sm">
+                {currentLang === 'pt' ? 'Tente ajustar seus filtros ou termo de busca.' : currentLang === 'es' ? 'Intente ajustar sus filtros o término de búsqueda.' : 'Try adjusting your filters or search term.'}
+            </p>
           </div>
         )}
       </div>

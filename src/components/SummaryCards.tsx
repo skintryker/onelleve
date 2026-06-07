@@ -3,52 +3,55 @@
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { Wallet, DollarSign, CreditCard, Banknote, Building2, Target } from 'lucide-react';
+import { translations, Language } from '@/utils/translations';
 
 const SummaryCards = () => {
-  const { summary } = useAppContext();
+  const { summary, settings } = useAppContext();
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
   
   const cards = [
     {
-      title: 'Available Balance',
+      title: t.availableBalance,
       amount: summary.availableBalance,
       icon: Wallet,
       color: 'blue',
-      subtitle: 'Real available cash'
+      subtitle: currentLang === 'pt' ? 'Dinheiro disponível real' : currentLang === 'es' ? 'Dinero disponible real' : 'Real available cash'
     },
     {
-      title: 'Income This Month',
+      title: t.incomeThisMonth,
       amount: summary.incomeThisMonth,
       icon: DollarSign,
       color: 'emerald',
-      subtitle: 'Total money in'
+      subtitle: currentLang === 'pt' ? 'Total de entradas' : currentLang === 'es' ? 'Total de entradas' : 'Total money in'
     },
     {
-      title: 'Cash Out This Month',
+      title: t.cashOutThisMonth,
       amount: summary.cashOutThisMonth,
       icon: Target,
       color: 'rose',
-      subtitle: 'Real money out'
+      subtitle: currentLang === 'pt' ? 'Saída de caixa real' : currentLang === 'es' ? 'Salida de caja real' : 'Real money out'
     },
     {
-      title: 'Investment This Month',
+      title: t.investmentThisMonth,
       amount: summary.investmentThisMonth,
       icon: Banknote,
       color: 'blue',
-      subtitle: 'Monthly contributions'
+      subtitle: currentLang === 'pt' ? 'Contribuições mensais' : currentLang === 'es' ? 'Contribuciones mensuales' : 'Monthly contributions'
     },
     {
-      title: 'Credit Cards Outstanding',
+      title: t.creditCardsOutstanding,
       amount: summary.cardOutstanding,
       icon: CreditCard,
       color: 'amber',
-      subtitle: 'Remaining unpaid balance'
+      subtitle: currentLang === 'pt' ? 'Saldo devedor total' : currentLang === 'es' ? 'Saldo pendiente total' : 'Remaining unpaid balance'
     },
     {
-      title: 'Investments Total',
+      title: t.investmentsTotal,
       amount: summary.investmentsTotal,
       icon: Building2,
       color: 'indigo',
-      subtitle: 'Accumulated investments'
+      subtitle: currentLang === 'pt' ? 'Investimentos acumulados' : currentLang === 'es' ? 'Inversiones acumuladas' : 'Accumulated investments'
     }
   ];
 

@@ -236,7 +236,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const defaultSettings: Omit<UserSettings, 'id'> = {
           user_id: currentUser.id,
           full_name: currentUser.user_metadata?.full_name || '',
-          preferred_currency: 'USD'
+          preferred_currency: 'USD',
+          language: 'en',
+          date_format: 'MM/DD/YYYY'
         };
         const { data: newSet, error: insertError } = await supabase
           .from('user_settings')
@@ -516,7 +518,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!user || !supabase) return;
     
-    // STRICT UPSERT: Only sending full_name and preferred_currency to avoid DB errors
+    // STRICT UPSERT: Sending allowed fields to avoid DB errors
     const payload: any = {
       user_id: user.id,
       updated_at: new Date().toISOString()
@@ -524,6 +526,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     if (newSettings.full_name !== undefined) payload.full_name = newSettings.full_name;
     if (newSettings.preferred_currency !== undefined) payload.preferred_currency = newSettings.preferred_currency;
+    if (newSettings.language !== undefined) payload.language = newSettings.language;
+    if (newSettings.date_format !== undefined) payload.date_format = newSettings.date_format;
 
     const { error } = await supabase.from('user_settings').upsert(payload, { onConflict: 'user_id' });
 

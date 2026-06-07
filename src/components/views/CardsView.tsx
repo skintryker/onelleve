@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAppContext, Card } from '@/context/AppContext';
 import { Plus, Edit2, Trash2, Wifi, Calendar } from 'lucide-react';
 import Modal from '../modals/Modal';
+import { translations, Language } from '@/utils/translations';
 
 // EXACT 8 options as requested
 const colorOptions = [
@@ -17,9 +18,19 @@ const colorOptions = [
   { name: 'Purple', hex: '#4F46E5' },
 ];
 
-const months = [
+const monthsEN = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const monthsPT = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
+
+const monthsES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
 // Refined gradients for better vibrancy and "Metallic" feel
@@ -47,9 +58,13 @@ const getThemeForCard = (name: string) => {
 };
 
 const CardsView = () => {
-  const { cards, deleteCard, addCard, editCard } = useAppContext();
+  const { cards, deleteCard, addCard, editCard, settings } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
+
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
+  const months = currentLang === 'pt' ? monthsPT : currentLang === 'es' ? monthsES : monthsEN;
 
   const safeCards = Array.isArray(cards) ? cards : [];
 
@@ -119,7 +134,7 @@ const CardsView = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this card?')) {
+    if (confirm(currentLang === 'pt' ? 'Tem certeza que deseja excluir este cartão?' : currentLang === 'es' ? '¿Estás seguro de que quieres eliminar esta tarjeta?' : 'Are you sure you want to delete this card?')) {
       deleteCard(id);
     }
   };
@@ -129,15 +144,17 @@ const CardsView = () => {
       {/* SECTION HEADER: FIXED ALIGNMENT */}
       <div className="flex flex-row justify-between items-center">
         <div>
-          <h2 className="text-xl font-black uppercase tracking-tight">Credit Cards</h2>
-          <p className="text-xs text-slate-500 font-medium tracking-tight italic">Manage your statements and expiration dates</p>
+          <h2 className="text-xl font-black uppercase tracking-tight">{t.creditCards}</h2>
+          <p className="text-xs text-slate-500 font-medium tracking-tight italic">
+              {currentLang === 'pt' ? 'Gerencie suas faturas e datas de expiração' : currentLang === 'es' ? 'Administra tus estados de cuenta y fechas de vencimiento' : 'Manage your statements and expiration dates'}
+          </p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-[10px] uppercase tracking-widest whitespace-nowrap"
         >
           <Plus size={14} />
-          Add Card
+          {currentLang === 'pt' ? 'Adicionar Cartão' : currentLang === 'es' ? 'Agregar Tarjeta' : 'Add Card'}
         </button>
       </div>
 
@@ -177,7 +194,7 @@ const CardsView = () => {
                 
                 <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
                   <div className="flex justify-between items-start">
-                    <p className={`text-[8px] font-bold uppercase tracking-tight ${isLight ? 'text-slate-500' : 'text-white/60'}`}>Credit Card</p>
+                    <p className={`text-[8px] font-bold uppercase tracking-tight ${isLight ? 'text-slate-500' : 'text-white/60'}`}>{currentLang === 'pt' ? 'Cartão de Crédito' : currentLang === 'es' ? 'Tarjeta de Crédito' : 'Credit Card'}</p>
                     <Wifi size={16} className={`${isLight ? 'text-slate-400' : 'text-white/50'} rotate-90`} />
                   </div>
 
@@ -187,11 +204,11 @@ const CardsView = () => {
 
                   <div className="flex justify-between items-end">
                     <div className="max-w-[65%] space-y-0.5">
-                      <p className={`text-[7px] font-medium ${isLight ? 'text-slate-400' : 'text-white/40'}`}>Card Name</p>
+                      <p className={`text-[7px] font-medium ${isLight ? 'text-slate-400' : 'text-white/40'}`}>{currentLang === 'pt' ? 'Nome do Cartão' : currentLang === 'es' ? 'Nombre de Tarjeta' : 'Card Name'}</p>
                       <p className="text-xs font-semibold truncate tracking-tight uppercase">{card.cardName}</p>
                     </div>
                     <div className="text-right shrink-0 space-y-0.5">
-                      <p className={`text-[7px] font-medium ${isLight ? 'text-slate-400' : 'text-white/40'}`}>Expires</p>
+                      <p className={`text-[7px] font-medium ${isLight ? 'text-slate-400' : 'text-white/40'}`}>{currentLang === 'pt' ? 'Validade' : currentLang === 'es' ? 'Vencimiento' : 'Expires'}</p>
                       <p className="text-xs font-semibold tracking-tight">{card.expiry || '12/28'}</p>
                     </div>
                   </div>
@@ -200,16 +217,16 @@ const CardsView = () => {
 
               <div className="flex justify-between items-end px-1">
                 <div className="space-y-0.5">
-                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">Outstanding</p>
+                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">{currentLang === 'pt' ? 'Pendente' : currentLang === 'es' ? 'Pendiente' : 'Outstanding'}</p>
                   <p className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
                     ${card.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="text-right space-y-0.5">
-                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">Due Day</p>
+                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">{currentLang === 'pt' ? 'Vencimento' : currentLang === 'es' ? 'Vencimiento' : 'Due Day'}</p>
                   <p className="text-xs font-black text-blue-600 dark:text-blue-400 flex items-center gap-1.5 leading-none justify-end uppercase">
                     <Calendar size={12} strokeWidth={2.5} />
-                    Day {card.dueDay || '--'}
+                    {currentLang === 'pt' ? 'Dia' : currentLang === 'es' ? 'Día' : 'Day'} {card.dueDay || '--'}
                   </p>
                 </div>
               </div>
@@ -218,10 +235,10 @@ const CardsView = () => {
         })}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCard ? 'Edit Card Details' : 'Add New Credit Card'}>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCard ? (currentLang === 'pt' ? 'Editar Cartão' : currentLang === 'es' ? 'Editar Tarjeta' : 'Edit Card') : (currentLang === 'pt' ? 'Novo Cartão' : currentLang === 'es' ? 'Nueva Tarjeta' : 'Add Card')}>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2 text-slate-900 dark:text-white">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Card Identification</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Identificação do Cartão' : currentLang === 'es' ? 'Identificación de Tarjeta' : 'Card Identification'}</label>
             <input 
               type="text" 
               required
@@ -234,7 +251,7 @@ const CardsView = () => {
           
           <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Due Day (1-31)</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Dia do Vencimento' : currentLang === 'es' ? 'Día de Vencimiento' : 'Due Day'} (1-31)</label>
               <input 
                 type="number" 
                 min="1" 
@@ -247,7 +264,7 @@ const CardsView = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Expiry (MM/YY)</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Validade (MM/AA)' : currentLang === 'es' ? 'Vencimiento (MM/AA)' : 'Expiry (MM/YY)'}</label>
               <input 
                 type="text" 
                 required
@@ -261,7 +278,7 @@ const CardsView = () => {
 
           <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Outstanding Balance ($)</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Saldo Devedor ($)' : currentLang === 'es' ? 'Saldo Pendiente ($)' : 'Outstanding Balance ($)'}</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -272,7 +289,7 @@ const CardsView = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Annual Fee ($)</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Anuidade ($)' : currentLang === 'es' ? 'Anualidad ($)' : 'Annual Fee ($)'}</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -285,7 +302,7 @@ const CardsView = () => {
           </div>
 
           <div className="space-y-2 text-slate-900 dark:text-white">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Renewal Month</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Mês de Renovação' : currentLang === 'es' ? 'Mes de Renovación' : 'Renewal Month'}</label>
             <select 
               value={renewalMonth}
               onChange={(e) => setRenewalMonth(e.target.value)}
@@ -297,7 +314,7 @@ const CardsView = () => {
           </div>
 
           <div className="space-y-2 text-slate-900 dark:text-white">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">Card Theme</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Tema do Cartão' : currentLang === 'es' ? 'Tema de Tarjeta' : 'Card Theme'}</label>
             <div className="flex flex-wrap gap-4 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
               {colorOptions.map((opt) => (
                 <button
@@ -323,7 +340,7 @@ const CardsView = () => {
               type="submit"
               className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
             >
-              {editingCard ? 'Update Card' : 'Add Card'}
+              {editingCard ? (currentLang === 'pt' ? 'Atualizar Cartão' : currentLang === 'es' ? 'Actualizar Tarjeta' : 'Update Card') : (currentLang === 'pt' ? 'Adicionar Cartão' : currentLang === 'es' ? 'Agregar Tarjeta' : 'Add Card')}
             </button>
           </div>
         </form>

@@ -14,16 +14,8 @@ import {
   Building2
 } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
-
-const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard' },
-  { icon: Wallet, label: 'Accounts' },
-  { icon: CreditCard, label: 'Credit Cards' },
-  { icon: Building2, label: 'Investments' },
-  { icon: ArrowUpRight, label: 'Income' },
-  { icon: ArrowDownLeft, label: 'Expenses' },
-  { icon: PieChart, label: 'Reports' },
-];
+import { useAppContext } from '@/context/AppContext';
+import { translations, Language } from '@/utils/translations';
 
 interface SidebarProps {
   activeItem: string;
@@ -32,6 +24,20 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
+  const { settings } = useAppContext();
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
+
+  const menuItems = [
+    { icon: LayoutDashboard, label: t.dashboard, original: 'Dashboard' },
+    { icon: Wallet, label: t.accounts, original: 'Accounts' },
+    { icon: CreditCard, label: t.creditCards, original: 'Credit Cards' },
+    { icon: Building2, label: t.investments, original: 'Investments' },
+    { icon: ArrowUpRight, label: t.income, original: 'Income' },
+    { icon: ArrowDownLeft, label: t.expenses, original: 'Expenses' },
+    { icon: PieChart, label: t.reports, original: 'Reports' },
+  ];
+
   const handleItemClick = (label: string) => {
     setActiveItem(label);
     if (onClose) onClose();
@@ -64,14 +70,14 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
           {menuItems.map((item, index) => (
             <button 
               key={index}
-              onClick={() => handleItemClick(item.label)}
+              onClick={() => handleItemClick(item.original)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                activeItem === item.label 
+                activeItem === item.original 
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-[1.02]' 
                   : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800 hover:translate-x-1'
               }`}
             >
-              <item.icon size={18} strokeWidth={2.5} className={`${activeItem === item.label ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
+              <item.icon size={18} strokeWidth={2.5} className={`${activeItem === item.original ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
               <span className="font-bold text-sm tracking-tight">{item.label}</span>
             </button>
           ))}
@@ -88,14 +94,14 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
           }`}
         >
           <Settings size={18} strokeWidth={2.5} className={`${activeItem === 'Settings' ? 'text-white' : 'group-hover:text-blue-600'}`} />
-          <span className="font-bold text-sm tracking-tight">Settings</span>
+          <span className="font-bold text-sm tracking-tight">{t.settings}</span>
         </button>
         <button 
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all font-bold text-sm tracking-tight active:scale-95"
         >
           <LogOut size={18} strokeWidth={2.5} />
-          <span>Logout</span>
+          <span>{t.logout}</span>
         </button>
       </div>
     </div>

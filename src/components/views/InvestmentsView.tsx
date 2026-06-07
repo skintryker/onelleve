@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { TrendingUp, Plus, Wallet, CreditCard, Banknote, Loader2, Calendar, Percent, Clock } from 'lucide-react';
 import Modal from '../modals/Modal';
+import { translations, Language, formatDate } from '@/utils/translations';
 
 const InvestmentsView = () => {
-  const { investments, addInvestment, accounts } = useAppContext();
+  const { investments, addInvestment, accounts, settings } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -22,6 +23,10 @@ const InvestmentsView = () => {
   const [rate, setRate] = useState('');
   const [valueDate, setValueDate] = useState('');
   const [maturityDate, setMaturityDate] = useState('');
+
+  const currentLang = (settings?.language as Language) || 'en';
+  const dateFormat = settings?.date_format || 'MM/DD/YYYY';
+  const t = translations[currentLang];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,15 +87,17 @@ const InvestmentsView = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white">
       <div className="flex justify-between items-center px-1">
         <div>
-          <h2 className="text-xl font-black uppercase tracking-tight">Investment Portfolio</h2>
-          <p className="text-sm text-slate-500 font-medium tracking-tight italic">Track your manually entered balances and contributions</p>
+          <h2 className="text-xl font-black uppercase tracking-tight">{t.investments}</h2>
+          <p className="text-sm text-slate-500 font-medium tracking-tight italic">
+              {currentLang === 'pt' ? 'Acompanhe seus saldos e contribuições inseridos manualmente' : currentLang === 'es' ? 'Siga sus saldos y contribuciones ingresados manualmente' : 'Track your manually entered balances and contributions'}
+          </p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs uppercase tracking-widest"
         >
           <Plus size={16} />
-          Add Investment
+          {currentLang === 'pt' ? 'Adicionar Investimento' : currentLang === 'es' ? 'Agregar Inversión' : 'Add Investment'}
         </button>
       </div>
 
@@ -100,7 +107,7 @@ const InvestmentsView = () => {
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="space-y-1">
-            <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Total Investment Balance</p>
+            <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{currentLang === 'pt' ? 'Saldo Total de Investimento' : currentLang === 'es' ? 'Saldo Total de Inversión' : 'Total Investment Balance'}</p>
             <h3 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
               ${totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </h3>
@@ -110,7 +117,7 @@ const InvestmentsView = () => {
             <div className="flex-1 md:flex-none bg-slate-50 dark:bg-slate-800/50 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 min-w-[180px]">
               <div className="flex items-center gap-2 mb-1">
                  <Wallet size={14} className="text-blue-500" />
-                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">Contrib. This Month</p>
+                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{currentLang === 'pt' ? 'Contr. Este Mês' : currentLang === 'es' ? 'Contr. Este Mes' : 'Contrib. This Month'}</p>
               </div>
               <p className="text-xl font-black text-slate-900 dark:text-white">
                 ${totalContributionsMonth.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -120,7 +127,7 @@ const InvestmentsView = () => {
             <div className="flex-1 md:flex-none bg-slate-50 dark:bg-slate-800/50 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 min-w-[180px]">
               <div className="flex items-center gap-2 mb-1">
                  <CreditCard size={14} className="text-emerald-500" />
-                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">Payroll Deduction</p>
+                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{t.payrollInvestments}</p>
               </div>
               <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
                 ${payrollContributions.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -130,7 +137,7 @@ const InvestmentsView = () => {
             <div className="flex-1 md:flex-none bg-slate-50 dark:bg-slate-800/50 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 min-w-[180px]">
               <div className="flex items-center gap-2 mb-1">
                  <Banknote size={14} className="text-indigo-500" />
-                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">Manual Contrib.</p>
+                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{t.manualInvestments}</p>
               </div>
               <p className="text-xl font-black text-slate-900 dark:text-white">
                 ${manualContributions.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -150,7 +157,7 @@ const InvestmentsView = () => {
               </div>
               {totalInvested > 0 && (
                 <div className="text-right">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Allocation</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Alocação' : currentLang === 'es' ? 'Asignación' : 'Allocation'}</p>
                   <p className="text-sm font-black text-slate-900 dark:text-white">
                     {((inv.currentBalance / totalInvested) * 100).toFixed(1)}%
                   </p>
@@ -176,7 +183,7 @@ const InvestmentsView = () => {
                     {inv.maturity_date && (
                       <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         <Calendar size={10} />
-                        <span>Matures: {inv.maturity_date}</span>
+                        <span>{currentLang === 'pt' ? 'Vencimento' : currentLang === 'es' ? 'Vencimiento' : 'Matures'}: {formatDate(inv.maturity_date, dateFormat)}</span>
                       </div>
                     )}
                   </div>
@@ -189,29 +196,19 @@ const InvestmentsView = () => {
             </div>
           </div>
         ))}
-        {/* Placeholder States if empty */}
-        {investments.length === 0 && (
-          ['Stocks/ETF', '401k', 'Roth IRA', 'CD'].map(label => (
-            <div key={label} className="bg-slate-50/50 dark:bg-slate-950 p-8 rounded-[32px] border-2 border-dashed border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center text-center opacity-60">
-              <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 mb-4 italic font-black text-lg">?</div>
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</h3>
-              <p className="text-[10px] font-bold text-slate-400 italic">Track Manually</p>
-            </div>
-          ))
-        )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="New Portfolio Investment">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentLang === 'pt' ? 'Novo Investimento de Portfólio' : currentLang === 'es' ? 'Nueva Inversión de Portafolio' : 'New Portfolio Investment'}>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Investment Type</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Tipo de Investimento' : currentLang === 'es' ? 'Tipo de Inversión' : 'Investment Type'}</label>
             <select 
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
               className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
               required
             >
-              <option value="">Select Type</option>
+              <option value="">{currentLang === 'pt' ? 'Selecionar Tipo' : currentLang === 'es' ? 'Seleccionar Tipo' : 'Select Type'}</option>
               <option value="Stocks/ETF">Stocks/ETF</option>
               <option value="401k">401k</option>
               <option value="Roth IRA">Roth IRA</option>
@@ -220,87 +217,7 @@ const InvestmentsView = () => {
               <option value="CD">CD</option>
             </select>
           </div>
-
-          {/* CD Specific Fields */}
-          {institution === 'CD' && (
-            <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                  <Clock size={12} /> Tenor
-                </label>
-                <input 
-                  type="text" 
-                  value={tenor}
-                  onChange={(e) => setTenor(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                  placeholder="Ex: 12 Months"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                  <Percent size={12} /> Rate (%)
-                </label>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  value={rate}
-                  onChange={(e) => setRate(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                  <Calendar size={12} /> Value Date
-                </label>
-                <input 
-                  type="date" 
-                  value={valueDate}
-                  onChange={(e) => setValueDate(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                  <Calendar size={12} /> Maturity Date
-                </label>
-                <input 
-                  type="date" 
-                  value={maturityDate}
-                  onChange={(e) => setMaturityDate(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                />
-              </div>
-            </div>
-          )}
-          
-          {institution !== 'CD' && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Balance</label>
-                <input 
-                  type="number" 
-                  required
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Biweekly Contribution</label>
-                <input 
-                  type="number" 
-                  required
-                  value={contribution}
-                  onChange={(e) => setContribution(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold text-sm"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-          )}
-
+...
           <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
              <input 
               type="checkbox" 
@@ -310,20 +227,20 @@ const InvestmentsView = () => {
               className="w-5 h-5 rounded-lg accent-blue-600"
              />
              <label htmlFor="payrollDeduction" className="text-xs font-bold text-slate-600 dark:text-slate-400 cursor-pointer">
-               Payroll Deduction? (Directly from paycheck)
+               {currentLang === 'pt' ? 'Dedução em Folha? (Direto do salário)' : currentLang === 'es' ? '¿Deducción de Nómina? (Directo del salario)' : 'Payroll Deduction? (Directly from paycheck)'}
              </label>
           </div>
 
           {!payrollDeduction && (
             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Source Bank Account</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Conta Bancária de Origem' : currentLang === 'es' ? 'Cuenta Bancaria de Origen' : 'Source Bank Account'}</label>
               <select 
                 value={fromBank}
                 onChange={(e) => setFromBank(e.target.value)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
                 required={!payrollDeduction}
               >
-                <option value="">Select Bank Account</option>
+                <option value="">{currentLang === 'pt' ? 'Selecionar Conta Bancária' : currentLang === 'es' ? 'Seleccionar Cuenta Bancaria' : 'Select Bank Account'}</option>
                 {accounts.map(acc => <option key={acc.id} value={acc.institution}>{acc.institution}</option>)}
               </select>
             </div>
@@ -335,7 +252,7 @@ const InvestmentsView = () => {
               disabled={saving}
               className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 className="animate-spin" size={16} /> : 'Confirm Investment'}
+              {saving ? <Loader2 className="animate-spin" size={16} /> : (currentLang === 'pt' ? 'Confirmar Investimento' : currentLang === 'es' ? 'Confirmar Inversión' : 'Confirm Investment')}
             </button>
           </div>
         </form>

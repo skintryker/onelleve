@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Bell, Shield, Globe, Save, Mail, Loader2, Key, LogOut, Check, Trash2 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/utils/supabaseClient';
+import { translations, Language } from '@/utils/translations';
 
 const SettingsView = () => {
   const { user, settings, updateSettings, loading: appLoading } = useAppContext();
@@ -14,12 +15,19 @@ const SettingsView = () => {
   // Local form states
   const [fullName, setFullName] = useState('');
   const [currency, setCurrency] = useState('USD');
+  const [language, setLanguage] = useState<Language>('en');
+  const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
+
+  const currentLang = (settings?.language as Language) || 'en';
+  const t = translations[currentLang];
 
   // Sync local state with settings from context
   useEffect(() => {
     if (settings) {
       setFullName(settings.full_name || '');
       setCurrency(settings.preferred_currency || 'USD');
+      setLanguage((settings.language as Language) || 'en');
+      setDateFormat(settings.date_format || 'MM/DD/YYYY');
     }
   }, [settings]);
 
@@ -31,12 +39,32 @@ const SettingsView = () => {
         full_name: fullName,
         preferred_currency: currency
       });
-      setSaveStatus({ type: 'success', message: 'Settings saved successfully!' });
+      setSaveStatus({ type: 'success', message: t.saveChanges + '!' });
     } catch (error: any) {
       console.error('Supabase Save Error:', error);
       setSaveStatus({ 
         type: 'error', 
         message: error.message || 'Failed to save settings.' 
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveRegion = async () => {
+    setSaving(true);
+    setSaveStatus(null);
+    try {
+      await updateSettings({
+        language,
+        date_format: dateFormat
+      });
+      setSaveStatus({ type: 'success', message: t.region + ' updated!' });
+    } catch (error: any) {
+      console.error('Supabase Save Error:', error);
+      setSaveStatus({ 
+        type: 'error', 
+        message: error.message || 'Failed to save region settings.' 
       });
     } finally {
       setSaving(false);
@@ -72,12 +100,12 @@ const SettingsView = () => {
       case 'profile':
         return (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-8">Profile Settings</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-8">{t.profileSettings}</h3>
             
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.fullName}</label>
                   <input 
                     type="text" 
                     value={fullName}
@@ -87,7 +115,7 @@ const SettingsView = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address (Read-only)</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.emailAddress} (Read-only)</label>
                   <div className="relative">
                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                      <input 
@@ -102,7 +130,7 @@ const SettingsView = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Currency</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.preferredCurrency}</label>
                   <div className="relative">
                     <select 
                       value={currency}
@@ -123,7 +151,7 @@ const SettingsView = () => {
                     className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/25 active:scale-95 hover:bg-blue-700 transition-all disabled:opacity-50"
                   >
                     {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                    Save Changes
+                    {t.saveChanges}
                   </button>
                 </div>
               </div>
@@ -139,7 +167,7 @@ const SettingsView = () => {
       case 'notifications':
         return (
           <div className="space-y-4 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Notifications</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">{t.notifications}</h3>
             <div className="grid grid-cols-1 gap-3">
               {[
                 { label: 'Email notifications', desc: 'Monthly summaries and important alerts' },
@@ -164,7 +192,7 @@ const SettingsView = () => {
       case 'security':
         return (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Security & Privacy</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">{t.security}</h3>
             
             <div className="space-y-4">
                {/* Password Card */}
@@ -177,7 +205,7 @@ const SettingsView = () => {
                      </div>
                   </div>
                   <button onClick={handleResetPassword} className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all text-slate-900 dark:text-white active:scale-95 shadow-sm">
-                    Reset Password
+                    {t.resetPassword}
                   </button>
                </div>
 
@@ -191,7 +219,7 @@ const SettingsView = () => {
                      </div>
                   </div>
                   <button onClick={handleLogout} className="px-4 py-2 bg-rose-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all active:scale-95 shadow-sm">
-                     Logout
+                     {t.logout}
                   </button>
                </div>
 
@@ -211,43 +239,55 @@ const SettingsView = () => {
                      </button>
                   </div>
                </div>
-               
-               <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] italic">
-                 Your financial data is stored securely and tied to your account.
-               </p>
             </div>
           </div>
         );
       case 'region':
         return (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Language & Region</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4 text-center">{t.region}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Language</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.language}</label>
                 <select 
-                  disabled
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 text-xs font-bold cursor-not-allowed"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as Language)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white"
                 >
-                  <option value="en">English only for now</option>
+                  <option value="en">English</option>
+                  <option value="pt">Português</option>
+                  <option value="es">Español</option>
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Region</label>
-                <select className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white">
-                  <option value="US">United States</option>
-                  <option value="BR">Brazil</option>
-                  <option value="EU">Europe</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Date Format</label>
-                <select className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.dateFormat}</label>
+                <select 
+                  value={dateFormat}
+                  onChange={(e) => setDateFormat(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white"
+                >
                   <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                   <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                 </select>
               </div>
             </div>
+
+            <div className="flex justify-center pt-4">
+               <button 
+                disabled={saving}
+                onClick={handleSaveRegion} 
+                className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/25 active:scale-95 hover:bg-blue-700 transition-all disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                {t.saveChanges}
+              </button>
+            </div>
+
+            {saveStatus && (
+              <p className={`text-center text-sm font-bold ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {saveStatus.message}
+              </p>
+            )}
           </div>
         );
     }
@@ -259,10 +299,10 @@ const SettingsView = () => {
         {/* Navigation Sidebar */}
         <div className="lg:col-span-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 custom-scrollbar shrink-0">
           {[
-            { id: 'profile', label: 'Profile', icon: User },
-            { id: 'notifications', label: 'Notifications', icon: Bell },
-            { id: 'security', label: 'Security', icon: Shield },
-            { id: 'region', label: 'Region', icon: Globe },
+            { id: 'profile', label: t.profileSettings, icon: User },
+            { id: 'notifications', label: t.notifications, icon: Bell },
+            { id: 'security', label: t.security, icon: Shield },
+            { id: 'region', label: t.region, icon: Globe },
           ].map(item => (
             <button 
               key={item.id}
