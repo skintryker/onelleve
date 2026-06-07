@@ -134,7 +134,7 @@ const CardsView = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(currentLang === 'pt' ? 'Tem certeza que deseja excluir este cartão?' : currentLang === 'es' ? '¿Estás seguro de que quieres eliminar esta tarjeta?' : 'Are you sure you want to delete this card?')) {
+    if (confirm(t.areYouSureDeleteCard)) {
       deleteCard(id);
     }
   };
@@ -146,7 +146,7 @@ const CardsView = () => {
         <div>
           <h2 className="text-xl font-black uppercase tracking-tight">{t.creditCards}</h2>
           <p className="text-xs text-slate-500 font-medium tracking-tight italic">
-              {currentLang === 'pt' ? 'Gerencie suas faturas e datas de expiração' : currentLang === 'es' ? 'Administra tus estados de cuenta y fechas de vencimiento' : 'Manage your statements and expiration dates'}
+              {t.manageCards}
           </p>
         </div>
         <button 
@@ -170,7 +170,7 @@ const CardsView = () => {
                 <button 
                   onClick={() => handleOpenModal(card)}
                   className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-slate-100 dark:border-slate-700"
-                  title="Edit Card"
+                  title={t.editCard}
                 >
                   <Edit2 size={11} />
                 </button>
@@ -199,7 +199,7 @@ const CardsView = () => {
                   </div>
 
                   <div className="py-1 flex justify-center">
-                    <p className="text-lg sm:text-xl font-mono tracking-normal font-medium whitespace-nowrap overflow-hidden text-center">**** **** **** ****</p>
+                    <p className="text-lg sm:text-xl font-mono tracking-normal font-medium whitespace-nowrap overflow-hidden text-center">{t.cardNumberPlaceholder}</p>
                   </div>
 
                   <div className="flex justify-between items-end">
@@ -217,16 +217,16 @@ const CardsView = () => {
 
               <div className="flex justify-between items-end px-1">
                 <div className="space-y-0.5">
-                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">{currentLang === 'pt' ? 'Pendente' : currentLang === 'es' ? 'Pendiente' : 'Outstanding'}</p>
+                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">{t.outstanding}</p>
                   <p className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
                     ${maskValue(card.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
                   </p>
                 </div>
                 <div className="text-right space-y-0.5">
-                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">{currentLang === 'pt' ? 'Vencimento' : currentLang === 'es' ? 'Vencimiento' : 'Due Day'}</p>
+                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">{t.dueDay}</p>
                   <p className="text-xs font-black text-blue-600 dark:text-blue-400 flex items-center gap-1.5 leading-none justify-end uppercase">
                     <Calendar size={12} strokeWidth={2.5} />
-                    {currentLang === 'pt' ? 'Dia' : currentLang === 'es' ? 'Día' : 'Day'} {card.dueDay || '--'}
+                    {t.day} {card.dueDay || '--'}
                   </p>
                 </div>
               </div>
@@ -235,10 +235,10 @@ const CardsView = () => {
         })}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCard ? (currentLang === 'pt' ? 'Editar Cartão' : currentLang === 'es' ? 'Editar Tarjeta' : 'Edit Card') : (currentLang === 'pt' ? 'Novo Cartão' : currentLang === 'es' ? 'Nueva Tarjeta' : 'Add Card')}>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCard ? t.editCard : t.newCard}>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2 text-slate-900 dark:text-white">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Identificação do Cartão' : currentLang === 'es' ? 'Identificación de Tarjeta' : 'Card Identification'}</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{t.cardIdentification}</label>
             <input 
               type="text" 
               required
@@ -251,7 +251,7 @@ const CardsView = () => {
           
           <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Dia do Vencimento' : currentLang === 'es' ? 'Día de Vencimiento' : 'Due Day'} (1-31)</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{t.dueDay} (1-31)</label>
               <input 
                 type="number" 
                 min="1" 
@@ -268,7 +268,7 @@ const CardsView = () => {
               <input 
                 type="text" 
                 required
-                placeholder="e.g. 12/28"
+                placeholder={t.expiryPlaceholder}
                 value={expiry}
                 onChange={(e) => setExpiry(e.target.value)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500/20"
@@ -278,7 +278,7 @@ const CardsView = () => {
 
           <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Saldo Devedor ($)' : currentLang === 'es' ? 'Saldo Pendiente ($)' : 'Outstanding Balance ($)'}</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{t.outstandingBalance} ($)</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -289,7 +289,7 @@ const CardsView = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Anuidade ($)' : currentLang === 'es' ? 'Anualidad ($)' : 'Annual Fee ($)'}</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{t.annualFee} ($)</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -302,7 +302,7 @@ const CardsView = () => {
           </div>
 
           <div className="space-y-2 text-slate-900 dark:text-white">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Mês de Renovação' : currentLang === 'es' ? 'Mes de Renovación' : 'Renewal Month'}</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{t.renewalMonth}</label>
             <select 
               value={renewalMonth}
               onChange={(e) => setRenewalMonth(e.target.value)}
@@ -314,7 +314,7 @@ const CardsView = () => {
           </div>
 
           <div className="space-y-2 text-slate-900 dark:text-white">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{currentLang === 'pt' ? 'Tema do Cartão' : currentLang === 'es' ? 'Tema de Tarjeta' : 'Card Theme'}</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-slate-400">{t.cardTheme}</label>
             <div className="flex flex-wrap gap-4 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
               {colorOptions.map((opt) => (
                 <button
@@ -340,7 +340,7 @@ const CardsView = () => {
               type="submit"
               className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
             >
-              {editingCard ? (currentLang === 'pt' ? 'Atualizar Cartão' : currentLang === 'es' ? 'Actualizar Tarjeta' : 'Update Card') : (currentLang === 'pt' ? 'Adicionar Cartão' : currentLang === 'es' ? 'Agregar Tarjeta' : 'Add Card')}
+              {editingCard ? t.updateCard : t.addCard}
             </button>
           </div>
         </form>

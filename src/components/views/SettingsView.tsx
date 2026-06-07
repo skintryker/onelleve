@@ -69,13 +69,13 @@ const SettingsView = () => {
     }
   };
 
-  const handleSaveRegion = async () => {
+  const handleSaveRegion = async (lang?: Language, format?: string) => {
     setSaving(true);
     setSaveStatus(null);
     try {
       await updateSettings({
-        language,
-        date_format: dateFormat
+        language: lang || language,
+        date_format: format || dateFormat
       });
       setSaveStatus({ type: 'success', message: t.region + ' updated!' });
     } catch (error: any) {
@@ -89,24 +89,17 @@ const SettingsView = () => {
     }
   };
 
-  const handleToggleNotif = (key: keyof typeof notifs) => {
-    setNotifs(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleSaveNotifications = async () => {
-    setSaving(true);
-    setSaveStatus(null);
+  const handleToggleNotif = async (key: keyof typeof notifs) => {
+    const newValue = !notifs[key];
+    setNotifs(prev => ({ ...prev, [key]: newValue }));
+    
+    // Save immediately
     try {
-      await updateSettings(notifs);
-      setSaveStatus({ type: 'success', message: 'Notification preferences saved!' });
-    } catch (error: any) {
-      console.error('Supabase Save Error:', error);
-      setSaveStatus({ 
-        type: 'error', 
-        message: error.message || 'Failed to save notification settings.' 
-      });
-    } finally {
-      setSaving(false);
+      await updateSettings({ [key]: newValue });
+    } catch (error) {
+      console.error('Error saving notification toggle:', error);
+      // Revert local state if save fails
+      setNotifs(prev => ({ ...prev, [key]: !newValue }));
     }
   };
 
@@ -209,7 +202,7 @@ const SettingsView = () => {
                 </div>
               </div>
 
-              {saveStatus && (
+              {saveStatus && activeTab === 'profile' && (
                 <p className={`text-sm font-bold px-1 ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {saveStatus.message}
                 </p>
@@ -268,11 +261,11 @@ const SettingsView = () => {
             <h3 className="text-xl font-black uppercase tracking-tight mb-4">{t.notifications}</h3>
             <div className="grid grid-cols-1 gap-3">
               {[
-                { id: 'email_notifications', label: 'Email notifications', desc: 'Monthly summaries and important alerts' },
-                { id: 'payment_reminders', label: 'Payment reminders', desc: 'Reminders for upcoming manual payments' },
-                { id: 'due_day_reminders', label: 'Due day reminders', desc: 'Alerts when your card due day is approaching' },
-                { id: 'monthly_summary', label: 'Monthly summary', desc: 'Detailed report of your financial performance' },
-                { id: 'investment_reminders', label: 'Investment reminders', desc: 'Notifications for manual investment contributions' }
+                { id: 'email_notifications', label: t.emailNotifications, desc: t.emailNotificationsDesc },
+                { id: 'payment_reminders', label: t.paymentReminders, desc: t.paymentRemindersDesc },
+                { id: 'due_day_reminders', label: t.dueDayReminders, desc: t.dueDayRemindersDesc },
+                { id: 'monthly_summary', label: t.monthlySummary, desc: t.monthlySummaryDesc },
+                { id: 'investment_reminders', label: t.investmentReminders, desc: t.investmentRemindersDesc }
               ].map((item) => (
                 <div 
                   key={item.id} 
@@ -290,18 +283,7 @@ const SettingsView = () => {
               ))}
             </div>
 
-            <div className="flex justify-center pt-4">
-               <button 
-                disabled={saving}
-                onClick={handleSaveNotifications} 
-                className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/25 active:scale-95 hover:bg-blue-700 transition-all disabled:opacity-50"
-              >
-                {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                Save Notifications
-              </button>
-            </div>
-
-            {saveStatus && (
+            {saveStatus && activeTab === 'notifications' && (
               <p className={`text-center text-sm font-bold ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {saveStatus.message}
               </p>
@@ -364,13 +346,17 @@ const SettingsView = () => {
       case 'region':
         return (
           <div className="space-y-6 animate-in fade-in duration-300 text-slate-900 dark:text-white">
-            <h3 className="text-xl font-black uppercase tracking-tight mb-4 text-center">{t.region}</h3>
+            <h3 className="text-xl font-black uppercase tracking-tight mb-4 text-center">{t.languageAndDate}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.language}</label>
                 <select 
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value as Language)}
+                  onChange={(e) => {
+                    const val = e.target.value as Language;
+                    setLanguage(val);
+                    handleSaveRegion(val);
+                  }}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white"
                 >
                   <option value="en">English</option>
@@ -382,7 +368,11 @@ const SettingsView = () => {
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.dateFormat}</label>
                 <select 
                   value={dateFormat}
-                  onChange={(e) => setDateFormat(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDateFormat(val);
+                    handleSaveRegion(undefined, val);
+                  }}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold appearance-none outline-none dark:text-white"
                 >
                   <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -394,15 +384,15 @@ const SettingsView = () => {
             <div className="flex justify-center pt-4">
                <button 
                 disabled={saving}
-                onClick={handleSaveRegion} 
+                onClick={() => handleSaveRegion()} 
                 className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/25 active:scale-95 hover:bg-blue-700 transition-all disabled:opacity-50"
               >
                 {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                {t.saveChanges}
+                {t.saveRegionSettings}
               </button>
             </div>
 
-            {saveStatus && (
+            {saveStatus && activeTab === 'region' && (
               <p className={`text-center text-sm font-bold ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {saveStatus.message}
               </p>

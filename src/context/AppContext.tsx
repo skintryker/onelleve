@@ -263,7 +263,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           full_name: currentUser.user_metadata?.full_name || '',
           preferred_currency: 'USD',
           language: 'en',
-          date_format: 'MM/DD/YYYY'
+          date_format: 'MM/DD/YYYY',
+          email_notifications: false,
+          payment_reminders: false,
+          due_day_reminders: false,
+          monthly_summary: false,
+          investment_reminders: false
         };
         const { data: newSet, error: insertError } = await supabase
           .from('user_settings')

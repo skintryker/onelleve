@@ -131,8 +131,8 @@ export default function ReportsView() {
             <Calendar size={24} />
           </div>
           <div>
-            <h3 className="text-xl font-black tracking-tight">{currentLang === 'pt' ? 'Gerador de Relatórios' : currentLang === 'es' ? 'Generador de Informes' : 'Report Generator'}</h3>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{currentLang === 'pt' ? 'Selecione um período para analisar' : currentLang === 'es' ? 'Seleccione un período para analizar' : 'Select a period to analyze'}</p>
+            <h3 className="text-xl font-black tracking-tight">{t.reportGenerator}</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.selectPeriodToAnalyze}</p>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ export default function ReportsView() {
           </select>
           <button 
             onClick={handleGenerateReport}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2"
           >
             <Plus size={16} />
             {t.generateReport}
@@ -166,7 +166,7 @@ export default function ReportsView() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 dark:bg-white/5">
-                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Nome do Relatório' : currentLang === 'es' ? 'Nombre del Informe' : 'Report Name'}</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">{t.reportName}</th>
                   <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">{t.period}</th>
                   <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">{t.type}</th>
                   <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">{t.actions}</th>
@@ -210,9 +210,9 @@ export default function ReportsView() {
               <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
                 <FileText size={32} />
               </div>
-              <h4 className="text-xl font-black text-slate-900 dark:text-white">{t.noReports}</h4>
+              <h4 className="text-xl font-black text-slate-900 dark:text-white">{t.noReportsGeneratedYet}</h4>
               <p className="text-sm text-slate-400 font-medium mt-2 italic">
-                  {currentLang === 'pt' ? 'Selecione um mês acima para gerar seu primeiro resumo financeiro.' : currentLang === 'es' ? 'Seleccione un mes arriba para generar su primer resumen financiero.' : 'Select a month above to generate your first financial summary.'}
+                  {t.selectMonthToGenerate}
               </p>
             </div>
           )}
@@ -281,7 +281,7 @@ export default function ReportsView() {
 
              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
-                    {currentLang === 'pt' ? 'Gastos por Categoria' : currentLang === 'es' ? 'Gastos por Categoría' : 'Spending by Category'}
+                    {t.spendingByCategory}
                 </p>
                 <div className="space-y-2">
                    {Object.entries(viewingReport.report_data.categories).map(([cat, val]: [string, any]) => (
@@ -295,7 +295,7 @@ export default function ReportsView() {
                          </div>
                       </div>
                    ))}
-                   {Object.keys(viewingReport.report_data.categories).length === 0 && <p className="text-xs text-slate-400 italic">No spending data for this period.</p>}
+                   {Object.keys(viewingReport.report_data.categories).length === 0 && <p className="text-xs text-slate-400 italic">{t.noSpendingData}</p>}
                 </div>
              </div>
 

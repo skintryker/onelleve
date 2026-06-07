@@ -86,7 +86,7 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
             onClick={() => setFilterType('all')}
             className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${filterType === 'all' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-blue-600'}`}
           >
-            {currentLang === 'pt' ? 'Todos' : currentLang === 'es' ? 'Todos' : 'All'}
+            {t.all}
           </button>
           <button 
             onClick={() => setFilterType('income')}
@@ -124,7 +124,7 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
                     : (currentLang === 'pt' ? 'Adicionar Despesa' : currentLang === 'es' ? 'Agregar Gasto' : 'Add Expense')
                 }
             </span>
-            <span className="sm:hidden">{currentLang === 'pt' ? 'Add' : currentLang === 'es' ? 'Add' : 'Add'}</span>
+            <span className="sm:hidden">{t.add}</span>
           </button>
         </div>
       </div>
@@ -136,19 +136,19 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
               <tr className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-slate-800">
                 <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   {filterType === 'income' 
-                    ? (currentLang === 'pt' ? 'Fonte' : currentLang === 'es' ? 'Fuente' : 'Source')
-                    : (currentLang === 'pt' ? 'Transação' : currentLang === 'es' ? 'Transacción' : 'Transaction')}
+                    ? t.source
+                    : t.transaction}
                 </th>
                 <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   {filterType === 'income' 
                     ? 'Label' 
-                    : (currentLang === 'pt' ? 'Categoria' : currentLang === 'es' ? 'Categoría' : 'Category')}
+                    : t.category}
                 </th>
                 <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {currentLang === 'pt' ? 'Data' : currentLang === 'es' ? 'Fecha' : 'Date'}
+                    {t.date}
                 </th>
                 <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {currentLang === 'pt' ? 'Valor' : currentLang === 'es' ? 'Monto' : 'Amount'}
+                    {t.amount}
                 </th>
                 <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t.actions}</th>
               </tr>
@@ -224,10 +224,10 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
               <Search size={32} />
             </div>
             <h3 className="text-lg font-bold">
-                {currentLang === 'pt' ? 'Nenhuma transação encontrada' : currentLang === 'es' ? 'No se encontraron transacciones' : 'No transactions found'}
+                {t.noTransactionsFound}
             </h3>
             <p className="text-slate-500 font-medium text-sm">
-                {currentLang === 'pt' ? 'Tente ajustar seus filtros ou termo de busca.' : currentLang === 'es' ? 'Intente ajustar sus filtros o término de búsqueda.' : 'Try adjusting your filters or search term.'}
+                {t.tryAdjustingFilters}
             </p>
           </div>
         )}

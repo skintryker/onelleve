@@ -15,7 +15,7 @@ const AccountsView = () => {
   const t = translations[currentLang];
 
   const handleDelete = (id: string) => {
-    if (confirm(currentLang === 'pt' ? 'Tem certeza que deseja excluir esta conta?' : currentLang === 'es' ? '¿Estás seguro de que quieres eliminar esta cuenta?' : 'Are you sure you want to delete this account?')) {
+    if (confirm(t.areYouSureDeleteAccount)) {
       deleteAccount(id);
     }
   };
@@ -31,7 +31,7 @@ const AccountsView = () => {
         <div>
           <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{t.accounts}</h2>
           <p className="text-sm text-slate-500 font-medium tracking-tight">
-              {currentLang === 'pt' ? 'Gerencie suas contas bancárias' : currentLang === 'es' ? 'Administra tus cuentas bancarias' : 'Manage your bank accounts'}
+              {t.manageAccounts}
           </p>
         </div>
         <button 
@@ -72,7 +72,7 @@ const AccountsView = () => {
               <h3 className="text-3xl font-black tracking-tighter mb-1">
                 ${maskValue(account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
               </h3>
-              <p className="text-[10px] font-bold text-slate-400 mt-2 italic uppercase tracking-widest leading-none border-t border-slate-100 dark:border-slate-800 pt-3 inline-block w-full">{account.type} {currentLang === 'pt' ? 'Conta' : currentLang === 'es' ? 'Cuenta' : 'Account'}</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-2 italic uppercase tracking-widest leading-none border-t border-slate-100 dark:border-slate-800 pt-3 inline-block w-full">{account.type} {t.account}</p>
             </div>
           </div>
         ))}

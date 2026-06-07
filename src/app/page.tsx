@@ -96,19 +96,19 @@ export default function Dashboard() {
             <SummaryCards />
             {searchQuery && (
                <div className="mt-8 bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-4">
-                  <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">
-                      {currentLang === 'pt' ? `Resultados da busca para "${searchQuery}"` : currentLang === 'es' ? `Resultados de búsqueda para "${searchQuery}"` : `Search Results for "${searchQuery}"`}
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">
+                      {t.searchResultsFor} "{searchQuery}"
                   </h3>
                   <div className="grid grid-cols-1 gap-4">
                     {filteredTransactions.map(tr => (
-                      <div key={tr.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                      <div key={tr.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-900 dark:text-white">
                         <div className="flex items-center gap-4">
                           <div className={`p-2 rounded-xl ${tr.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                             {tr.type === 'income' ? <Plus size={16} /> : <AlertCircle size={16} />}
                           </div>
                           <div>
-                            <p className="font-bold text-slate-900 dark:text-white">{tr.name}</p>
-                            <p className="text-xs text-slate-500">{tr.category} • {formatDate(tr.date, dateFormat)}</p>
+                            <p className="font-bold">{tr.name}</p>
+                            <p className="text-xs text-slate-500 font-medium">{tr.category} • {formatDate(tr.date, dateFormat)}</p>
                           </div>
                         </div>
                         <p className={`font-black ${tr.type === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-white'}`}>
@@ -117,8 +117,8 @@ export default function Dashboard() {
                       </div>
                     ))}
                     {filteredTransactions.length === 0 && (
-                      <p className="text-slate-500 text-sm italic">
-                          {currentLang === 'pt' ? 'Nenhuma transação corresponde à sua busca.' : currentLang === 'es' ? 'Ninguna transacción coincide con su búsqueda.' : 'No transactions match your search.'}
+                      <p className="text-slate-500 text-sm italic p-4 text-center font-medium">
+                          {t.noTransactionsMatchSearch}
                       </p>
                     )}
                   </div>
@@ -160,7 +160,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#020617] font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-[#020617] font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden text-slate-900 dark:text-white">
       {/* Sidebar Desktop */}
       <div className="hidden md:block sticky top-0 h-screen">
         <Sidebar activeItem={activeItem} setActiveItem={setActiveItem} />
@@ -188,7 +188,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 w-full max-w-full overflow-x-hidden min-h-screen">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-3 md:py-4">
+        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-3 md:py-4 text-slate-900 dark:text-white">
           <div className="flex items-center justify-between gap-3 md:gap-4">
             <div className="flex items-center gap-2 md:gap-3">
               <button 
@@ -198,11 +198,11 @@ export default function Dashboard() {
                 <Menu size={22} />
               </button>
               <div className="hidden sm:block">
-                <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">{getTranslatedActiveItem()}</h1>
+                <h1 className="text-lg md:text-xl font-black tracking-tighter uppercase">{getTranslatedActiveItem()}</h1>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Clock size={10} className="text-slate-400" />
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">
-                      {currentLang === 'pt' ? 'Atualizado:' : currentLang === 'es' ? 'Actualizado:' : 'Updated:'} {lastUpdate}
+                      {t.updatedAt} {lastUpdate}
                   </p>
                 </div>
               </div>
@@ -213,10 +213,10 @@ export default function Dashboard() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input 
                   type="text" 
-                  placeholder={currentLang === 'pt' ? 'Busca global...' : currentLang === 'es' ? 'Busqueda global...' : 'Global search...'}
+                  placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-xs md:text-sm font-bold focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white"
+                  className="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-xs md:text-sm font-bold focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white outline-none"
                 />
               </div>
 
@@ -233,9 +233,9 @@ export default function Dashboard() {
                   </button>
 
                   {isNotificationsOpen && (
-                    <div className="absolute right-0 mt-3 w-72 md:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2">
-                      <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 px-2">
-                          {currentLang === 'pt' ? 'Alertas' : currentLang === 'es' ? 'Alertas' : 'Alerts'}
+                    <div className="absolute right-0 mt-3 w-72 md:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2 text-slate-900 dark:text-white">
+                      <h3 className="text-xs font-black uppercase tracking-wider mb-4 px-2">
+                          {t.alerts}
                       </h3>
                       <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                         {notifications.map(n => (
@@ -244,7 +244,7 @@ export default function Dashboard() {
                              <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-tight">{n.message}</p>
                           </div>
                         ))}
-                        {notifications.length === 0 && <p className="text-xs text-slate-500 italic p-4 text-center">{currentLang === 'pt' ? 'Sem alertas ativos' : currentLang === 'es' ? 'Sin alertas activos' : 'No active alerts'}</p>}
+                        {notifications.length === 0 && <p className="text-xs text-slate-500 italic p-4 text-center">{t.noActiveAlerts}</p>}
                       </div>
                     </div>
                   )}

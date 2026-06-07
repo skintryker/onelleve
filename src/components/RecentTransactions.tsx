@@ -24,11 +24,11 @@ const RecentTransactions = () => {
   const recentTransactions = transactions.filter(t => t.type === 'expense').slice(0, 5);
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors h-full flex flex-col">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors h-full flex flex-col text-slate-900 dark:text-white">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{currentLang === 'pt' ? 'Atividade Recente' : currentLang === 'es' ? 'Actividad Reciente' : 'Recent Activity'}</h3>
+        <h3 className="text-lg font-bold tracking-tight">{currentLang === 'pt' ? 'Atividade Recente' : currentLang === 'es' ? 'Actividad Reciente' : 'Recent Activity'}</h3>
         <button 
-          onClick={() => alert('Viewing all transactions...')}
+          onClick={() => {}}
           className="text-blue-600 dark:text-blue-400 text-sm font-semibold hover:underline active:scale-95 transition-transform"
         >
           {currentLang === 'pt' ? 'Ver Tudo' : currentLang === 'es' ? 'Ver Todo' : 'View All'}
@@ -46,11 +46,11 @@ const RecentTransactions = () => {
                     <IconComponent size={18} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{transaction.name}</p>
+                    <p className="text-sm font-bold leading-tight">{transaction.name}</p>
                     <p className="text-[11px] text-slate-500 font-medium">{transaction.category} • {formatDate(transaction.date, dateFormat)}</p>
                   </div>
                 </div>
-                <div className="text-sm font-black text-slate-900 dark:text-white">
+                <div className="text-sm font-black">
                   -${maskValue(Math.abs(transaction.amount).toLocaleString(undefined, { minimumFractionDigits: 2 }))}
                 </div>
               </div>

@@ -44,7 +44,7 @@ const Sidebar = ({ activeItem, setActiveItem, onClose }: SidebarProps) => {
   };
 
   const handleLogout = async () => {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm(currentLang === 'pt' ? 'Tem certeza que deseja sair?' : currentLang === 'es' ? '¿Estás seguro de que quieres cerrar sesión?' : 'Are you sure you want to logout?')) {
       if (supabase) await supabase.auth.signOut();
     }
   };

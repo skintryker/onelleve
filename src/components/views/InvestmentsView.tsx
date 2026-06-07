@@ -89,7 +89,7 @@ const InvestmentsView = () => {
         <div>
           <h2 className="text-xl font-black uppercase tracking-tight">{t.investments}</h2>
           <p className="text-sm text-slate-500 font-medium tracking-tight italic">
-              {currentLang === 'pt' ? 'Acompanhe seus saldos e contribuições inseridos manualmente' : currentLang === 'es' ? 'Siga sus saldos y contribuciones ingresados manualmente' : 'Track your manually entered balances and contributions'}
+              {t.trackManualInvestments}
           </p>
         </div>
         <button 
@@ -97,7 +97,7 @@ const InvestmentsView = () => {
           className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs uppercase tracking-widest"
         >
           <Plus size={16} />
-          {currentLang === 'pt' ? 'Adicionar Investimento' : currentLang === 'es' ? 'Agregar Inversión' : 'Add Investment'}
+          {t.addInvestment}
         </button>
       </div>
 
@@ -107,7 +107,7 @@ const InvestmentsView = () => {
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="space-y-1">
-            <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{currentLang === 'pt' ? 'Saldo Total de Investimento' : currentLang === 'es' ? 'Saldo Total de Inversión' : 'Total Investment Balance'}</p>
+            <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{t.totalInvestmentBalance}</p>
             <h3 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
               ${maskValue(totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
             </h3>
@@ -117,7 +117,7 @@ const InvestmentsView = () => {
             <div className="flex-1 md:flex-none bg-slate-50 dark:bg-slate-800/50 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 min-w-[180px]">
               <div className="flex items-center gap-2 mb-1">
                  <Wallet size={14} className="text-blue-500" />
-                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{currentLang === 'pt' ? 'Contr. Este Mês' : currentLang === 'es' ? 'Contr. Este Mes' : 'Contrib. This Month'}</p>
+                 <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{t.contribThisMonth}</p>
               </div>
               <p className="text-xl font-black text-slate-900 dark:text-white">
                 ${maskValue(totalContributionsMonth.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
@@ -157,7 +157,7 @@ const InvestmentsView = () => {
               </div>
               {totalInvested > 0 && (
                 <div className="text-right">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Alocação' : currentLang === 'es' ? 'Asignación' : 'Allocation'}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.allocation}</p>
                   <p className="text-sm font-black text-slate-900 dark:text-white">
                     {((inv.currentBalance / totalInvested) * 100).toFixed(1)}%
                   </p>
@@ -183,7 +183,7 @@ const InvestmentsView = () => {
                     {inv.maturity_date && (
                       <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         <Calendar size={10} />
-                        <span>{currentLang === 'pt' ? 'Vencimento' : currentLang === 'es' ? 'Vencimiento' : 'Matures'}: {formatDate(inv.maturity_date, dateFormat)}</span>
+                        <span>{t.matures}: {formatDate(inv.maturity_date, dateFormat)}</span>
                       </div>
                     )}
                   </div>
@@ -198,17 +198,17 @@ const InvestmentsView = () => {
         ))}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentLang === 'pt' ? 'Novo Investimento de Portfólio' : currentLang === 'es' ? 'Nueva Inversión de Portafolio' : 'New Portfolio Investment'}>
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t.newPortfolioInvestment}>
+        <form onSubmit={handleSubmit} className="space-y-6 text-slate-900 dark:text-white">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Tipo de Investimento' : currentLang === 'es' ? 'Tipo de Inversión' : 'Investment Type'}</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.investmentType}</label>
             <select 
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
               className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
               required
             >
-              <option value="">{currentLang === 'pt' ? 'Selecionar Tipo' : currentLang === 'es' ? 'Seleccionar Tipo' : 'Select Type'}</option>
+              <option value="">{t.selectType}</option>
               <option value="Stocks/ETF">Stocks/ETF</option>
               <option value="401k">401k</option>
               <option value="Roth IRA">Roth IRA</option>
@@ -220,7 +220,7 @@ const InvestmentsView = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Contribuição' : currentLang === 'es' ? 'Contribución' : 'Contribution'} ($)</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.contribution} ($)</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -231,7 +231,7 @@ const InvestmentsView = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Saldo Atual' : currentLang === 'es' ? 'Saldo Actual' : 'Current Balance'} ($)</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.currentBalance} ($)</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -249,7 +249,7 @@ const InvestmentsView = () => {
             <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-300">
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Prazo' : currentLang === 'es' ? 'Plazo' : 'Tenor'}</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.tenor}</label>
                     <input 
                       type="text" 
                       placeholder="e.g. 1 Year"
@@ -259,7 +259,7 @@ const InvestmentsView = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Taxa APY' : currentLang === 'es' ? 'Tasa APY' : 'Rate APY'} (%)</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.rateApy} (%)</label>
                     <input 
                       type="number" 
                       step="0.01"
@@ -272,7 +272,7 @@ const InvestmentsView = () => {
                </div>
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Data de Aplicação' : currentLang === 'es' ? 'Fecha de Aplicación' : 'Value Date'}</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.valueDate}</label>
                     <input 
                       type="date" 
                       value={valueDate}
@@ -281,7 +281,7 @@ const InvestmentsView = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Data de Vencimento' : currentLang === 'es' ? 'Fecha de Vencimiento' : 'Maturity Date'}</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.maturityDate}</label>
                     <input 
                       type="date" 
                       value={maturityDate}
@@ -302,20 +302,20 @@ const InvestmentsView = () => {
               className="w-5 h-5 rounded-lg accent-blue-600"
              />
              <label htmlFor="payrollDeduction" className="text-xs font-bold text-slate-600 dark:text-slate-400 cursor-pointer">
-               {currentLang === 'pt' ? 'Dedução em Folha? (Direto do salário)' : currentLang === 'es' ? '¿Deducción de Nómina? (Directo del salario)' : 'Payroll Deduction? (Directly from paycheck)'}
+               {t.payrollDeduction}
              </label>
           </div>
 
           {!payrollDeduction && (
             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Conta Bancária de Origem' : currentLang === 'es' ? 'Cuenta Bancaria de Origen' : 'Source Bank Account'}</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.sourceBankAccount}</label>
               <select 
                 value={fromBank}
                 onChange={(e) => setFromBank(e.target.value)}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none font-bold text-slate-900 dark:text-white text-sm"
                 required={!payrollDeduction}
               >
-                <option value="">{currentLang === 'pt' ? 'Selecionar Conta Bancária' : currentLang === 'es' ? 'Seleccionar Cuenta Bancaria' : 'Select Bank Account'}</option>
+                <option value="">{t.selectBankAccount}</option>
                 {accounts.map(acc => <option key={acc.id} value={acc.institution}>{acc.institution}</option>)}
               </select>
             </div>
@@ -327,7 +327,7 @@ const InvestmentsView = () => {
               disabled={saving}
               className="w-full sm:max-w-[280px] py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 className="animate-spin" size={16} /> : (currentLang === 'pt' ? 'Confirmar Investimento' : currentLang === 'es' ? 'Confirmar Inversión' : 'Confirm Investment')}
+              {saving ? <Loader2 className="animate-spin" size={16} /> : t.confirmInvestment}
             </button>
           </div>
         </form>

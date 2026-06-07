@@ -16,28 +16,28 @@ const SummaryCards = () => {
       amount: summary.availableBalance,
       icon: Wallet,
       color: 'blue',
-      subtitle: currentLang === 'pt' ? 'Dinheiro disponível real' : currentLang === 'es' ? 'Dinero disponible real' : 'Real available cash'
+      subtitle: t.actualCashOutDesc
     },
     {
       title: t.incomeThisMonth,
       amount: summary.incomeThisMonth,
       icon: DollarSign,
       color: 'emerald',
-      subtitle: currentLang === 'pt' ? 'Total de entradas' : currentLang === 'es' ? 'Total de entradas' : 'Total money in'
+      subtitle: t.incomeDesc
     },
     {
       title: t.cashOutThisMonth,
       amount: summary.cashOutThisMonth,
       icon: Target,
       color: 'rose',
-      subtitle: currentLang === 'pt' ? 'Saída de caixa real' : currentLang === 'es' ? 'Salida de caja real' : 'Real money out'
+      subtitle: t.actualCashOutDesc
     },
     {
       title: t.investmentThisMonth,
       amount: summary.investmentThisMonth,
       icon: Banknote,
       color: 'blue',
-      subtitle: currentLang === 'pt' ? 'Contribuições mensais' : currentLang === 'es' ? 'Contribuciones mensuales' : 'Monthly contributions'
+      subtitle: t.contribThisMonth
     },
     {
       title: t.creditCardsOutstanding,
