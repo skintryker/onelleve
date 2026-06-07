@@ -23,6 +23,7 @@ export interface IncomeLog {
   depositBank: string;
   notes?: string;
   monthKey: string;
+  created_at: string;
 }
 
 export interface ExpenseLog {
@@ -45,6 +46,7 @@ export interface ExpenseLog {
   amountPaid: number;
   notes?: string;
   monthKey: string;
+  created_at: string;
 }
 
 export interface UnifiedTransaction {
@@ -112,6 +114,7 @@ export interface Investment {
   rate?: number;
   value_date?: string | null;
   maturity_date?: string | null;
+  created_at: string;
 }
 
 export interface SavedReport {
@@ -162,8 +165,8 @@ interface AppContextType {
   summary: AppSummary;
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   refreshData: () => Promise<void>;
-  addIncome: (log: Omit<IncomeLog, 'id' | 'user_id'>) => Promise<void>;
-  addExpense: (log: Omit<ExpenseLog, 'id' | 'user_id'>) => Promise<void>;
+  addIncome: (log: Omit<IncomeLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+  addExpense: (log: Omit<ExpenseLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   updateExpense: (id: string, log: Partial<ExpenseLog>) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -173,7 +176,7 @@ interface AppContextType {
   addAccount: (account: Omit<Account, 'id' | 'user_id'>) => Promise<void>;
   editAccount: (id: string, account: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
-  addInvestment: (inv: Omit<Investment, 'id' | 'user_id'>) => Promise<void>;
+  addInvestment: (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<SavedReport | null>;
   deleteReport: (id: string) => Promise<void>;
   startNewMonth: () => Promise<void>;
@@ -379,12 +382,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const summary = useMemo(() => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const lastReset = settings?.last_reset_date || '1970-01-01';
+    const lastReset = settings?.last_reset_date || '1970-01-01T00:00:00.000Z';
 
-    // Monthly KPIs: Filter by month AND ensure date is after the last reset
-    const activeIncomes = incomeLogs.filter(log => log.monthKey === currentMonth && log.date > lastReset);
-    const activeExpenses = expenseLogs.filter(log => log.monthKey === currentMonth && log.date > lastReset);
-    const activeInvestments = investments.filter(inv => inv.monthKey === currentMonth && inv.date > lastReset);
+    // Monthly KPIs: Filter by month AND ensure created_at is after the last reset
+    const activeIncomes = incomeLogs.filter(log => log.monthKey === currentMonth && log.created_at > lastReset);
+    const activeExpenses = expenseLogs.filter(log => log.monthKey === currentMonth && log.created_at > lastReset);
+    const activeInvestments = investments.filter(inv => inv.monthKey === currentMonth && inv.created_at > lastReset);
 
     const incomeThisMonth = activeIncomes.reduce((acc, log) => acc + log.amount, 0);
     
@@ -407,7 +410,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ).reduce((acc, log) => acc + log.amount, 0);
 
     const cardPaymentsFromBank = activeExpenses.filter(log => 
-      log.monthKey === currentMonth && 
       log.transactionType === 'Payment'
     ).reduce((acc, log) => acc + log.amount, 0);
 
@@ -435,6 +437,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const d = new Date();
       const month = d.toLocaleString('en-US', { month: 'long' });
       const year = d.getFullYear().toString();
+      const nowISO = d.toISOString();
       
       // 1. Archive current snapshot
       await supabase.from('monthly_archives').insert([{
@@ -458,8 +461,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ]);
       
       // 4. Record reset date to clear dashboard monthly KPIs
-      const todayStr = new Date().toISOString().split('T')[0];
-      await updateSettings({ last_reset_date: todayStr });
+      await updateSettings({ last_reset_date: nowISO });
       
       await refreshData();
     } catch (error) {
@@ -467,7 +469,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       throw error;
     }
   };
-  const addIncome = async (log: Omit<IncomeLog, 'id' | 'user_id'>) => {
+  const addIncome = async (log: Omit<IncomeLog, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
     await supabase.from('income_log').insert([{ ...log, user_id: user.id }]);
     
@@ -482,7 +484,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
   };
 
-  const addExpense = async (log: Omit<ExpenseLog, 'id' | 'user_id'>) => {
+  const addExpense = async (log: Omit<ExpenseLog, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
     await supabase.from('expense_log').insert([{ ...log, user_id: user.id }]);
     
@@ -575,7 +577,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshData();
   };
 
-  const addInvestment = async (inv: Omit<Investment, 'id' | 'user_id'>) => {
+  const addInvestment = async (inv: Omit<Investment, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
     await supabase.from('investments').insert([{ ...inv, user_id: user.id }]);
     if (!inv.payrollDeduction && inv.fromBank) {
