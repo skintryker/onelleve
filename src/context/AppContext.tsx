@@ -508,7 +508,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // 4. Reset persistent balances
       await Promise.all([
         supabase.from('bank_accounts').update({ balance: 0 }).eq('user_id', user.id),
-        supabase.from('credit_cards').update({ currentBalance: 0 }).eq('user_id', user.id)
+        supabase.from('credit_cards').update({ currentBalance: 0 }).eq('user_id', user.id),
+        supabase.from('investments').update({ currentBalance: 0, contribution: 0 }).eq('user_id', user.id)
       ]);
       
       // 5. Record reset date to clear dashboard monthly KPIs
