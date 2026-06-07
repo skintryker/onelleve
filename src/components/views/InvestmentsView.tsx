@@ -196,6 +196,20 @@ const InvestmentsView = () => {
             </div>
           </div>
         ))}
+
+        {investments.length === 0 && (
+          <div className="col-span-full py-20 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 border-dashed flex flex-col items-center justify-center text-center">
+             <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                <TrendingUp size={32} />
+             </div>
+             <h4 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                {currentLang === 'pt' ? 'Nenhum investimento ativo' : currentLang === 'es' ? 'Ninguna inversión activa' : 'No active investments'}
+             </h4>
+             <p className="text-sm text-slate-500 font-medium max-w-xs mx-auto mt-2 italic">
+                {currentLang === 'pt' ? 'Seu portfólio foi resetado para o novo mês. Adicione seus investimentos atuais para começar o acompanhamento.' : currentLang === 'es' ? 'Su cartera ha sido reiniciada para el nuevo mes. Agregue sus inversiones actuales para comenzar el seguimiento.' : 'Your portfolio has been reset for the new month. Add your current investments to start tracking.'}
+             </p>
+          </div>
+        )}
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t.newPortfolioInvestment}>
