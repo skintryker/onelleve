@@ -30,7 +30,8 @@ export default function ReportsView() {
     addReport, 
     deleteReport,
     settings,
-    maskValue
+    maskValue,
+    calculateSummary
   } = useAppContext();
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -56,83 +57,33 @@ export default function ReportsView() {
     setIsGenerating(true);
     try {
       const currentMonthKey = new Date().toISOString().slice(0, 7);
-      const lastReset = settings?.last_reset_date || '1970-01-01T00:00:00.000Z';
-
-      // Filtering logic: If selected month is current, apply lastReset filter.
-      // Otherwise (past months), use all records for that month.
       const isSelectedCurrent = selectedMonth === currentMonthKey;
 
-      const monthIncome = incomeLogs.filter(log => 
-        log.monthKey === selectedMonth && (!isSelectedCurrent || log.created_at >= lastReset)
+      const reportData = calculateSummary(
+        selectedMonth,
+        isSelectedCurrent,
+        incomeLogs,
+        expenseLogs,
+        investments,
+        accounts,
+        cards
       );
-      const monthExpense = expenseLogs.filter(log => 
-        log.monthKey === selectedMonth && (!isSelectedCurrent || log.created_at >= lastReset)
-      );
-      const monthInvestments = investments.filter(inv => 
-        inv.monthKey === selectedMonth && (!isSelectedCurrent || inv.created_at >= lastReset)
-      );
-
-      const totalIncome = monthIncome.reduce((acc, log) => acc + log.amount, 0);
-      const totalSpending = monthExpense.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0);
-      
-      const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
-      const bankBalances = accounts.reduce((acc, accnt) => acc + accnt.balance, 0);
-      const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
-
-      const categories = monthExpense.reduce((acc: Record<string, number>, log) => {
-        acc[log.category] = (acc[log.category] || 0) + log.amount;
-        return acc;
-      }, {});
-
-      const periodLabel = months.find(m => m.key === selectedMonth)?.label || selectedMonth;
-
-      // 1. Pure Bank/Cash Expenses (excluding CC payments and investments to avoid double counting)
-      const pureBankExpenses = monthExpense.filter(log => 
-        log.paymentChannel !== 'Credit Card' && 
-        log.transactionType !== 'Payment' && 
-        log.transactionType !== 'Investment' &&
-        log.category !== 'Investment'
-      ).reduce((acc, log) => acc + log.amount, 0);
-
-      // 2. Credit Card Payments
-      const cardPayments = monthExpense.filter(log => 
-        log.transactionType === 'Payment'
-      ).reduce((acc, log) => acc + log.amount, 0);
-      
-      // 3. Manual Investments (Contribution)
-      const manualInvestments = monthInvestments.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
-      
-      // 4. Payroll Investments (Contribution)
-      const payrollDeduction = monthInvestments.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
-
-      const reportData = {
-        totalIncome,
-        totalSpending,
-        totalCashOut: pureBankExpenses + cardPayments + manualInvestments,
-        pureBankExpenses,
-        cardOutstanding,
-        bankBalances,
-        investmentsTotal,
-        netPosition: bankBalances + investmentsTotal - cardOutstanding,
-        categories,
-        cardPayments,
-        payrollDeduction,
-        manualInvestments
-      };
 
       // Validation: Only generate if there is real data
       const hasData = 
-        totalIncome > 0 || 
-        totalSpending > 0 || 
-        reportData.totalCashOut > 0 ||
-        investmentsTotal > 0 ||
-        bankBalances > 0 ||
-        cardOutstanding > 0;
+        reportData.incomeThisMonth > 0 || 
+        reportData.cashOutThisMonth > 0 || 
+        reportData.investmentThisMonth > 0 ||
+        reportData.investmentsTotal > 0 ||
+        reportData.availableBalance > 0 ||
+        reportData.cardOutstanding > 0;
 
       if (!hasData) {
         alert('No data available to generate a report.');
         return;
       }
+
+      const periodLabel = months.find(m => m.key === selectedMonth)?.label || selectedMonth;
 
       const newReportData = {
         title: `${periodLabel} Financial Summary`,
@@ -330,6 +281,20 @@ export default function ReportsView() {
                          <p className="text-sm font-bold">{t.investmentsTotal}</p>
                       </div>
                       <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">${maskValue(safeFormat(currentData.investmentsTotal))}</p>
+                   </div>
+                   <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                         <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
+                         <p className="text-sm font-bold">{t.availableBalance}</p>
+                      </div>
+                      <p className="text-sm font-black text-blue-600 dark:text-blue-400">${maskValue(safeFormat(currentData.availableBalance))}</p>
+                   </div>
+                   <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                         <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600"><CreditCard size={14} /></div>
+                         <p className="text-sm font-bold">{t.creditCardsOutstanding}</p>
+                      </div>
+                      <p className="text-sm font-black text-amber-600 dark:text-amber-400">${maskValue(safeFormat(currentData.creditCardsOutstanding))}</p>
                    </div>
                 </div>
              </div>

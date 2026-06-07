@@ -187,6 +187,15 @@ interface AppContextType {
   isPrivacyMode: boolean;
   togglePrivacyMode: () => void;
   maskValue: (value: string | number) => string;
+  calculateSummary: (
+    targetMonthKey: string,
+    filterByReset: boolean,
+    incomes: IncomeLog[],
+    expenses: ExpenseLog[],
+    investmentLogs: Investment[],
+    bankAccounts: Account[],
+    creditCards: Card[]
+  ) => any;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -418,53 +427,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return [...incomes, ...expenses, ...unifiedInvestments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [activeIncomeLogs, activeExpenseLogs, activeInvestments]);
 
-  const summary = useMemo(() => {
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    
-    // Monthly KPIs: Filter by month (active logs are already filtered by last_reset_date in their own memos)
-    const monthIncomes = activeIncomeLogs.filter(log => log.monthKey === currentMonth);
-    const monthExpenses = activeExpenseLogs.filter(log => log.monthKey === currentMonth);
-    const monthInvestments = activeInvestments.filter(inv => inv.monthKey === currentMonth);
+  const calculateSummary = (
+    targetMonthKey: string,
+    filterByReset: boolean,
+    incomes: IncomeLog[],
+    expenses: ExpenseLog[],
+    investmentLogs: Investment[],
+    bankAccounts: Account[],
+    creditCards: Card[]
+  ): AppSummary & { categories: Record<string, number>, cardPayments: number, payrollDeduction: number, manualInvestments: number, bankBalances: number } => {
+    const lastReset = settings?.last_reset_date || '1970-01-01T00:00:00.000Z';
 
-    const incomeThisMonth = monthIncomes.reduce((acc, log) => acc + log.amount, 0);
-    
-    // KPI: Sum of all expenses (Bank + Card)
-    const expensesThisMonth = monthExpenses.filter(log => 
-      log.transactionType !== 'Payment' && 
-      log.transactionType !== 'Investment' && 
-      log.category !== 'Credit Card'
-    ).reduce((acc, log) => acc + log.amount, 0);
+    // 1. Filter active logs for the specific period
+    const activeIncomes = incomes.filter(log => 
+      log.monthKey === targetMonthKey && (!filterByReset || log.created_at >= lastReset)
+    );
+    const activeExpenses = expenses.filter(log => 
+      log.monthKey === targetMonthKey && (!filterByReset || log.created_at >= lastReset)
+    );
+    const activeInv = investmentLogs.filter(inv => 
+      inv.monthKey === targetMonthKey && (!filterByReset || inv.created_at >= lastReset)
+    );
 
-    const investmentThisMonth = monthInvestments.reduce((acc, inv) => acc + inv.contribution, 0);
-    
-    // Logic for Available Cash Balance:
-    // Only deduct money that actually left the bank/cash
-    const bankSpending = monthExpenses.filter(log => 
+    // 2. Income This Month
+    const incomeThisMonth = activeIncomes.reduce((acc, log) => acc + log.amount, 0);
+
+    // 3. Cash Out Calculation Rules
+    // Rule: Money that actually left the bank/cash
+    const pureBankSpending = activeExpenses.filter(log => 
       log.transactionType !== 'Payment' && 
       log.transactionType !== 'Investment' && 
       log.category !== 'Credit Card' &&
-      log.paymentChannel !== 'Credit Card' // Ignore card purchases for cash flow
+      log.paymentChannel !== 'Credit Card'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const cardPaymentsFromBank = monthExpenses.filter(log => 
+    const cardPayments = activeExpenses.filter(log => 
       log.transactionType === 'Payment'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const manualInvestmentThisMonth = monthInvestments
-      .filter(inv => !inv.payrollDeduction)
-      .reduce((acc, inv) => acc + inv.contribution, 0);
-    
-    // Available Balance = Sum of all actual bank/cash account balances
-    const availableBalance = accounts.reduce((acc, accnt) => acc + accnt.balance, 0);
-    
-    // Monthly KPIs
-    const cashOutThisMonth = bankSpending + cardPaymentsFromBank + manualInvestmentThisMonth;
-    
-    const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
-    const investmentsTotal = activeInvestments.reduce((acc, inv) => acc + inv.currentBalance, 0);
+    const manualInvestments = activeInv.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+    const payrollDeduction = activeInv.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
 
-    return { availableBalance, incomeThisMonth, cashOutThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
-  }, [activeIncomeLogs, activeExpenseLogs, activeInvestments, accounts, cards]);
+    const cashOutThisMonth = pureBankSpending + cardPayments + manualInvestments;
+
+    // 4. Investment This Month
+    const investmentThisMonth = activeInv.reduce((acc, inv) => acc + inv.contribution, 0);
+
+    // 5. Category Breakdown
+    const categories = activeExpenses.filter(log => log.transactionType !== 'Payment').reduce((acc: Record<string, number>, log) => {
+      acc[log.category] = (acc[log.category] || 0) + log.amount;
+      return acc;
+    }, {});
+
+    // 6. Global State (Not filtered by month for available balance and outstanding)
+    const bankBalances = bankAccounts.reduce((acc, accnt) => acc + accnt.balance, 0);
+    const cardOutstanding = creditCards.reduce((acc, card) => acc + card.currentBalance, 0);
+    const investmentsTotal = investmentLogs.reduce((acc, inv) => acc + inv.currentBalance, 0);
+
+    return {
+      availableBalance: bankBalances,
+      incomeThisMonth,
+      cashOutThisMonth,
+      investmentThisMonth,
+      cardOutstanding,
+      investmentsTotal,
+      categories,
+      cardPayments,
+      payrollDeduction,
+      manualInvestments,
+      bankBalances
+    };
+  };
+
+  const summary = useMemo(() => {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const res = calculateSummary(currentMonth, true, incomeLogs, expenseLogs, investments, accounts, cards);
+    
+    return {
+      availableBalance: res.availableBalance,
+      incomeThisMonth: res.incomeThisMonth,
+      cashOutThisMonth: res.cashOutThisMonth,
+      investmentThisMonth: res.investmentThisMonth,
+      cardOutstanding: res.cardOutstanding,
+      investmentsTotal: res.investmentsTotal
+    };
+  }, [incomeLogs, expenseLogs, investments, accounts, cards, settings]);
 
   // Actions
   const startNewMonth = async () => {
@@ -600,7 +647,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user || !supabase) return;
     await supabase.from('expense_log').insert([{ ...log, user_id: user.id }]);
     
-    // Internal side effects (Updating balances)
+    // Rule 3: Credit Card Purchase increases Outstanding
     if (log.transactionType === 'Purchase' && log.paymentChannel === 'Credit Card' && log.creditCard) {
       const card = cards.find(c => c.cardName === log.creditCard);
       if (card) {
@@ -611,16 +658,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
     
-    if (log.transactionType === 'Payment' && log.creditCard) {
+    // Rule 4 & 5: Credit Card Payment reduces Outstanding
+    // A Payment type OR an Autopay channel targeting a card reduces its balance
+    if ((log.transactionType === 'Payment' || log.paymentChannel === 'Autopay') && log.creditCard) {
       const card = cards.find(c => c.cardName === log.creditCard);
       if (card) {
         await supabase.from('credit_cards').update({ 
-          currentBalance: card.currentBalance - log.amount,
+          currentBalance: Math.max(0, card.currentBalance - log.amount),
           totalPayments: card.totalPayments + log.amount
         }).eq('id', card.id);
       }
     }
 
+    // Rule 2, 4, 5: Money leaving bank reduces Bank Balance
     if (log.paymentChannel === 'Bank' || log.paymentChannel === 'Autopay' || log.transactionType === 'Payment') {
       if (log.bank) {
         const account = accounts.find(a => a.institution === log.bank);
@@ -639,17 +689,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteExpense = async (id: string) => {
-    if (!supabase) return;
-    await supabase.from('expense_log').delete().eq('id', id);
-    await refreshData();
+    await deleteTransaction(id);
   };
 
   const deleteTransaction = async (id: string) => {
     if (!supabase) return;
-    await Promise.all([
-      supabase.from('income_log').delete().eq('id', id),
-      supabase.from('expense_log').delete().eq('id', id)
-    ]);
+    
+    // 1. Find the transaction to revert its effect on balances
+    const income = incomeLogs.find(i => i.id === id);
+    const expense = expenseLogs.find(e => e.id === id);
+    
+    if (income) {
+       if (income.depositBank) {
+         const account = accounts.find(a => a.institution === income.depositBank);
+         if (account) {
+           await supabase.from('bank_accounts').update({ balance: account.balance - income.amount }).eq('id', account.id);
+         }
+       }
+       await supabase.from('income_log').delete().eq('id', id);
+    }
+    
+    if (expense) {
+       // Revert CC outstanding if applicable
+       if (expense.transactionType === 'Purchase' && expense.paymentChannel === 'Credit Card' && expense.creditCard) {
+         const card = cards.find(c => c.cardName === expense.creditCard);
+         if (card) {
+           await supabase.from('credit_cards').update({ 
+             currentBalance: Math.max(0, card.currentBalance - expense.amount),
+             totalCharges: card.totalCharges - expense.amount
+           }).eq('id', card.id);
+         }
+       }
+       
+       if ((expense.transactionType === 'Payment' || expense.paymentChannel === 'Autopay') && expense.creditCard) {
+          const card = cards.find(c => c.cardName === expense.creditCard);
+          if (card) {
+            await supabase.from('credit_cards').update({ 
+              currentBalance: card.currentBalance + expense.amount,
+              totalPayments: card.totalPayments - expense.amount
+            }).eq('id', card.id);
+          }
+       }
+       
+       // Revert Bank Balance
+       if (expense.paymentChannel === 'Bank' || expense.paymentChannel === 'Autopay' || expense.transactionType === 'Payment') {
+         if (expense.bank) {
+           const account = accounts.find(a => a.institution === expense.bank);
+           if (account) {
+             await supabase.from('bank_accounts').update({ balance: account.balance + expense.amount }).eq('id', account.id);
+           }
+         }
+       }
+       await supabase.from('expense_log').delete().eq('id', id);
+    }
+
     await refreshData();
   };
 
@@ -756,7 +849,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user, loading, incomeLogs, expenseLogs, activeIncomeLogs, activeExpenseLogs, activeInvestments, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment,
-      addReport, deleteReport, startNewMonth, factoryReset, isPrivacyMode, togglePrivacyMode, maskValue
+      addReport, deleteReport, startNewMonth, factoryReset, isPrivacyMode, togglePrivacyMode, maskValue, calculateSummary
     }}>
       {children}
     </AppContext.Provider>
