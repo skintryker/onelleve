@@ -467,13 +467,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       log.transactionType === 'Payment'
     ).reduce((acc, log) => acc + log.amount, 0);
 
-    const manualInvestments = activeInv.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
-    const payrollDeduction = activeInv.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+    const manualInvestments = investmentLogs.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
+    const payrollDeduction = investmentLogs.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
 
     const cashOutThisMonth = pureBankSpending + cardPayments + manualInvestments;
 
     // 4. Investment This Month
-    const investmentThisMonth = activeInv.reduce((acc, inv) => acc + inv.contribution, 0);
+    const investmentThisMonth = manualInvestments + payrollDeduction;
 
     // 5. Category Breakdown
     const categories = activeExpenses.filter(log => log.transactionType !== 'Payment').reduce((acc: Record<string, number>, log) => {
@@ -484,7 +484,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // 6. Global State (Current snapshot of cards/investments)
     const bankBalances = bankAccounts.reduce((acc, accnt) => acc + accnt.balance, 0);
     const cardOutstanding = creditCards.reduce((acc, card) => acc + card.currentBalance, 0);
-    const investmentsTotal = investmentLogs.reduce((acc, inv) => acc + inv.currentBalance, 0);
+    const investmentsTotal = investmentLogs.reduce((acc, inv) => acc + inv.currentBalance + inv.contribution, 0);
 
     return {
       availableBalance: bankBalances,
@@ -653,11 +653,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (log.transactionType === 'Investment' || log.category === 'Investment') {
        await addInvestment({
          date: log.date,
-         institution: log.description, // Use description as institution name for transactions
+         institution: log.description, 
          accountType: 'Investment',
          contribution: log.amount,
-         currentBalance: 0, // addInvestment will calculate (existing + contribution)
-         payrollDeduction: !log.bank, // If no bank selected, it's payroll-deducted
+         currentBalance: 0, // Keep existing base balance
+         payrollDeduction: !log.bank, 
          monthKey: log.monthKey,
          fromBank: log.bank
        }, true); // skipLog = true to avoid double entry
@@ -806,13 +806,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const existing = investments.find(i => i.institution === inv.institution);
 
     if (existing) {
-       // Update existing card (Cumulative contribution and updated balance)
+       // Update existing card: 
+       // Cumulative contribution + keep/update base balance
        const newContribution = existing.contribution + inv.contribution;
-       const newBalance = inv.currentBalance > 0 ? inv.currentBalance : (existing.currentBalance + inv.contribution);
+       const newBaseBalance = inv.currentBalance > 0 ? inv.currentBalance : existing.currentBalance;
        
        await supabase.from('investments').update({
          contribution: newContribution,
-         currentBalance: newBalance,
+         currentBalance: newBaseBalance,
          date: inv.date,
          notes: inv.notes || existing.notes,
          tenor: inv.tenor || existing.tenor,

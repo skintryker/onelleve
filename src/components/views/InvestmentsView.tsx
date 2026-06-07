@@ -108,7 +108,7 @@ const InvestmentsView = () => {
   };
 
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const totalInvested = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
+  const totalInvested = investments.reduce((acc, inv) => acc + inv.currentBalance + inv.contribution, 0);
   
   const totalContributionsMonth = activeInvestments
     .filter(inv => inv.monthKey === currentMonth)
@@ -210,7 +210,7 @@ const InvestmentsView = () => {
                 <div className="text-right">
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.allocation}</p>
                   <p className="text-sm font-black text-slate-900 dark:text-white">
-                    {((inv.currentBalance / totalInvested) * 100).toFixed(1)}%
+                    {(((inv.currentBalance + inv.contribution) / totalInvested) * 100).toFixed(1)}%
                   </p>
                 </div>
               )}
@@ -219,7 +219,7 @@ const InvestmentsView = () => {
             <div>
               <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{inv.institution}</p>
               <h3 className="text-2xl font-black tracking-tight mb-1">
-                ${maskValue(inv.currentBalance.toLocaleString())}
+                ${maskValue((inv.currentBalance + inv.contribution).toLocaleString())}
               </h3>
               <div className="mt-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <p className="text-[10px] font-bold text-slate-400 italic uppercase tracking-widest leading-none mb-2">{inv.accountType}</p>
@@ -240,9 +240,19 @@ const InvestmentsView = () => {
                   </div>
                 )}
                 
-                {inv.payrollDeduction && (
-                  <span className="inline-block mt-3 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[8px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/30">Payroll</span>
-                )}
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                   <div className="flex items-center gap-1 text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700">
+                      <span>Base:</span>
+                      <span>${maskValue(inv.currentBalance.toLocaleString())}</span>
+                   </div>
+                   <div className="flex items-center gap-1 text-[8px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                      <span>Contrib:</span>
+                      <span>${maskValue(inv.contribution.toLocaleString())}</span>
+                   </div>
+                   {inv.payrollDeduction && (
+                     <span className="px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg text-[8px] font-black uppercase tracking-widest border border-amber-100 dark:border-amber-900/30">Payroll</span>
+                   )}
+                </div>
               </div>
             </div>
           </div>
