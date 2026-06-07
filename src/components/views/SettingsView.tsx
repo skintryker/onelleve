@@ -20,6 +20,15 @@ const SettingsView = () => {
   const [language, setLanguage] = useState<Language>('en');
   const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
 
+  // Notifications state
+  const [notifs, setNotifs] = useState({
+    email_notifications: false,
+    payment_reminders: false,
+    due_day_reminders: false,
+    monthly_summary: false,
+    investment_reminders: false
+  });
+
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
 
@@ -30,6 +39,13 @@ const SettingsView = () => {
       setCurrency(settings.preferred_currency || 'USD');
       setLanguage((settings.language as Language) || 'en');
       setDateFormat(settings.date_format || 'MM/DD/YYYY');
+      setNotifs({
+        email_notifications: !!settings.email_notifications,
+        payment_reminders: !!settings.payment_reminders,
+        due_day_reminders: !!settings.due_day_reminders,
+        monthly_summary: !!settings.monthly_summary,
+        investment_reminders: !!settings.investment_reminders
+      });
     }
   }, [settings]);
 
@@ -67,6 +83,27 @@ const SettingsView = () => {
       setSaveStatus({ 
         type: 'error', 
         message: error.message || 'Failed to save region settings.' 
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleNotif = (key: keyof typeof notifs) => {
+    setNotifs(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSaveNotifications = async () => {
+    setSaving(true);
+    setSaveStatus(null);
+    try {
+      await updateSettings(notifs);
+      setSaveStatus({ type: 'success', message: 'Notification preferences saved!' });
+    } catch (error: any) {
+      console.error('Supabase Save Error:', error);
+      setSaveStatus({ 
+        type: 'error', 
+        message: error.message || 'Failed to save notification settings.' 
       });
     } finally {
       setSaving(false);
@@ -115,8 +152,8 @@ const SettingsView = () => {
     switch (activeTab) {
       case 'profile':
         return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-8">{t.profileSettings}</h3>
+          <div className="space-y-6 animate-in fade-in duration-300 text-slate-900 dark:text-white">
+            <h3 className="text-xl font-black uppercase tracking-tight mb-8">{t.profileSettings}</h3>
             
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -227,33 +264,54 @@ const SettingsView = () => {
         );
       case 'notifications':
         return (
-          <div className="space-y-4 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">{t.notifications}</h3>
+          <div className="space-y-6 animate-in fade-in duration-300 text-slate-900 dark:text-white">
+            <h3 className="text-xl font-black uppercase tracking-tight mb-4">{t.notifications}</h3>
             <div className="grid grid-cols-1 gap-3">
               {[
-                { label: 'Email notifications', desc: 'Monthly summaries and important alerts' },
-                { label: 'Payment reminders', desc: 'Reminders for upcoming manual payments' },
-                { label: 'Due day reminders', desc: 'Alerts when your card due day is approaching' },
-                { label: 'Monthly summary', desc: 'Detailed report of your financial performance' },
-                { label: 'Investment reminders', desc: 'Notifications for manual investment contributions' }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800">
+                { id: 'email_notifications', label: 'Email notifications', desc: 'Monthly summaries and important alerts' },
+                { id: 'payment_reminders', label: 'Payment reminders', desc: 'Reminders for upcoming manual payments' },
+                { id: 'due_day_reminders', label: 'Due day reminders', desc: 'Alerts when your card due day is approaching' },
+                { id: 'monthly_summary', label: 'Monthly summary', desc: 'Detailed report of your financial performance' },
+                { id: 'investment_reminders', label: 'Investment reminders', desc: 'Notifications for manual investment contributions' }
+              ].map((item) => (
+                <div 
+                  key={item.id} 
+                  onClick={() => handleToggleNotif(item.id as keyof typeof notifs)}
+                  className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 cursor-pointer hover:border-blue-200 dark:hover:border-blue-900/30 transition-all group"
+                >
                   <div>
-                    <p className="text-xs font-bold">{item.label}</p>
-                    <p className="text-[10px] text-slate-400">{item.desc}</p>
+                    <p className="text-xs font-black uppercase tracking-tight">{item.label}</p>
+                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">{item.desc}</p>
                   </div>
-                  <div className="w-10 h-5 bg-slate-200 dark:bg-slate-800 rounded-full relative cursor-not-allowed opacity-50">
-                    <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full shadow-sm" />
+                  <div className={`w-11 h-6 rounded-full relative transition-all duration-300 ${notifs[item.id as keyof typeof notifs] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-300 ${notifs[item.id as keyof typeof notifs] ? 'left-6' : 'left-1'}`} />
                   </div>
                 </div>
               ))}
             </div>
+
+            <div className="flex justify-center pt-4">
+               <button 
+                disabled={saving}
+                onClick={handleSaveNotifications} 
+                className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-3 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/25 active:scale-95 hover:bg-blue-700 transition-all disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                Save Notifications
+              </button>
+            </div>
+
+            {saveStatus && (
+              <p className={`text-center text-sm font-bold ${saveStatus.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {saveStatus.message}
+              </p>
+            )}
           </div>
         );
       case 'security':
         return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">{t.security}</h3>
+          <div className="space-y-6 animate-in fade-in duration-300 text-slate-900 dark:text-white">
+            <h3 className="text-xl font-black uppercase tracking-tight mb-4">{t.security}</h3>
             
             <div className="space-y-4">
                {/* Password Card */}
@@ -305,8 +363,8 @@ const SettingsView = () => {
         );
       case 'region':
         return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4 text-center">{t.region}</h3>
+          <div className="space-y-6 animate-in fade-in duration-300 text-slate-900 dark:text-white">
+            <h3 className="text-xl font-black uppercase tracking-tight mb-4 text-center">{t.region}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.language}</label>

@@ -598,6 +598,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (newSettings.language !== undefined) payload.language = newSettings.language;
     if (newSettings.date_format !== undefined) payload.date_format = newSettings.date_format;
     if (newSettings.last_reset_date !== undefined) payload.last_reset_date = newSettings.last_reset_date;
+    if (newSettings.email_notifications !== undefined) payload.email_notifications = newSettings.email_notifications;
+    if (newSettings.payment_reminders !== undefined) payload.payment_reminders = newSettings.payment_reminders;
+    if (newSettings.due_day_reminders !== undefined) payload.due_day_reminders = newSettings.due_day_reminders;
+    if (newSettings.monthly_summary !== undefined) payload.monthly_summary = newSettings.monthly_summary;
+    if (newSettings.investment_reminders !== undefined) payload.investment_reminders = newSettings.investment_reminders;
 
     const { error } = await supabase.from('user_settings').upsert(payload, { onConflict: 'user_id' });
 
