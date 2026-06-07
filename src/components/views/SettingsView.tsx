@@ -8,11 +8,13 @@ import { translations, Language } from '@/utils/translations';
 import Modal from '../modals/Modal';
 
 const SettingsView = () => {
-  const { user, settings, updateSettings, startNewMonth, loading: appLoading } = useAppContext();
+  const { user, settings, updateSettings, startNewMonth, factoryReset, loading: appLoading } = useAppContext();
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'region'>('profile');
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isStartMonthModalOpen, setIsStartMonthModalOpen] = useState(false);
+  const [isFactoryResetModalOpen, setIsFactoryResetModalOpen] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
   
   // Local form states
   const [fullName, setFullName] = useState('');
@@ -112,6 +114,23 @@ const SettingsView = () => {
     } catch (error: any) {
       console.error('Start New Month Error:', error);
       alert('Failed to start new month.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleFactoryReset = async () => {
+    if (resetConfirmText !== 'RESET') return;
+    
+    setSaving(true);
+    try {
+      await factoryReset();
+      setSaveStatus({ type: 'success', message: 'Factory reset completed!' });
+      setIsFactoryResetModalOpen(false);
+      setResetConfirmText('');
+    } catch (error: any) {
+      console.error('Factory Reset Error:', error);
+      alert('Failed to perform factory reset.');
     } finally {
       setSaving(false);
     }
@@ -222,6 +241,24 @@ const SettingsView = () => {
                    </button>
                 </div>
               </div>
+
+              <div className="pt-6">
+                <div className="flex flex-col md:flex-row items-center justify-between p-6 bg-rose-50/50 dark:bg-rose-900/5 rounded-3xl border border-rose-100/50 dark:border-rose-900/20 gap-6">
+                   <div className="flex-1 text-center md:text-left">
+                      <h4 className="text-lg font-black text-rose-600 dark:text-rose-400">{t.factoryReset}</h4>
+                      <p className="text-xs text-slate-500 mt-1">{t.factoryResetDesc}</p>
+                   </div>
+                   <button 
+                    onClick={() => {
+                      setResetConfirmText('');
+                      setIsFactoryResetModalOpen(true);
+                    }}
+                    className="px-8 py-3 bg-white dark:bg-slate-900 border-2 border-rose-500 text-rose-500 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-rose-500 hover:text-white transition-all active:scale-95 shadow-sm"
+                   >
+                     {t.factoryReset}
+                   </button>
+                </div>
+              </div>
             </div>
 
             <Modal 
@@ -246,6 +283,46 @@ const SettingsView = () => {
                     </button>
                     <button 
                       onClick={() => setIsStartMonthModalOpen(false)}
+                      className="w-full sm:max-w-[280px] py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+               </div>
+            </Modal>
+
+            <Modal 
+              isOpen={isFactoryResetModalOpen} 
+              onClose={() => setIsFactoryResetModalOpen(false)} 
+              title={t.factoryReset}
+            >
+               <div className="space-y-6 text-slate-900 dark:text-white">
+                  <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl text-rose-700 dark:text-rose-300">
+                     <p className="text-sm font-bold leading-relaxed">
+                        {t.factoryResetConfirm}
+                     </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <input 
+                      type="text"
+                      value={resetConfirmText}
+                      onChange={(e) => setResetConfirmText(e.target.value)}
+                      placeholder="Type RESET to confirm"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-rose-200 dark:border-rose-900/30 rounded-xl outline-none focus:ring-2 focus:ring-rose-500/20 text-center font-black tracking-widest text-rose-600 uppercase"
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-3">
+                    <button 
+                      disabled={saving || resetConfirmText !== 'RESET'}
+                      onClick={handleFactoryReset}
+                      className="w-full sm:max-w-[280px] py-3.5 bg-rose-600 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-rose-500/25 active:scale-95 flex items-center justify-center gap-3 hover:bg-rose-700 transition-all disabled:opacity-50 disabled:grayscale"
+                    >
+                      {saving ? <Loader2 className="animate-spin" size={16} /> : 'Delete Everything'}
+                    </button>
+                    <button 
+                      onClick={() => setIsFactoryResetModalOpen(false)}
                       className="w-full sm:max-w-[280px] py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
                     >
                       Cancel

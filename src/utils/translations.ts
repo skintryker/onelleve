@@ -128,6 +128,9 @@ export const translations = {
     incomeVsExpenses: 'Income vs Expenses',
     flowAnalysis: 'Flow Analysis',
     distributionByCategory: 'Distribution by Category',
+    factoryReset: 'Factory Reset',
+    factoryResetDesc: 'Delete all financial data and history from this account. This cannot be undone.',
+    factoryResetConfirm: 'Are you sure you want to delete EVERYTHING? This will remove all transactions, bank accounts, credit cards, investments, and reports. Type RESET to confirm.',
   },
   pt: {
     dashboard: 'Painel',
@@ -256,6 +259,9 @@ export const translations = {
     incomeVsExpenses: 'Renda vs Despesas',
     flowAnalysis: 'Análise de Fluxo',
     distributionByCategory: 'Distribuição por Categoria',
+    factoryReset: 'Reset de Fábrica',
+    factoryResetDesc: 'Apaga todos os dados financeiros e histórico desta conta. Isso não pode ser desfeito.',
+    factoryResetConfirm: 'Tem certeza que deseja apagar TUDO? Isso removerá todas as transações, contas bancárias, cartões de crédito, investimentos e relatórios. Digite RESET para confirmar.',
   },
   es: {
     dashboard: 'Panel',
@@ -384,6 +390,9 @@ export const translations = {
     incomeVsExpenses: 'Ingresos vs Gastos',
     flowAnalysis: 'Análisis de Flujo',
     distributionByCategory: 'Distribución por Categoría',
+    factoryReset: 'Reset de Fábrica',
+    factoryResetDesc: 'Borra todos los datos financieros e historial de esta cuenta. Esto no se puede deshacer.',
+    factoryResetConfirm: '¿Estás seguro de que quieres borrar TODO? Esto eliminará todas las transacciones, cuentas bancarias, tarjetas de crédito, inversiones e informes. Escribe RESET para confirmar.',
   }
 };
 

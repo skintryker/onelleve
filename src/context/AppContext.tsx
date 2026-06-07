@@ -183,6 +183,7 @@ interface AppContextType {
   addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<SavedReport | null>;
   deleteReport: (id: string) => Promise<void>;
   startNewMonth: () => Promise<void>;
+  factoryReset: () => Promise<void>;
   isPrivacyMode: boolean;
   togglePrivacyMode: () => void;
   maskValue: (value: string | number) => string;
@@ -530,6 +531,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       throw error;
     }
   };
+  const factoryReset = async () => {
+    if (!user || !supabase) return;
+    const client = supabase; // Standard reference to avoid undefined checks in map
+
+    try {
+      // 1. Delete data from all financial tables for this user
+      const tables = [
+        'bank_accounts',
+        'credit_cards',
+        'income_log',
+        'expense_log',
+        'investments',
+        'reports',
+        'monthly_archives'
+      ];
+
+      const deletePromises = tables.map(table => 
+        client.from(table).delete().eq('user_id', user.id)
+      );
+
+      const results = await Promise.all(deletePromises);
+
+      // Check for errors in any deletion
+      const firstError = results.find(res => res.error)?.error;
+      if (firstError) {
+        console.error('Factory Reset Deletion Error:', firstError);
+        throw firstError;
+      }
+
+      // 2. Update last_reset_date to now
+      await updateSettings({ last_reset_date: new Date().toISOString() });
+
+      // 3. Reload everything
+      await refreshData();
+    } catch (error) {
+      console.error('General Factory Reset Error:', error);
+      throw error;
+    }
+  };
+
   const addIncome = async (log: Omit<IncomeLog, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
     await supabase.from('income_log').insert([{ ...log, user_id: user.id }]);
@@ -705,7 +746,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user, loading, incomeLogs, expenseLogs, activeIncomeLogs, activeExpenseLogs, activeInvestments, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment,
-      addReport, deleteReport, startNewMonth, isPrivacyMode, togglePrivacyMode, maskValue
+      addReport, deleteReport, startNewMonth, factoryReset, isPrivacyMode, togglePrivacyMode, maskValue
     }}>
       {children}
     </AppContext.Provider>
