@@ -141,7 +141,7 @@ export interface UserSettings {
 interface AppSummary {
   availableBalance: number;
   incomeThisMonth: number;
-  spendingThisMonth: number;
+  cashOutThisMonth: number;
   investmentThisMonth: number;
   cardOutstanding: number;
   investmentsTotal: number;
@@ -369,12 +369,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .reduce((acc, inv) => acc + inv.contribution, 0);
     
     // Available Balance = Total Income - (Bank Purchases + Card Payments + Manual Investments)
-    const availableBalance = incomeThisMonth - bankSpending - cardPaymentsFromBank - manualInvestmentThisMonth;
+    const cashOutThisMonth = bankSpending + cardPaymentsFromBank + manualInvestmentThisMonth;
+    const availableBalance = incomeThisMonth - cashOutThisMonth;
     
     const cardOutstanding = cards.reduce((acc, card) => acc + card.currentBalance, 0);
     const investmentsTotal = investments.reduce((acc, inv) => acc + inv.currentBalance, 0);
 
-    return { availableBalance, incomeThisMonth, spendingThisMonth: expensesThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
+    return { availableBalance, incomeThisMonth, cashOutThisMonth, investmentThisMonth, cardOutstanding, investmentsTotal };
   }, [incomeLogs, expenseLogs, cards, accounts, investments]);
 
   // Actions

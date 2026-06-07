@@ -23,11 +23,11 @@ const SummaryCards = () => {
       subtitle: 'Total money in'
     },
     {
-      title: 'Expenses This Month',
-      amount: summary.spendingThisMonth,
+      title: 'Cash Out This Month',
+      amount: summary.cashOutThisMonth,
       icon: Target,
       color: 'rose',
-      subtitle: 'Purchases by category'
+      subtitle: 'Real money out'
     },
     {
       title: 'Investment This Month',
