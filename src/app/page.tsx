@@ -186,10 +186,10 @@ export default function Dashboard() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-full overflow-x-hidden min-h-screen">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden min-h-screen flex flex-col items-center">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-3 md:py-4 text-slate-900 dark:text-white">
-          <div className="flex items-center justify-between gap-3 md:gap-4">
+        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 w-full text-slate-900 dark:text-white">
+          <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-3 md:gap-4">
             <div className="flex items-center gap-2 md:gap-3">
               <button 
                 className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400"
@@ -271,8 +271,10 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="p-4 md:p-8 max-w-full">
-          {renderView()}
+        <div className="w-full flex-1 flex flex-col items-center">
+          <div className="w-full max-w-[1400px] p-4 md:p-8">
+            {renderView()}
+          </div>
         </div>
       </main>
 
