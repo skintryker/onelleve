@@ -7,7 +7,7 @@ import Modal from '../modals/Modal';
 import { translations, Language, formatDate } from '@/utils/translations';
 
 const InvestmentsView = () => {
-  const { investments, addInvestment, accounts, settings } = useAppContext();
+  const { investments, addInvestment, accounts, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -109,7 +109,7 @@ const InvestmentsView = () => {
           <div className="space-y-1">
             <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{currentLang === 'pt' ? 'Saldo Total de Investimento' : currentLang === 'es' ? 'Saldo Total de Inversión' : 'Total Investment Balance'}</p>
             <h3 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
-              ${totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ${maskValue(totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
             </h3>
           </div>
           
@@ -120,7 +120,7 @@ const InvestmentsView = () => {
                  <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{currentLang === 'pt' ? 'Contr. Este Mês' : currentLang === 'es' ? 'Contr. Este Mes' : 'Contrib. This Month'}</p>
               </div>
               <p className="text-xl font-black text-slate-900 dark:text-white">
-                ${totalContributionsMonth.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${maskValue(totalContributionsMonth.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
               </p>
             </div>
             
@@ -130,7 +130,7 @@ const InvestmentsView = () => {
                  <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{t.payrollInvestments}</p>
               </div>
               <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
-                ${payrollContributions.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${maskValue(payrollContributions.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
               </p>
             </div>
 
@@ -140,7 +140,7 @@ const InvestmentsView = () => {
                  <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">{t.manualInvestments}</p>
               </div>
               <p className="text-xl font-black text-slate-900 dark:text-white">
-                ${manualContributions.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${maskValue(manualContributions.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
               </p>
             </div>
           </div>
@@ -168,7 +168,7 @@ const InvestmentsView = () => {
             <div>
               <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{inv.institution}</p>
               <h3 className="text-2xl font-black tracking-tight mb-1">
-                ${inv.currentBalance.toLocaleString()}
+                ${maskValue(inv.currentBalance.toLocaleString())}
               </h3>
               <div className="mt-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <p className="text-[10px] font-bold text-slate-400 italic uppercase tracking-widest leading-none mb-2">{inv.accountType}</p>
@@ -217,7 +217,82 @@ const InvestmentsView = () => {
               <option value="CD">CD</option>
             </select>
           </div>
-...
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Contribuição' : currentLang === 'es' ? 'Contribución' : 'Contribution'} ($)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                placeholder="0.00"
+                value={contribution}
+                onChange={(e) => setContribution(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900 dark:text-white text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Saldo Atual' : currentLang === 'es' ? 'Saldo Actual' : 'Current Balance'} ($)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                placeholder="0.00"
+                value={balance}
+                onChange={(e) => setBalance(e.target.value)}
+                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900 dark:text-white text-sm"
+                required={institution !== 'CD'}
+              />
+            </div>
+          </div>
+
+          {/* CD Fields */}
+          {institution === 'CD' && (
+            <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-300">
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Prazo' : currentLang === 'es' ? 'Plazo' : 'Tenor'}</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 1 Year"
+                      value={tenor}
+                      onChange={(e) => setTenor(e.target.value)}
+                      className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Taxa APY' : currentLang === 'es' ? 'Tasa APY' : 'Rate APY'} (%)</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      placeholder="e.g. 5.25"
+                      value={rate}
+                      onChange={(e) => setRate(e.target.value)}
+                      className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Data de Aplicação' : currentLang === 'es' ? 'Fecha de Aplicación' : 'Value Date'}</label>
+                    <input 
+                      type="date" 
+                      value={valueDate}
+                      onChange={(e) => setValueDate(e.target.value)}
+                      className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Data de Vencimento' : currentLang === 'es' ? 'Fecha de Vencimiento' : 'Maturity Date'}</label>
+                    <input 
+                      type="date" 
+                      value={maturityDate}
+                      onChange={(e) => setMaturityDate(e.target.value)}
+                      className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+               </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
              <input 
               type="checkbox" 

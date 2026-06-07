@@ -33,7 +33,7 @@ interface CategoryData {
 }
 
 const Charts = () => {
-  const { transactions } = useAppContext();
+  const { transactions, isPrivacyMode, maskValue } = useAppContext();
   const [pieFilter, setPieFilter] = useState<'income' | 'expense'>('expense');
 
   // 1. Process data for Monthly Bar Chart
@@ -132,10 +132,11 @@ const Charts = () => {
                 axisLine={false} 
                 tickLine={false} 
                 tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} 
-                tickFormatter={(value: number) => `$${value}`}
+                tickFormatter={(value: number) => isPrivacyMode ? '***' : `$${value}`}
               />
               <Tooltip 
                 cursor={{ fill: 'rgba(37,99,235,0.03)' }}
+                formatter={(value: any) => isPrivacyMode ? '******' : `$${value.toLocaleString()}`}
                 contentStyle={{ 
                   borderRadius: '20px', 
                   border: 'none', 
@@ -190,6 +191,7 @@ const Charts = () => {
                 ))}
               </Pie>
               <Tooltip 
+                formatter={(value: any) => isPrivacyMode ? '******' : `$${value.toLocaleString()}`}
                 contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 15px 20px -3px rgb(0 0 0 / 0.1)' }}
               />
               <Legend 
@@ -203,7 +205,7 @@ const Charts = () => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-12 text-center pointer-events-none">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
             <p className={`text-xl font-black ${pieFilter === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-white'}`}>
-              ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              ${maskValue(totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 }))}
             </p>
           </div>
         </div>

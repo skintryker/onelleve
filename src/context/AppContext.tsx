@@ -177,6 +177,9 @@ interface AppContextType {
   addReport: (report: Omit<SavedReport, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   deleteReport: (id: string) => Promise<void>;
   startNewMonth: () => Promise<void>;
+  isPrivacyMode: boolean;
+  togglePrivacyMode: () => void;
+  maskValue: (value: string | number) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -185,6 +188,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [isPrivacyMode, setIsPrivacyMode] = useState(false);
+
+  // Initialize privacy mode from localStorage
+  useEffect(() => {
+    const savedMode = localStorage.getItem('onelleve_privacy_mode');
+    if (savedMode === 'true') setIsPrivacyMode(true);
+  }, []);
+
+  const togglePrivacyMode = () => {
+    setIsPrivacyMode(prev => {
+      const newMode = !prev;
+      localStorage.setItem('onelleve_privacy_mode', String(newMode));
+      return newMode;
+    });
+  };
+
+  const maskValue = (value: string | number): string => {
+    if (!isPrivacyMode) return typeof value === 'number' ? value.toLocaleString() : String(value);
+    return '******';
+  };
   
   const [incomeLogs, setIncomeLogs] = useState<IncomeLog[]>([]);
   const [expenseLogs, setExpenseLogs] = useState<ExpenseLog[]>([]);
@@ -594,7 +617,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user, loading, incomeLogs, expenseLogs, transactions, cards, accounts, investments, reports, settings, summary, updateSettings, refreshData,
       addIncome, addExpense, updateExpense, deleteExpense, deleteTransaction,
       addCard, editCard, deleteCard, addAccount, editAccount, deleteAccount, addInvestment,
-      addReport, deleteReport, startNewMonth
+      addReport, deleteReport, startNewMonth, isPrivacyMode, togglePrivacyMode, maskValue
     }}>
       {children}
     </AppContext.Provider>

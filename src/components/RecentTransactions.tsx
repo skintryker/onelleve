@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { Smartphone, ShoppingCart, Coffee, Play, Home, DollarSign, Briefcase } from 'lucide-react';
+import { Language, translations, formatDate } from '@/utils/translations';
 
 const componentMap: { [key: string]: React.ElementType } = {
   Smartphone,
@@ -15,18 +16,22 @@ const componentMap: { [key: string]: React.ElementType } = {
 };
 
 const RecentTransactions = () => {
-  const { transactions } = useAppContext();
+  const { transactions, maskValue, settings } = useAppContext();
+  const currentLang = (settings?.language as Language) || 'en';
+  const dateFormat = settings?.date_format || 'MM/DD/YYYY';
+  const t = translations[currentLang];
+
   const recentTransactions = transactions.filter(t => t.type === 'expense').slice(0, 5);
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Recent Activity</h3>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{currentLang === 'pt' ? 'Atividade Recente' : currentLang === 'es' ? 'Actividad Reciente' : 'Recent Activity'}</h3>
         <button 
           onClick={() => alert('Viewing all transactions...')}
           className="text-blue-600 dark:text-blue-400 text-sm font-semibold hover:underline active:scale-95 transition-transform"
         >
-          View All
+          {currentLang === 'pt' ? 'Ver Tudo' : currentLang === 'es' ? 'Ver Todo' : 'View All'}
         </button>
       </div>
 
@@ -42,11 +47,11 @@ const RecentTransactions = () => {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{transaction.name}</p>
-                    <p className="text-[11px] text-slate-500 font-medium">{transaction.category} • {transaction.date}</p>
+                    <p className="text-[11px] text-slate-500 font-medium">{transaction.category} • {formatDate(transaction.date, dateFormat)}</p>
                   </div>
                 </div>
                 <div className="text-sm font-black text-slate-900 dark:text-white">
-                  -${Math.abs(transaction.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  -${maskValue(Math.abs(transaction.amount).toLocaleString(undefined, { minimumFractionDigits: 2 }))}
                 </div>
               </div>
             );
@@ -56,7 +61,7 @@ const RecentTransactions = () => {
             <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 mb-3">
               <DollarSign size={24} />
             </div>
-            <p className="text-sm font-medium text-slate-500">No recent transactions</p>
+            <p className="text-sm font-medium text-slate-500">{t.noTransactions}</p>
           </div>
         )}
       </div>

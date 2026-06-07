@@ -20,7 +20,7 @@ interface TransactionsViewProps {
 }
 
 const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
-  const { transactions, deleteTransaction, expenseLogs, incomeLogs, settings } = useAppContext();
+  const { transactions, deleteTransaction, expenseLogs, incomeLogs, settings, maskValue } = useAppContext();
   const [searchTerm, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'income' | 'expense' | 'all'>(initialType);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -193,7 +193,7 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
                       t.type === 'investment' ? 'text-indigo-600' :
                       'text-slate-900 dark:text-white'
                     }`}>
-                      {t.type === 'income' ? '+' : '-'}${Math.abs(t.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {t.type === 'income' ? '+' : '-'}${maskValue(Math.abs(t.amount).toLocaleString(undefined, { minimumFractionDigits: 2 }))}
                     </span>
                   </td>
                   <td className="px-4 md:px-6 py-3 md:py-4 text-right">

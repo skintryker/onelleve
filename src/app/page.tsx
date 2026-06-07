@@ -12,12 +12,12 @@ import SettingsView from '@/components/views/SettingsView';
 import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
 import Auth from '@/components/Auth';
-import { Search, Bell, Menu, Plus, Clock, AlertCircle, X, Loader2 } from 'lucide-react';
+import { Search, Bell, Menu, Plus, Clock, AlertCircle, X, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { translations, Language, formatDate } from '@/utils/translations';
 
 export default function Dashboard() {
-  const { transactions, user, loading, settings } = useAppContext();
+  const { transactions, user, loading, settings, isPrivacyMode, togglePrivacyMode, maskValue } = useAppContext();
   const [activeItem, setActiveItem] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,7 +112,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <p className={`font-black ${tr.type === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-white'}`}>
-                          {tr.type === 'income' ? '+' : '-'}${Math.abs(tr.amount).toLocaleString()}
+                          {tr.type === 'income' ? '+' : '-'}${maskValue(Math.abs(tr.amount))}
                         </p>
                       </div>
                     ))}
@@ -249,6 +249,14 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+
+                <button 
+                  onClick={togglePrivacyMode}
+                  className="p-2 md:p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 hover:scale-105 transition-all relative"
+                  title={isPrivacyMode ? "Show Values" : "Hide Values"}
+                >
+                  {isPrivacyMode ? <Eye size={20} strokeWidth={2.5} /> : <EyeOff size={20} strokeWidth={2.5} />}
+                </button>
 
                 <div className="h-8 md:h-10 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
                 

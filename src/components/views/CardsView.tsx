@@ -58,7 +58,7 @@ const getThemeForCard = (name: string) => {
 };
 
 const CardsView = () => {
-  const { cards, deleteCard, addCard, editCard, settings } = useAppContext();
+  const { cards, deleteCard, addCard, editCard, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
 
@@ -219,7 +219,7 @@ const CardsView = () => {
                 <div className="space-y-0.5">
                   <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide leading-none">{currentLang === 'pt' ? 'Pendente' : currentLang === 'es' ? 'Pendiente' : 'Outstanding'}</p>
                   <p className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
-                    ${card.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ${maskValue(card.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 }))}
                   </p>
                 </div>
                 <div className="text-right space-y-0.5">

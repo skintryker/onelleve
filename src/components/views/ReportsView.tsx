@@ -28,7 +28,8 @@ export default function ReportsView() {
     reports, 
     addReport, 
     deleteReport,
-    settings
+    settings,
+    maskValue
   } = useAppContext();
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -229,11 +230,11 @@ export default function ReportsView() {
              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">{t.totalIncome}</p>
-                   <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${viewingReport.report_data.totalIncome.toLocaleString()}</p>
+                   <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${maskValue(viewingReport.report_data.totalIncome.toLocaleString())}</p>
                 </div>
                 <div className="bg-rose-50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/20">
                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">{t.totalCashOut}</p>
-                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${viewingReport.report_data.totalCashOut.toLocaleString()}</p>
+                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${maskValue(viewingReport.report_data.totalCashOut.toLocaleString())}</p>
                 </div>
              </div>
 
@@ -245,35 +246,35 @@ export default function ReportsView() {
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><TrendingUp size={14} /></div>
                          <p className="text-sm font-bold">{t.actualCashOut}</p>
                       </div>
-                      <p className="text-sm font-black">${viewingReport.report_data.totalCashOut.toLocaleString()}</p>
+                      <p className="text-sm font-black">${maskValue(viewingReport.report_data.totalCashOut.toLocaleString())}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><CreditCard size={14} /></div>
                          <p className="text-sm font-bold">{t.cardPayments}</p>
                       </div>
-                      <p className="text-sm font-black">${viewingReport.report_data.cardPayments.toLocaleString()}</p>
+                      <p className="text-sm font-black">${maskValue(viewingReport.report_data.cardPayments.toLocaleString())}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600"><Building2 size={14} /></div>
                          <p className="text-sm font-bold">{t.payrollInvestments}</p>
                       </div>
-                      <p className="text-sm font-black">${viewingReport.report_data.payrollDeduction.toLocaleString()}</p>
+                      <p className="text-sm font-black">${maskValue(viewingReport.report_data.payrollDeduction.toLocaleString())}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
                          <p className="text-sm font-bold">{t.manualInvestments}</p>
                       </div>
-                      <p className="text-sm font-black">${(viewingReport.report_data.manualInvestments || 0).toLocaleString()}</p>
+                      <p className="text-sm font-black">${maskValue((viewingReport.report_data.manualInvestments || 0).toLocaleString())}</p>
                    </div>
                    <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><Building2 size={14} /></div>
                          <p className="text-sm font-bold">{t.investmentsTotal}</p>
                       </div>
-                      <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">${viewingReport.report_data.investmentsTotal.toLocaleString()}</p>
+                      <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">${maskValue(viewingReport.report_data.investmentsTotal.toLocaleString())}</p>
                    </div>
                 </div>
              </div>
@@ -290,7 +291,7 @@ export default function ReportsView() {
                             <div className="w-24 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                                <div className="h-full bg-blue-500" style={{ width: `${(val / (viewingReport.report_data.totalSpending || 1) * 100)}%` }} />
                             </div>
-                            <p className="text-xs font-black w-12 text-right">${val.toLocaleString()}</p>
+                            <p className="text-xs font-black w-12 text-right">${maskValue(val.toLocaleString())}</p>
                          </div>
                       </div>
                    ))}

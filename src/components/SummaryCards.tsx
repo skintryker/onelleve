@@ -6,7 +6,7 @@ import { Wallet, DollarSign, CreditCard, Banknote, Building2, Target } from 'luc
 import { translations, Language } from '@/utils/translations';
 
 const SummaryCards = () => {
-  const { summary, settings } = useAppContext();
+  const { summary, settings, maskValue } = useAppContext();
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
   
@@ -73,7 +73,7 @@ const SummaryCards = () => {
           <div>
             <p className="text-[9px] md:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{card.title}</p>
             <h3 className="text-2xl md:text-3xl font-black tracking-tighter">
-              ${card.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${maskValue(card.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
             </h3>
             <p className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-1 md:mt-2 italic tracking-tight">{card.subtitle}</p>
           </div>

@@ -7,7 +7,7 @@ import AccountModal from '../modals/AccountModal';
 import { translations, Language } from '@/utils/translations';
 
 const AccountsView = () => {
-  const { accounts, deleteAccount, settings } = useAppContext();
+  const { accounts, deleteAccount, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingAccount, setEditingAccount] = React.useState<Account | null>(null);
 
@@ -70,7 +70,7 @@ const AccountsView = () => {
             <div>
               <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{account.institution}</p>
               <h3 className="text-3xl font-black tracking-tighter mb-1">
-                ${account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${maskValue(account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
               </h3>
               <p className="text-[10px] font-bold text-slate-400 mt-2 italic uppercase tracking-widest leading-none border-t border-slate-100 dark:border-slate-800 pt-3 inline-block w-full">{account.type} {currentLang === 'pt' ? 'Conta' : currentLang === 'es' ? 'Cuenta' : 'Account'}</p>
             </div>
