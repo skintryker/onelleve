@@ -99,7 +99,10 @@ const Charts = () => {
     color: colors[cat] || colors['Other']
   }));
 
-  const totalValue = Object.values(categories).reduce((a: number, b: number) => a + b, 0);
+  const totalValue = Object.values(categories).reduce((a: number, b: number) => a + Number(b), 0);
+
+  const hasMonthlyData = monthlyData.some(d => d.income > 0 || d.expenses > 0);
+  const hasCategoryData = categoryData.length > 0;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 animate-in fade-in duration-1000 text-slate-900 dark:text-white">
@@ -121,38 +124,42 @@ const Charts = () => {
             </div>
           </div>
         </div>
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} 
-                dy={15}
-              />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} 
-                tickFormatter={(value: number) => isPrivacyMode ? '***' : `$${value}`}
-              />
-              <Tooltip 
-                cursor={{ fill: 'rgba(37,99,235,0.03)' }}
-                formatter={(value: any) => isPrivacyMode ? '******' : `$${value.toLocaleString()}`}
-                contentStyle={{ 
-                  borderRadius: '20px', 
-                  border: 'none', 
-                  boxShadow: '0 25px 30px -5px rgb(0 0 0 / 0.15)',
-                  padding: '16px',
-                  backgroundColor: 'rgba(255,255,255,0.95)'
-                }}
-              />
-              <Bar dataKey="income" fill="#10b981" radius={[6, 6, 0, 0]} barSize={10} />
-              <Bar dataKey="expenses" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={10} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="h-72 w-full flex items-center justify-center">
+          {hasMonthlyData ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.03)" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} 
+                  dy={15}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} 
+                  tickFormatter={(value: number) => isPrivacyMode ? '***' : `$${value}`}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(37,99,235,0.03)' }}
+                  formatter={(value: any) => isPrivacyMode ? '******' : `$${Number(value).toLocaleString()}`}
+                  contentStyle={{ 
+                    borderRadius: '20px', 
+                    border: 'none', 
+                    boxShadow: '0 25px 30px -5px rgb(0 0 0 / 0.15)',
+                    padding: '16px',
+                    backgroundColor: 'rgba(255,255,255,0.95)'
+                  }}
+                />
+                <Bar dataKey="income" fill="#10b981" radius={[6, 6, 0, 0]} barSize={10} />
+                <Bar dataKey="expenses" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={10} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">No data available for the last 6 months</p>
+          )}
         </div>
       </div>
 
@@ -177,41 +184,47 @@ const Charts = () => {
           </div>
         </div>
 
-        <div className="h-72 w-full relative">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={categoryData.length > 0 ? categoryData : [{ name: 'No Data', value: 1, color: '#f8fafc' }]}
-                cx="50%"
-                cy="50%"
-                innerRadius={75}
-                outerRadius={105}
-                paddingAngle={6}
-                dataKey="value"
-                stroke="none"
-              >
-                {categoryData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value: any) => isPrivacyMode ? '******' : `$${value.toLocaleString()}`}
-                contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 15px 20px -3px rgb(0 0 0 / 0.1)' }}
-              />
-              <Legend 
-                verticalAlign="bottom" 
-                height={36} 
-                iconType="circle"
-                wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-12 text-center pointer-events-none">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
-            <p className={`text-xl font-black ${pieFilter === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-white'}`}>
-              ${maskValue(totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 }))}
-            </p>
-          </div>
+        <div className="h-72 w-full relative flex items-center justify-center">
+          {hasCategoryData ? (
+            <>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={75}
+                    outerRadius={105}
+                    paddingAngle={6}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: any) => isPrivacyMode ? '******' : `$${Number(value).toLocaleString()}`}
+                    contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 15px 20px -3px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36} 
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: '9px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-12 text-center pointer-events-none">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
+                <p className={`text-xl font-black ${pieFilter === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-white'}`}>
+                  ${maskValue(totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 }))}
+                </p>
+              </div>
+            </>
+          ) : (
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">No {pieFilter} data available</p>
+          )}
         </div>
       </div>
     </div>

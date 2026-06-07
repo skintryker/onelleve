@@ -151,6 +151,15 @@ export default function ReportsView() {
     setIsViewModalOpen(true);
   };
 
+  const safeFormat = (val: any) => {
+    return Number(val ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const currentData = useMemo(() => {
+    if (!viewingReport) return null;
+    return viewingReport.report_data || (viewingReport as any).snapshot_data || {};
+  }, [viewingReport]);
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-slate-900 dark:text-white">
       {/* Real-time Charts */}
@@ -252,21 +261,21 @@ export default function ReportsView() {
       </div>
 
       {/* View Summary Modal */}
-      {viewingReport && (
+      {viewingReport && currentData && (
         <Modal 
           isOpen={isViewModalOpen} 
           onClose={() => setIsViewModalOpen(false)} 
           title={`${viewingReport.period} Financial Summary`}
         >
-          <div className="space-y-6">
+          <div className="space-y-6 text-slate-900 dark:text-white">
              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">{t.totalIncome}</p>
-                   <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${maskValue(viewingReport.report_data.totalIncome.toLocaleString())}</p>
+                   <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">${maskValue(safeFormat(currentData.totalIncome))}</p>
                 </div>
                 <div className="bg-rose-50 dark:bg-rose-900/10 p-4 rounded-2xl border border-rose-100 dark:border-rose-900/20">
                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">{t.totalCashOut}</p>
-                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${maskValue(viewingReport.report_data.totalCashOut.toLocaleString())}</p>
+                   <p className="text-2xl font-black text-rose-700 dark:text-rose-400">${maskValue(safeFormat(currentData.totalCashOut))}</p>
                 </div>
              </div>
 
@@ -278,35 +287,35 @@ export default function ReportsView() {
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><TrendingUp size={14} /></div>
                          <p className="text-sm font-bold">{t.actualCashOut}</p>
                       </div>
-                      <p className="text-sm font-black">${maskValue(viewingReport.report_data.totalCashOut.toLocaleString())}</p>
+                      <p className="text-sm font-black">${maskValue(safeFormat(currentData.totalCashOut))}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><CreditCard size={14} /></div>
                          <p className="text-sm font-bold">{t.cardPayments}</p>
                       </div>
-                      <p className="text-sm font-black">${maskValue(viewingReport.report_data.cardPayments.toLocaleString())}</p>
+                      <p className="text-sm font-black">${maskValue(safeFormat(currentData.cardPayments))}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600"><Building2 size={14} /></div>
                          <p className="text-sm font-bold">{t.payrollInvestments}</p>
                       </div>
-                      <p className="text-sm font-black">${maskValue(viewingReport.report_data.payrollDeduction.toLocaleString())}</p>
+                      <p className="text-sm font-black">${maskValue(safeFormat(currentData.payrollDeduction))}</p>
                    </div>
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600"><Wallet size={14} /></div>
                          <p className="text-sm font-bold">{t.manualInvestments}</p>
                       </div>
-                      <p className="text-sm font-black">${maskValue((viewingReport.report_data.manualInvestments || 0).toLocaleString())}</p>
+                      <p className="text-sm font-black">${maskValue(safeFormat(currentData.manualInvestments))}</p>
                    </div>
                    <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-1">
                       <div className="flex items-center gap-2">
                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600"><Building2 size={14} /></div>
                          <p className="text-sm font-bold">{t.investmentsTotal}</p>
                       </div>
-                      <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">${maskValue(viewingReport.report_data.investmentsTotal.toLocaleString())}</p>
+                      <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">${maskValue(safeFormat(currentData.investmentsTotal))}</p>
                    </div>
                 </div>
              </div>
@@ -316,18 +325,18 @@ export default function ReportsView() {
                     {t.spendingByCategory}
                 </p>
                 <div className="space-y-2">
-                   {Object.entries(viewingReport.report_data.categories).map(([cat, val]: [string, any]) => (
+                   {Object.entries(currentData.categories || {}).map(([cat, val]: [string, any]) => (
                       <div key={cat} className="flex justify-between items-center">
                          <p className="text-xs font-bold">{cat}</p>
                          <div className="flex items-center gap-2">
                             <div className="w-24 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                               <div className="h-full bg-blue-500" style={{ width: `${(val / (viewingReport.report_data.totalSpending || 1) * 100)}%` }} />
+                               <div className="h-full bg-blue-500" style={{ width: `${(Number(val) / (currentData.totalSpending || 1) * 100)}%` }} />
                             </div>
-                            <p className="text-xs font-black w-12 text-right">${maskValue(val.toLocaleString())}</p>
+                            <p className="text-xs font-black w-12 text-right">${maskValue(safeFormat(val))}</p>
                          </div>
                       </div>
                    ))}
-                   {Object.keys(viewingReport.report_data.categories).length === 0 && <p className="text-xs text-slate-400 italic">{t.noSpendingData}</p>}
+                   {(!currentData.categories || Object.keys(currentData.categories).length === 0) && <p className="text-xs text-slate-400 italic">{t.noSpendingData}</p>}
                 </div>
              </div>
 
