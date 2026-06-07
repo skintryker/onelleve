@@ -445,7 +445,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     investmentLogs: Investment[],
     bankAccounts: Account[],
     creditCards: Card[]
-  ): AppSummary & { categories: Record<string, number>, cardPayments: number, payrollDeduction: number, manualInvestments: number, bankBalances: number } => {
+  ): any => {
     const lastReset = settings?.last_reset_date || '1970-01-01T00:00:00.000Z';
 
     // 1. Filter active logs for the specific period
@@ -464,7 +464,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const incomeThisMonth = activeIncomes.reduce((acc, log) => acc + log.amount, 0);
 
     // 3. Cash Out Calculation Rules (Rule 9: Money that actually left the bank/cash)
-    const pureBankSpending = activeExpenses.filter(log => 
+    // Pure Bank Spending = Actual Cash Out for the breakdown
+    const actualCashOut = activeExpenses.filter(log => 
       log.transactionType !== 'Payment' && 
       log.transactionType !== 'Investment' && 
       log.category !== 'Credit Card' &&
@@ -480,13 +481,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const manualInvestmentsMonthly = activeInvLogs.filter(inv => !inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
     const payrollInvestmentsMonthly = activeInvLogs.filter(inv => inv.payrollDeduction).reduce((acc, inv) => acc + inv.contribution, 0);
 
-    const cashOutThisMonth = pureBankSpending + cardPayments + manualInvestmentsMonthly;
+    // Rule 1: Total Cash Out = Actual Cash Out (Pure bank) + CC Payments + Manual Investments
+    const totalCashOut = actualCashOut + cardPayments + manualInvestmentsMonthly;
 
     // 4. Investment This Month (Rule 10)
     const investmentThisMonth = manualInvestmentsMonthly + payrollInvestmentsMonthly;
 
-    // 5. Category Breakdown (Excluding internal payments)
-    const categories = activeExpenses.filter(log => log.transactionType !== 'Payment').reduce((acc: Record<string, number>, log) => {
+    // 5. Category Breakdown (Excluding internal payments and investments to avoid double counting in spending charts)
+    const categories = activeExpenses.filter(log => 
+      log.transactionType !== 'Payment' && 
+      log.transactionType !== 'Investment' &&
+      log.category !== 'Investment' &&
+      log.category !== 'Credit Card'
+    ).reduce((acc: Record<string, number>, log) => {
       acc[log.category] = (acc[log.category] || 0) + log.amount;
       return acc;
     }, {});
@@ -500,7 +507,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return {
       availableBalance: bankBalances,
       incomeThisMonth,
-      cashOutThisMonth,
+      cashOutThisMonth: totalCashOut, // For Dashboard compat
       investmentThisMonth,
       cardOutstanding,
       investmentsTotal,
@@ -510,8 +517,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       manualInvestments: manualInvestmentsMonthly,
       bankBalances,
       totalIncome: incomeThisMonth,
-      totalSpending: activeExpenses.filter(log => log.transactionType !== 'Payment').reduce((acc, log) => acc + log.amount, 0),
-      actualCashOut: cashOutThisMonth,
+      totalSpending: Object.values(categories).reduce((a, b) => a + b, 0),
+      totalCashOut: totalCashOut, // For Report Modal compat
+      actualCashOut: actualCashOut, // Pure bank expenses
       creditCardsOutstanding: cardOutstanding
     };
   };
