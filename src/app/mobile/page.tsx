@@ -140,13 +140,13 @@ export default function MobileApp() {
             </div>
 
             {/* Branding Footer to fill empty space */}
-            <div className="flex flex-col items-center justify-center pt-8 pb-4 opacity-40">
+            <div className="flex flex-col items-center justify-center pt-12 pb-8">
               <img 
                 src="/logo-onelleve.jpg" 
                 alt="onelleve" 
-                className="h-6 w-auto object-contain mix-blend-multiply dark:invert mb-2 grayscale"
+                className="h-16 md:h-20 w-auto object-contain mix-blend-multiply dark:invert mb-4 opacity-90"
               />
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Premium Personal Finance</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Premium Personal Finance</p>
             </div>
           </div>
         );
@@ -175,14 +175,7 @@ export default function MobileApp() {
     <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto custom-scrollbar p-4 pt-6 pb-24">
-          <div className="flex justify-between items-center mb-6 pt-2">
-            <div className="h-10">
-              <img 
-                src="/logo-onelleve.jpg" 
-                alt="onelleve" 
-                className="h-full w-auto object-contain mix-blend-multiply dark:invert"
-              />
-            </div>
+          <div className="flex justify-end items-center mb-6 pt-2">
             <button 
               onClick={() => setActiveItem('Home')}
               className="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors flex items-center gap-2 active:scale-95"
