@@ -76,18 +76,6 @@ export default function MobileApp() {
       case 'Home':
         return (
           <div className="space-y-6 pb-24">
-            <div className="flex justify-between items-center mb-2 pt-2">
-              <div className="h-8">
-                <img 
-                  src="/logo-onelleve.jpg" 
-                  alt="onelleve" 
-                  className="h-full w-auto object-contain mix-blend-multiply dark:invert"
-                />
-              </div>
-              <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full border border-blue-100 dark:border-blue-800">
-                 <span className="text-[10px] font-black tracking-widest uppercase">Mobile</span>
-              </div>
-            </div>
             
             {/* Main Hero Card: Available Balance */}
             <div className="bg-blue-600 p-8 rounded-[40px] text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
@@ -177,6 +165,18 @@ export default function MobileApp() {
     <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto custom-scrollbar p-4 pt-6 pb-24">
+          <div className="flex justify-between items-center mb-6 pt-2">
+            <button onClick={() => setActiveItem('Home')} className="h-8 active:scale-95 transition-transform">
+              <img 
+                src="/logo-onelleve.jpg" 
+                alt="onelleve" 
+                className="h-full w-auto object-contain mix-blend-multiply dark:invert"
+              />
+            </button>
+            <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full border border-blue-100 dark:border-blue-800">
+               <span className="text-[10px] font-black tracking-widest uppercase">Mobile</span>
+            </div>
+          </div>
           {renderView()}
         </main>
 

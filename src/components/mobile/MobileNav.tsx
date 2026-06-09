@@ -17,7 +17,6 @@ interface MobileNavProps {
 
 const MobileNav = ({ activeItem, setActiveItem }: MobileNavProps) => {
   const navItems = [
-    { id: 'Home', icon: Home, label: 'Home' },
     { id: 'Accounts', icon: Wallet, label: 'Accounts' },
     { id: 'Cards', icon: CreditCard, label: 'Cards' },
     { id: 'QuickAdd', icon: Plus, label: 'Add', isCenter: true },
