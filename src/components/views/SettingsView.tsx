@@ -527,7 +527,24 @@ const SettingsView = () => {
                 )}
               </button>
             </div>
-            <p className="text-center text-[10px] text-slate-400 font-medium italic">Your choice will be saved and you'll be redirected.</p>
+            
+            <div className="flex justify-center pt-6">
+              <button 
+                onClick={async () => {
+                  try {
+                    await updateSettings({ preferred_experience: null as any });
+                    window.location.href = '/';
+                  } catch (error) {
+                    console.error('Error resetting experience:', error);
+                  }
+                }}
+                className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+              >
+                Reset Experience Choice
+              </button>
+            </div>
+            
+            <p className="text-center text-[10px] text-slate-400 font-medium italic mt-4">Your choice will be saved and you'll be redirected.</p>
           </div>
         );
     }
