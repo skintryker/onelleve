@@ -129,35 +129,28 @@ const TransactionsView = ({
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-[24px] md:rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse min-w-[600px] md:min-w-full">
+        {/* Desktop View Table */}
+        <div className="hidden md:block overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-full">
             <thead>
               <tr className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {filterType === 'income' 
-                    ? t.source
-                    : t.transaction}
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  {filterType === 'income' ? t.source : t.transaction}
                 </th>
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {filterType === 'income' 
-                    ? 'Label' 
-                    : t.category}
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  {filterType === 'income' ? 'Label' : t.category}
                 </th>
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {t.date}
-                </th>
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {t.amount}
-                </th>
-                <th className="px-4 md:px-6 py-3 md:py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t.actions}</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.date}</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.amount}</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-900 dark:text-white">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredTransactions.map((tr) => (
-                <tr key={tr.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
-                  <td className="px-4 md:px-6 py-3 md:py-4">
+                <tr key={tr.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group text-slate-900 dark:text-white">
+                  <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className={`hidden sm:flex p-2 rounded-lg ${
+                      <div className={`flex p-2 rounded-lg ${
                         tr.type === 'income' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20' : 
                         tr.type === 'investment' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20' :
                         'bg-slate-100 text-slate-600 dark:bg-slate-800'
@@ -165,29 +158,29 @@ const TransactionsView = ({
                         {tr.type === 'income' ? <ArrowUpRight size={14} /> : tr.type === 'investment' ? <TrendingUp size={14} /> : <ArrowDownLeft size={14} />}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="font-bold text-xs md:text-sm truncate">{tr.name}</span>
+                        <span className="font-bold text-sm truncate">{tr.name}</span>
                         {tr.paymentPlan === 'Installment' && (
-                          <span className="text-[8px] md:text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                          <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
                             {tr.currentInstallment}/{tr.totalInstallments}
                           </span>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4">
-                    <span className={`px-2 md:px-3 py-1 ${
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 ${
                       tr.type === 'income' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 
                       tr.type === 'investment' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' :
                       'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                    } rounded-full text-[9px] md:text-xs font-black uppercase tracking-wider whitespace-nowrap`}>
+                    } rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap`}>
                       {tr.category}
                     </span>
                   </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4 text-[10px] md:text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
+                  <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
                     {formatDate(tr.date, dateFormat)}
                   </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4">
-                    <span className={`font-black text-xs md:text-base ${
+                  <td className="px-6 py-4">
+                    <span className={`font-black text-base ${
                       tr.type === 'income' ? 'text-emerald-600' : 
                       tr.type === 'investment' ? 'text-indigo-600' :
                       'text-slate-900 dark:text-white'
@@ -195,26 +188,53 @@ const TransactionsView = ({
                       {tr.type === 'income' ? '+' : '-'}${maskValue(Math.abs(tr.amount).toLocaleString(undefined, { minimumFractionDigits: 2 }))}
                     </span>
                   </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4 text-right">
-                    <div className="flex justify-end gap-1 md:gap-2">
-                      <button 
-                        onClick={() => handleEdit(tr)}
-                        className="p-1.5 md:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(tr.id)}
-                        className="p-1.5 md:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => handleEdit(tr)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"><Edit2 size={16} /></button>
+                      <button onClick={() => handleDelete(tr.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all"><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile View List */}
+        <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+          {filteredTransactions.map((tr) => (
+            <div key={tr.id} className="p-4 flex items-center justify-between active:bg-slate-50 dark:active:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`p-2.5 rounded-xl shrink-0 ${
+                  tr.type === 'income' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20' : 
+                  tr.type === 'investment' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20' :
+                  'bg-slate-50 text-slate-600 dark:bg-slate-800'
+                }`}>
+                  {tr.type === 'income' ? <ArrowUpRight size={18} /> : tr.type === 'investment' ? <TrendingUp size={18} /> : <ArrowDownLeft size={18} />}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{tr.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{formatDate(tr.date, dateFormat)}</span>
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">{tr.category}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1 shrink-0 ml-3">
+                <span className={`font-black text-sm ${
+                  tr.type === 'income' ? 'text-emerald-600' : 
+                  tr.type === 'investment' ? 'text-indigo-600' :
+                  'text-slate-900 dark:text-white'
+                }`}>
+                  {tr.type === 'income' ? '+' : '-'}${maskValue(Math.abs(tr.amount).toLocaleString(undefined, { minimumFractionDigits: 2 }))}
+                </span>
+                <div className="flex gap-1">
+                  <button onClick={() => handleEdit(tr)} className="p-1 text-slate-400"><Edit2 size={14} /></button>
+                  <button onClick={() => handleDelete(tr.id)} className="p-1 text-slate-400"><Trash2 size={14} /></button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {filteredTransactions.length === 0 && (
