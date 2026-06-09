@@ -164,18 +164,23 @@ export default function MobileApp() {
   return (
     <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 pt-6 pb-24">
-          <div className="flex justify-between items-center mb-6 pt-2">
-            <div className="w-[140px] h-10 flex items-center justify-start overflow-hidden">
-              <img 
-                src="/logo-onelleve.jpg" 
-                alt="onelleve" 
-                className="w-full h-auto object-contain mix-blend-multiply dark:invert scale-[1.85] origin-left"
-              />
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 pt-4 pb-24">
+          <div className="flex justify-between items-start mb-5">
+            <div className="flex flex-col">
+              <div className="w-[130px] h-8 flex items-center justify-start overflow-hidden relative">
+                <img 
+                  src="/logo-onelleve.jpg" 
+                  alt="onelleve" 
+                  className="w-full h-auto object-contain mix-blend-multiply dark:invert scale-[1.85] origin-left"
+                />
+              </div>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mt-0.5">
+                Personal Finance Dashboard
+              </p>
             </div>
             <button 
               onClick={() => setActiveItem('Home')}
-              className="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors flex items-center gap-2 active:scale-95 shrink-0"
+              className="px-4 py-1.5 mt-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors flex items-center gap-2 active:scale-95 shrink-0"
             >
                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                <span className="text-[10px] font-black tracking-widest uppercase">Home</span>
