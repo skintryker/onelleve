@@ -141,6 +141,7 @@ export interface UserSettings {
   region?: string;
   date_format?: string;
   last_reset_date?: string;
+  preferred_experience?: string;
 }
 
 interface AppSummary {

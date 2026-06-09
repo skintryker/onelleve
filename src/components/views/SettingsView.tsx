@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Bell, Shield, Globe, Save, Mail, Loader2, Key, LogOut, Check, Trash2 } from 'lucide-react';
+import { User, Bell, Shield, Globe, Save, Mail, Loader2, Key, LogOut, Check, Trash2, Monitor, Smartphone } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { supabase } from '@/utils/supabaseClient';
 import { translations, Language } from '@/utils/translations';
@@ -9,7 +9,7 @@ import Modal from '../modals/Modal';
 
 const SettingsView = () => {
   const { user, settings, updateSettings, startNewMonth, factoryReset, loading: appLoading } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'region'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'region' | 'experience'>('profile');
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isStartMonthModalOpen, setIsStartMonthModalOpen] = useState(false);
@@ -476,6 +476,60 @@ const SettingsView = () => {
             )}
           </div>
         );
+      case 'experience':
+        return (
+          <div className="space-y-6 animate-in fade-in duration-300 text-slate-900 dark:text-white">
+            <h3 className="text-xl font-black uppercase tracking-tight mb-8 text-center">App Experience</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button 
+                onClick={async () => {
+                  await updateSettings({ preferred_experience: 'desktop' });
+                  window.location.href = '/';
+                }}
+                className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center text-center gap-4 ${
+                  settings?.preferred_experience === 'desktop' 
+                    ? 'border-blue-600 bg-blue-50/30 dark:bg-blue-900/10' 
+                    : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 hover:border-blue-200'
+                }`}
+              >
+                <div className={`p-4 rounded-2xl ${settings?.preferred_experience === 'desktop' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-400'}`}>
+                  <Monitor size={32} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="font-black uppercase tracking-tight text-sm">Desktop Version</p>
+                  <p className="text-[10px] text-slate-400 font-medium mt-1">Full dashboard experience</p>
+                </div>
+                {settings?.preferred_experience === 'desktop' && (
+                  <div className="px-3 py-1 bg-blue-600 text-white text-[8px] font-black uppercase tracking-widest rounded-full">Active</div>
+                )}
+              </button>
+
+              <button 
+                onClick={async () => {
+                  await updateSettings({ preferred_experience: 'mobile' });
+                  window.location.href = '/mobile';
+                }}
+                className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center text-center gap-4 ${
+                  settings?.preferred_experience === 'mobile' 
+                    ? 'border-emerald-600 bg-emerald-50/30 dark:bg-emerald-900/10' 
+                    : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 hover:border-blue-200'
+                }`}
+              >
+                <div className={`p-4 rounded-2xl ${settings?.preferred_experience === 'mobile' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-400'}`}>
+                  <Smartphone size={32} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="font-black uppercase tracking-tight text-sm">Mobile App Version</p>
+                  <p className="text-[10px] text-slate-400 font-medium mt-1">Simplified mobile UI</p>
+                </div>
+                {settings?.preferred_experience === 'mobile' && (
+                  <div className="px-3 py-1 bg-emerald-600 text-white text-[8px] font-black uppercase tracking-widest rounded-full">Active</div>
+                )}
+              </button>
+            </div>
+            <p className="text-center text-[10px] text-slate-400 font-medium italic">Your choice will be saved and you'll be redirected.</p>
+          </div>
+        );
     }
   };
 
@@ -489,6 +543,7 @@ const SettingsView = () => {
             { id: 'notifications', label: t.notifications, icon: Bell },
             { id: 'security', label: t.security, icon: Shield },
             { id: 'region', label: t.region, icon: Globe },
+            { id: 'experience', label: 'App Experience', icon: Smartphone },
           ].map(item => (
             <button 
               key={item.id}

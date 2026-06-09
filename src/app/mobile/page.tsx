@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAppContext, IncomeLog } from '@/context/AppContext';
 import Auth from '@/components/Auth';
+import ExperienceSelector from '@/components/ExperienceSelector';
 import MobileNav from '@/components/mobile/MobileNav';
 import MobileQuickAdd from '@/components/mobile/MobileQuickAdd';
 import SummaryCards from '@/components/SummaryCards';
@@ -18,9 +19,11 @@ import IncomeModal from '@/components/modals/IncomeModal';
 import { Loader2, ExternalLink, TrendingUp } from 'lucide-react';
 import { translations, Language } from '@/utils/translations';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function MobileApp() {
   const { user, loading, settings, summary, maskValue } = useAppContext();
+  const router = useRouter();
   const [activeItem, setActiveItem] = useState('Home');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   
@@ -35,6 +38,15 @@ export default function MobileApp() {
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
 
+  // Routing and Experience Selection Logic
+  React.useEffect(() => {
+    if (!loading && user && settings) {
+      if (settings.preferred_experience === 'desktop') {
+        router.push('/');
+      }
+    }
+  }, [loading, user, settings, router]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center">
@@ -45,6 +57,11 @@ export default function MobileApp() {
 
   if (!user) {
     return <Auth />;
+  }
+
+  // Show experience selector if no preference is set
+  if (settings && !settings.preferred_experience) {
+    return <ExperienceSelector />;
   }
 
   const handleQuickAddSelect = (item: string, modal: string) => {

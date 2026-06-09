@@ -13,12 +13,15 @@ import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
 import IncomeModal from '@/components/modals/IncomeModal';
 import Auth from '@/components/Auth';
+import ExperienceSelector from '@/components/ExperienceSelector';
 import { Search, Bell, Menu, Plus, Clock, AlertCircle, X, Loader2, Eye, EyeOff, Wallet, CreditCard, TrendingUp, ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react';
 import { useAppContext, IncomeLog } from '@/context/AppContext';
 import { translations, Language, formatDate } from '@/utils/translations';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
   const { transactions, user, loading, settings, isPrivacyMode, togglePrivacyMode, maskValue } = useAppContext();
+  const router = useRouter();
   const [activeItem, setActiveItem] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,6 +38,15 @@ export default function Dashboard() {
   const currentLang = (settings?.language as Language) || 'en';
   const dateFormat = settings?.date_format || 'MM/DD/YYYY';
   const t = translations[currentLang];
+
+  // Routing and Experience Selection Logic
+  useEffect(() => {
+    if (!loading && user && settings) {
+      if (settings.preferred_experience === 'mobile') {
+        router.push('/mobile');
+      }
+    }
+  }, [loading, user, settings, router]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -104,6 +116,11 @@ export default function Dashboard() {
 
   if (!user) {
     return <Auth />;
+  }
+
+  // Show experience selector if no preference is set
+  if (settings && !settings.preferred_experience) {
+    return <ExperienceSelector />;
   }
 
   const renderView = () => {
