@@ -13,7 +13,6 @@ import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
 import IncomeModal from '@/components/modals/IncomeModal';
 import Auth from '@/components/Auth';
-import ExperienceSelector from '@/components/ExperienceSelector';
 import { Search, Bell, Menu, Plus, Clock, AlertCircle, X, Loader2, Eye, EyeOff, Wallet, CreditCard, TrendingUp, ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react';
 import { useAppContext, IncomeLog } from '@/context/AppContext';
 import { translations, Language, formatDate } from '@/utils/translations';
@@ -42,7 +41,9 @@ export default function Dashboard() {
   // Routing and Experience Selection Logic
   useEffect(() => {
     if (!loading && user && settings) {
-      if (settings.preferred_experience === 'mobile') {
+      if (!settings.preferred_experience) {
+        router.push('/choose-experience');
+      } else if (settings.preferred_experience === 'mobile') {
         router.push('/mobile');
       }
     }
@@ -116,11 +117,6 @@ export default function Dashboard() {
 
   if (!user) {
     return <Auth />;
-  }
-
-  // Show experience selector if no preference is set
-  if (settings && !settings.preferred_experience) {
-    return <ExperienceSelector />;
   }
 
   const renderView = () => {

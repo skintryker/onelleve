@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useAppContext, IncomeLog } from '@/context/AppContext';
 import Auth from '@/components/Auth';
-import ExperienceSelector from '@/components/ExperienceSelector';
 import MobileNav from '@/components/mobile/MobileNav';
 import MobileQuickAdd from '@/components/mobile/MobileQuickAdd';
 import SummaryCards from '@/components/SummaryCards';
@@ -41,9 +40,11 @@ export default function MobileApp() {
   // Routing and Experience Selection Logic
   React.useEffect(() => {
     if (!loading && user && settings) {
-      if (settings.preferred_experience === 'desktop') {
-        router.push('/');
+      if (!settings.preferred_experience) {
+        router.push('/choose-experience');
       }
+      // Note: We DO NOT redirect to desktop if they manually visited /mobile,
+      // per the specific requirement to allow manual navigation.
     }
   }, [loading, user, settings, router]);
 
@@ -59,13 +60,7 @@ export default function MobileApp() {
     return <Auth />;
   }
 
-  // Show experience selector if no preference is set
-  if (settings && !settings.preferred_experience) {
-    return <ExperienceSelector />;
-  }
-
-  const handleQuickAddSelect = (item: string, modal: string) => {
-    setIsQuickAddOpen(false);
+  const handleQuickAddSelect = (item: string, modal: string) => {    setIsQuickAddOpen(false);
     if (modal === 'income') {
       setEditingIncome(null);
       setIsIncomeModalOpen(true);
