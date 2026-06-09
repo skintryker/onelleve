@@ -946,6 +946,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (newSettings.due_day_reminders !== undefined) payload.due_day_reminders = newSettings.due_day_reminders;
     if (newSettings.monthly_summary !== undefined) payload.monthly_summary = newSettings.monthly_summary;
     if (newSettings.investment_reminders !== undefined) payload.investment_reminders = newSettings.investment_reminders;
+    if (newSettings.preferred_experience !== undefined) payload.preferred_experience = newSettings.preferred_experience;
 
     const { error } = await supabase.from('user_settings').upsert(payload, { onConflict: 'user_id' });
 
