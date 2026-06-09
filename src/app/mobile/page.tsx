@@ -75,78 +75,77 @@ export default function MobileApp() {
     switch (activeItem) {
       case 'Home':
         return (
-          <div className="space-y-6 pb-24">
+          <div className="space-y-4 pb-24">
             
+            {/* Top Logo Area */}
+            <div className="flex flex-col items-center justify-center pt-2 pb-6 w-full">
+              <img 
+                src="/logo-onelleve.jpg" 
+                alt="onelleve" 
+                className="h-10 w-auto object-contain mix-blend-multiply dark:invert"
+              />
+            </div>
+
             {/* Main Hero Card: Available Balance */}
-            <div className="bg-blue-600 p-8 rounded-[40px] text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-blue-400/20 rounded-full blur-xl" />
+            <div className="bg-blue-600 p-6 rounded-3xl text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 bg-blue-400/20 rounded-full blur-lg" />
               
-              <div className="relative z-10">
-                <p className="text-xs font-bold text-blue-100 uppercase tracking-widest mb-1">{t.availableBalance}</p>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tighter">
+              <div className="relative z-10 text-center">
+                <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest mb-1">{t.availableBalance}</p>
+                <h2 className="text-4xl font-black tracking-tighter">
                   ${maskValue(summary.availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </h2>
-                <p className="text-[10px] font-medium text-blue-200 mt-2 italic">{t.actualCashOutDesc}</p>
+                <p className="text-[9px] font-medium text-blue-200 mt-1 italic">{t.actualCashOutDesc}</p>
               </div>
             </div>
 
             {/* 2-Column Grid for Secondary KPIs */}
             <div className="grid grid-cols-2 gap-3">
               {/* Income */}
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-tight">{t.incomeThisMonth}</p>
-                <p className="text-xl font-black text-emerald-600 tracking-tighter break-words">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.incomeThisMonth}</p>
+                <p className="text-lg font-black text-emerald-600 tracking-tighter break-words">
                   ${maskValue(summary.incomeThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
 
               {/* Cash Out */}
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-tight">{t.cashOutThisMonth}</p>
-                <p className="text-xl font-black text-rose-600 tracking-tighter break-words">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.cashOutThisMonth}</p>
+                <p className="text-lg font-black text-rose-600 tracking-tighter break-words">
                   ${maskValue(summary.cashOutThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
 
               {/* Credit Cards Outstanding */}
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-tight">{t.creditCardsOutstanding}</p>
-                <p className="text-xl font-black text-amber-600 tracking-tighter break-words">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.creditCardsOutstanding}</p>
+                <p className="text-lg font-black text-amber-600 tracking-tighter break-words">
                   ${maskValue(summary.cardOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
 
               {/* Investment This Month */}
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 leading-tight">{t.investmentThisMonth}</p>
-                <p className="text-xl font-black text-indigo-600 tracking-tighter break-words">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.investmentThisMonth}</p>
+                <p className="text-lg font-black text-indigo-600 tracking-tighter break-words">
                   ${maskValue(summary.investmentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
             </div>
 
             {/* Full Width Card for Investments Total */}
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.investmentsTotal}</p>
-                <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.investmentsTotal}</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white tracking-tighter">
                   ${maskValue(summary.investmentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl">
-                <TrendingUp size={24} />
+              <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl">
+                <TrendingUp size={20} />
               </div>
-            </div>
-
-            {/* Branding Footer to fill empty space */}
-            <div className="flex flex-col items-center justify-center pt-12 pb-16 w-full">
-              <img 
-                src="/logo-onelleve.jpg" 
-                alt="onelleve" 
-                className="w-[85%] max-w-[320px] h-auto object-contain mix-blend-multiply dark:invert mb-8 opacity-90"
-              />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Premium Personal Finance</p>
             </div>
           </div>
         );
