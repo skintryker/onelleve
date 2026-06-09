@@ -36,7 +36,7 @@ const MobileQuickAdd = ({ isOpen, onClose, onSelect }: MobileQuickAddProps) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-[110] animate-in fade-in duration-300">
+    <div className="absolute inset-0 z-[110] animate-in fade-in duration-300">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
       
       <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-[40px] p-6 pb-12 animate-in slide-in-from-bottom duration-500">

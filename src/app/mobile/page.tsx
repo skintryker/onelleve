@@ -5,19 +5,17 @@ import { useAppContext, IncomeLog } from '@/context/AppContext';
 import Auth from '@/components/Auth';
 import MobileNav from '@/components/mobile/MobileNav';
 import MobileQuickAdd from '@/components/mobile/MobileQuickAdd';
-import SummaryCards from '@/components/SummaryCards';
-import AccountsView from '@/components/views/AccountsView';
-import CardsView from '@/components/views/CardsView';
-import InvestmentsView from '@/components/views/InvestmentsView';
-import TransactionsView from '@/components/views/TransactionsView';
-import ReportsView from '@/components/views/ReportsView';
-import SettingsView from '@/components/views/SettingsView';
+import MobileAccountsView from '@/components/mobile/views/MobileAccountsView';
+import MobileCardsView from '@/components/mobile/views/MobileCardsView';
+import MobileInvestmentsView from '@/components/mobile/views/MobileInvestmentsView';
+import MobileTransactionsView from '@/components/mobile/views/MobileTransactionsView';
+import MobileReportsView from '@/components/mobile/views/MobileReportsView';
+import MobileSettingsView from '@/components/mobile/views/MobileSettingsView';
 import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
 import IncomeModal from '@/components/modals/IncomeModal';
-import { Loader2, ExternalLink, TrendingUp } from 'lucide-react';
+import { Loader2, TrendingUp } from 'lucide-react';
 import { translations, Language } from '@/utils/translations';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function MobileApp() {
@@ -155,78 +153,66 @@ export default function MobileApp() {
           </div>
         );
       case 'Accounts':
-        return <div className="pb-24"><AccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <div className="pb-24"><MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setIsAccountModalOpen(true); }} /></div>;
       case 'Cards':
-        return <div className="pb-24"><CardsView autoOpenModal={autoOpenModal === 'card'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <div className="pb-24"><MobileCardsView onEditCard={(card) => { /* Desktop requires Cards modal handling, we'll just implement basic view for now or handle later */ }} /></div>;
       case 'Income':
-        return <div className="pb-24"><TransactionsView initialType="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onAddIncome={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} /></div>;
+        return <div className="pb-24"><MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onEditExpense={() => {}} /></div>;
       case 'Expenses':
-        return <div className="pb-24"><TransactionsView initialType="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onAddExpense={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} /></div>;
+        return <div className="pb-24"><MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onEditIncome={() => {}} /></div>;
       case 'Investments':
-        return <div className="pb-24"><InvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <div className="pb-24"><MobileInvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} onEditInvestment={(inv) => { /* Handle edit */ }} /></div>;
       case 'Reports':
-        return <div className="pb-24"><ReportsView autoOpenModal={autoOpenModal === 'report'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <div className="pb-24"><MobileReportsView autoOpenModal={autoOpenModal === 'report'} onModalClose={() => setAutoOpenModal(null)} /></div>;
       case 'Settings':
-        return (
-          <div className="space-y-6 pb-24">
-            <SettingsView />
-            <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800">
-               <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">Development</h3>
-               <Link 
-                 href="/"
-                 className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 font-bold text-sm text-blue-600"
-               >
-                 <span>Preview Desktop Version</span>
-                 <ExternalLink size={16} />
-               </Link>
-            </div>
-          </div>
-        );
+        return <div className="pb-24"><MobileSettingsView /></div>;
       case 'QuickAdd':
         return null; // Handled by the overlay
       default:
-        return <SummaryCards />;
+        return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white font-sans selection:bg-blue-500/30">
-      <main className="w-full max-w-md mx-auto p-4 pt-8 min-h-screen flex flex-col">
-        {renderView()}
-      </main>
+    <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
+      <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 pt-6 pb-24">
+          {renderView()}
+        </main>
 
-      <MobileNav 
-        activeItem={activeItem === 'QuickAdd' ? activeItem : activeItem} 
-        setActiveItem={(item) => {
-          if (item === 'QuickAdd') {
-            setIsQuickAddOpen(true);
-          } else {
-            setActiveItem(item);
-          }
-        }} 
-      />
+        <MobileNav 
+          activeItem={activeItem === 'QuickAdd' ? activeItem : activeItem} 
+          setActiveItem={(item) => {
+            if (item === 'QuickAdd') {
+              setIsQuickAddOpen(true);
+            } else {
+              setActiveItem(item);
+            }
+          }} 
+        />
 
-      <MobileQuickAdd 
-        isOpen={isQuickAddOpen} 
-        onClose={() => setIsQuickAddOpen(false)} 
-        onSelect={handleQuickAddSelect}
-      />
+        <MobileQuickAdd 
+          isOpen={isQuickAddOpen} 
+          onClose={() => setIsQuickAddOpen(false)} 
+          onSelect={handleQuickAddSelect}
+        />
 
-      {/* Modals reused from desktop */}
-      <TransactionModal 
-        isOpen={isTransactionModalOpen} 
-        onClose={() => { setIsTransactionModalOpen(false); setEditingExpense(null); }} 
-        editingTransaction={editingExpense}
-      />
-      <AccountModal 
-        isOpen={isAccountModalOpen} 
-        onClose={() => { setIsAccountModalOpen(false); setAutoOpenModal(null); }} 
-      />
-      <IncomeModal
-        isOpen={isIncomeModalOpen}
-        onClose={() => { setIsIncomeModalOpen(false); setEditingIncome(null); }}
-        editingIncome={editingIncome}
-      />
+        {/* Modals reused from desktop */}
+        <TransactionModal 
+          isOpen={isTransactionModalOpen} 
+          onClose={() => { setIsTransactionModalOpen(false); setEditingExpense(null); }} 
+          editingTransaction={editingExpense}
+        />
+        <AccountModal 
+          isOpen={isAccountModalOpen} 
+          onClose={() => { setIsAccountModalOpen(false); setAutoOpenModal(null); }} 
+        />
+        <IncomeModal
+          isOpen={isIncomeModalOpen}
+          onClose={() => { setIsIncomeModalOpen(false); setEditingIncome(null); }}
+          editingIncome={editingIncome}
+        />
+      </div>
     </div>
   );
 }

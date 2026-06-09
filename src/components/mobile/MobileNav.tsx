@@ -26,7 +26,7 @@ const MobileNav = ({ activeItem, setActiveItem }: MobileNavProps) => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pb-safe pt-2 px-1 flex justify-around items-center z-[100] h-16 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+    <nav className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-safe pt-2 px-1 flex justify-around items-center z-[50] h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       {navItems.map((item) => (
         <button
           key={item.id}
