@@ -23,6 +23,7 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
   const [depositBank, setDepositBank] = useState('');
   const [date, setDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [alreadyIncluded, setAlreadyIncluded] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
         setDepositBank(editingIncome.depositBank);
         setDate(editingIncome.date);
         setNotes(editingIncome.notes || '');
+        setAlreadyIncluded(editingIncome.already_included_in_bank_balance || false);
       } else {
         setSource('');
         setPaycheckLabel('');
@@ -41,6 +43,7 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
         setDepositBank('');
         setDate(new Date().toISOString().split('T')[0]);
         setNotes('');
+        setAlreadyIncluded(false);
       }
     }
   }, [isOpen, editingIncome]);
@@ -56,6 +59,7 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
         depositBank,
         date,
         notes,
+        already_included_in_bank_balance: alreadyIncluded,
         monthKey: date.slice(0, 7)
       };
       await addIncome(data);
@@ -135,6 +139,20 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
                 {accounts.map(acc => <option key={acc.id} value={acc.institution}>{acc.institution}</option>)}
               </select>
             </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl">
+            <input 
+              type="checkbox" 
+              id="alreadyIncluded"
+              checked={alreadyIncluded}
+              onChange={(e) => setAlreadyIncluded(e.target.checked)}
+              className="mt-1 h-5 w-5 rounded-lg border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/20"
+            />
+            <label htmlFor="alreadyIncluded" className="flex flex-col cursor-pointer">
+              <span className="text-sm font-bold text-slate-900 dark:text-white">Already included in bank balance</span>
+              <span className="text-[11px] text-slate-500 font-medium">Use this if your selected bank balance already includes this income.</span>
+            </label>
           </div>
 
           <div className="space-y-2">

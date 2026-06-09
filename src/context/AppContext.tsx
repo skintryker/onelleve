@@ -22,6 +22,7 @@ export interface IncomeLog {
   amount: number;
   depositBank: string;
   notes?: string;
+  already_included_in_bank_balance?: boolean;
   monthKey: string;
   created_at: string;
 }
@@ -646,19 +647,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addIncome = async (log: Omit<IncomeLog, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
-    await supabase.from('income_log').insert([{ ...log, user_id: user.id }]);
-    
-    // Update Bank Balance
-    if (log.depositBank) {
+
+    // Save to income_log
+    const { error: insertError } = await supabase.from('income_log').insert([{ ...log, user_id: user.id }]);
+    if (insertError) {
+      console.error('Error inserting income:', insertError);
+      throw insertError;
+    }
+
+    // Update Bank Balance only if NOT already included
+    if (log.depositBank && !log.already_included_in_bank_balance) {
       const account = accounts.find(a => a.institution === log.depositBank);
       if (account) {
-        await supabase.from('bank_accounts').update({ balance: account.balance + log.amount }).eq('id', account.id);
+        const { error: updateError } = await supabase
+          .from('bank_accounts')
+          .update({ balance: account.balance + log.amount })
+          .eq('id', account.id)
+          .eq('user_id', user.id); // Extra safety
+
+        if (updateError) {
+          console.error('Error updating bank balance:', updateError);
+          throw updateError;
+        }
       }
     }
-    
+
     await refreshData();
   };
-
   const addExpense = async (log: Omit<ExpenseLog, 'id' | 'user_id' | 'created_at'>) => {
     if (!user || !supabase) return;
     await supabase.from('expense_log').insert([{ ...log, user_id: user.id }]);
@@ -731,10 +746,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const expense = expenseLogs.find(e => e.id === id);
     
     if (income) {
-       if (income.depositBank) {
+       // Only revert bank balance if it was NOT already included
+       if (income.depositBank && !income.already_included_in_bank_balance) {
          const account = accounts.find(a => a.institution === income.depositBank);
          if (account) {
-           await supabase.from('bank_accounts').update({ balance: account.balance - income.amount }).eq('id', account.id);
+           await supabase.from('bank_accounts')
+             .update({ balance: account.balance - income.amount })
+             .eq('id', account.id)
+             .eq('user_id', user?.id); // Extra safety
          }
        }
        await supabase.from('income_log').delete().eq('id', id);
