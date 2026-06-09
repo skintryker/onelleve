@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext, Card } from '@/context/AppContext';
 import { Plus, Edit2, Trash2, Wifi, Calendar } from 'lucide-react';
 import Modal from '../modals/Modal';
@@ -57,10 +57,18 @@ const getThemeForCard = (name: string) => {
   return '#0B1220';
 };
 
-const CardsView = () => {
+const CardsView = ({ autoOpenModal, onModalClose }: { autoOpenModal?: boolean, onModalClose?: () => void }) => {
   const { cards, deleteCard, addCard, editCard, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
+
+  // Handle auto-open from Quick Add
+  useEffect(() => {
+    if (autoOpenModal) {
+      handleOpenModal();
+      if (onModalClose) onModalClose();
+    }
+  }, [autoOpenModal]);
 
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];

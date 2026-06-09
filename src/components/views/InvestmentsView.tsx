@@ -6,11 +6,19 @@ import { TrendingUp, Plus, Wallet, CreditCard, Banknote, Loader2, Calendar, Perc
 import Modal from '../modals/Modal';
 import { translations, Language, formatDate } from '@/utils/translations';
 
-const InvestmentsView = () => {
+const InvestmentsView = ({ autoOpenModal, onModalClose }: { autoOpenModal?: boolean, onModalClose?: () => void }) => {
   const { investments, activeInvestments, addInvestment, editInvestment, deleteInvestment, accounts, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
+
+  // Handle auto-open from Quick Add
+  useEffect(() => {
+    if (autoOpenModal) {
+      handleOpenModal();
+      if (onModalClose) onModalClose();
+    }
+  }, [autoOpenModal]);
   
   // Form State
   const [institution, setInstitution] = useState('');

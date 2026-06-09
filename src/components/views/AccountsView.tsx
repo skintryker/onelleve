@@ -1,15 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppContext, Account } from '@/context/AppContext';
 import { Building2, Plus, Edit2, Trash2 } from 'lucide-react';
 import AccountModal from '../modals/AccountModal';
 import { translations, Language } from '@/utils/translations';
 
-const AccountsView = () => {
+const AccountsView = ({ autoOpenModal, onModalClose }: { autoOpenModal?: boolean, onModalClose?: () => void }) => {
   const { accounts, deleteAccount, settings, maskValue } = useAppContext();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingAccount, setEditingAccount] = React.useState<Account | null>(null);
+
+  // Handle auto-open from Quick Add
+  useEffect(() => {
+    if (autoOpenModal) {
+      setEditingAccount(null);
+      setIsModalOpen(true);
+      if (onModalClose) onModalClose();
+    }
+  }, [autoOpenModal]);
 
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];

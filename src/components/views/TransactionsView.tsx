@@ -11,23 +11,26 @@ import {
   Plus,
   TrendingUp
 } from 'lucide-react';
-import TransactionModal from '../modals/TransactionModal';
-import IncomeModal from '../modals/IncomeModal';
 import { translations, Language, formatDate } from '@/utils/translations';
 
 interface TransactionsViewProps {
   initialType?: 'income' | 'expense' | 'all';
+  onEditIncome?: (income: IncomeLog) => void;
+  onAddIncome?: () => void;
+  onEditExpense?: (expense: ExpenseLog) => void;
+  onAddExpense?: () => void;
 }
 
-const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
+const TransactionsView = ({ 
+  initialType = 'all', 
+  onEditIncome, 
+  onAddIncome, 
+  onEditExpense, 
+  onAddExpense 
+}: TransactionsViewProps) => {
   const { transactions, deleteTransaction, activeExpenseLogs, activeIncomeLogs, settings, maskValue } = useAppContext();
   const [searchTerm, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'income' | 'expense' | 'all'>(initialType);
-  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
-  const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
-  
-  const [editingExpense, setEditingExpense] = useState<ExpenseLog | null>(null);
-  const [editingIncome, setEditingIncome] = useState<IncomeLog | null>(null);
 
   const currentLang = (settings?.language as Language) || 'en';
   const dateFormat = settings?.date_format || 'MM/DD/YYYY';
@@ -55,26 +58,22 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
   const handleEdit = (tr: UnifiedTransaction) => {
     if (tr.type === 'expense' || tr.type === 'investment') {
       const log = activeExpenseLogs.find(e => e.id === tr.id);
-      if (log) {
-        setEditingExpense(log);
-        setIsExpenseModalOpen(true);
+      if (log && onEditExpense) {
+        onEditExpense(log);
       }
     } else {
       const log = activeIncomeLogs.find(i => i.id === tr.id);
-      if (log) {
-        setEditingIncome(log);
-        setIsIncomeModalOpen(true);
+      if (log && onEditIncome) {
+        onEditIncome(log);
       }
     }
   };
 
   const handleAddNew = () => {
     if (filterType === 'income') {
-      setEditingIncome(null);
-      setIsIncomeModalOpen(true);
+      if (onAddIncome) onAddIncome();
     } else {
-      setEditingExpense(null);
-      setIsExpenseModalOpen(true);
+      if (onAddExpense) onAddExpense();
     }
   };
 
@@ -232,17 +231,6 @@ const TransactionsView = ({ initialType = 'all' }: TransactionsViewProps) => {
           </div>
         )}
       </div>
-
-      <TransactionModal 
-        isOpen={isExpenseModalOpen} 
-        onClose={() => { setIsExpenseModalOpen(false); setEditingExpense(null); }} 
-        editingTransaction={editingExpense}
-      />
-      <IncomeModal 
-        isOpen={isIncomeModalOpen} 
-        onClose={() => { setIsIncomeModalOpen(false); setEditingIncome(null); }} 
-        editingIncome={editingIncome}
-      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext, SavedReport } from '@/context/AppContext';
 import { 
   FileText, 
@@ -19,7 +19,7 @@ import Charts from '@/components/Charts';
 import Modal from '../modals/Modal';
 import { translations, Language } from '@/utils/translations';
 
-export default function ReportsView() {
+export default function ReportsView({ autoOpenModal, onModalClose }: { autoOpenModal?: boolean, onModalClose?: () => void }) {
   const { 
     incomeLogs, 
     expenseLogs, 
@@ -37,6 +37,15 @@ export default function ReportsView() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingReport, setViewingReport] = useState<SavedReport | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Handle auto-open from Quick Add
+  useEffect(() => {
+    if (autoOpenModal) {
+      handleGenerateReport();
+      if (onModalClose) onModalClose();
+    }
+  }, [autoOpenModal]);
+
 
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];

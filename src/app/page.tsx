@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Sidebar from '@/components/Sidebar';
 import SummaryCards from '@/components/SummaryCards';
 import AccountsView from '@/components/views/AccountsView';
@@ -11,9 +11,10 @@ import ReportsView from '@/components/views/ReportsView';
 import SettingsView from '@/components/views/SettingsView';
 import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
+import IncomeModal from '@/components/modals/IncomeModal';
 import Auth from '@/components/Auth';
-import { Search, Bell, Menu, Plus, Clock, AlertCircle, X, Loader2, Eye, EyeOff } from 'lucide-react';
-import { useAppContext } from '@/context/AppContext';
+import { Search, Bell, Menu, Plus, Clock, AlertCircle, X, Loader2, Eye, EyeOff, Wallet, CreditCard, TrendingUp, ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react';
+import { useAppContext, IncomeLog } from '@/context/AppContext';
 import { translations, Language, formatDate } from '@/utils/translations';
 
 export default function Dashboard() {
@@ -24,10 +25,27 @@ export default function Dashboard() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [autoOpenModal, setAutoOpenModal] = useState<string | null>(null);
+  const [editingIncome, setEditingIncome] = useState<IncomeLog | null>(null);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentLang = (settings?.language as Language) || 'en';
   const dateFormat = settings?.date_format || 'MM/DD/YYYY';
   const t = translations[currentLang];
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsQuickAddOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // 1. Search Logic
   const filteredTransactions = useMemo(() => {
@@ -127,17 +145,17 @@ export default function Dashboard() {
           </>
         );
       case 'Accounts':
-        return <AccountsView />;
+        return <AccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Credit Cards':
-        return <CardsView />;
+        return <CardsView autoOpenModal={autoOpenModal === 'card'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Investments':
-        return <InvestmentsView />;
+        return <InvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Income':
-        return <TransactionsView initialType="income" />;
+        return <TransactionsView initialType="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onAddIncome={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onAddExpense={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} />;
       case 'Expenses':
-        return <TransactionsView initialType="expense" />;
+        return <TransactionsView initialType="expense" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onAddIncome={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onAddExpense={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} />;
       case 'Reports':
-        return <ReportsView />;
+        return <ReportsView autoOpenModal={autoOpenModal === 'report'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Settings':
         return <SettingsView />;
       default:
@@ -260,12 +278,84 @@ export default function Dashboard() {
 
                 <div className="h-8 md:h-10 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
                 
-                <button 
-                  onClick={() => setIsTransactionModalOpen(true)}
-                  className="p-2 md:p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20"
-                >
-                  <Plus size={20} strokeWidth={3} />
-                </button>
+                <div className="relative" ref={dropdownRef}>
+                  <button 
+                    onClick={() => setIsQuickAddOpen(!isQuickAddOpen)}
+                    className="p-2 md:p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20"
+                  >
+                    <Plus size={20} strokeWidth={3} />
+                  </button>
+
+                  {isQuickAddOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl py-3 z-[100] animate-in fade-in zoom-in-95 duration-200">
+                      <div className="px-4 py-2 mb-1 border-b border-slate-50 dark:border-slate-800">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{currentLang === 'pt' ? 'Adição Rápida' : currentLang === 'es' ? 'Adición Rápida' : 'Quick Add'}</p>
+                      </div>
+                      
+                      <div className="p-1.5 space-y-0.5">
+                        <button 
+                          onClick={() => { setActiveItem('Accounts'); setAutoOpenModal('account'); setIsQuickAddOpen(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group text-left"
+                        >
+                          <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg group-hover:scale-110 transition-transform">
+                            <Wallet size={16} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-600 transition-colors">{t.accounts}</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setActiveItem('Credit Cards'); setAutoOpenModal('card'); setIsQuickAddOpen(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group text-left"
+                        >
+                          <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-lg group-hover:scale-110 transition-transform">
+                            <CreditCard size={16} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 transition-colors">{t.creditCards}</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setIsIncomeModalOpen(true); setIsQuickAddOpen(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group text-left"
+                        >
+                          <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-lg group-hover:scale-110 transition-transform">
+                            <ArrowUpRight size={16} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 transition-colors">{t.income}</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setIsTransactionModalOpen(true); setIsQuickAddOpen(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group text-left"
+                        >
+                          <div className="p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-lg group-hover:scale-110 transition-transform">
+                            <ArrowDownLeft size={16} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-600 transition-colors">{t.expenses}</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setActiveItem('Investments'); setAutoOpenModal('investment'); setIsQuickAddOpen(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group text-left"
+                        >
+                          <div className="p-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg group-hover:scale-110 transition-transform">
+                            <TrendingUp size={16} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-600 transition-colors">{t.investments}</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setActiveItem('Reports'); setAutoOpenModal('report'); setIsQuickAddOpen(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group text-left"
+                        >
+                          <div className="p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-lg group-hover:scale-110 transition-transform">
+                            <FileText size={16} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-purple-600 transition-colors">{t.generateReport}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -281,11 +371,17 @@ export default function Dashboard() {
       {/* Shared Modals */}
       <TransactionModal 
         isOpen={isTransactionModalOpen} 
-        onClose={() => setIsTransactionModalOpen(false)} 
+        onClose={() => { setIsTransactionModalOpen(false); setEditingExpense(null); }} 
+        editingTransaction={editingExpense}
       />
       <AccountModal 
         isOpen={isAccountModalOpen} 
         onClose={() => setIsAccountModalOpen(false)} 
+      />
+      <IncomeModal
+        isOpen={isIncomeModalOpen}
+        onClose={() => { setIsIncomeModalOpen(false); setEditingIncome(null); }}
+        editingIncome={editingIncome}
       />
     </div>
   );
