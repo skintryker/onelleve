@@ -26,22 +26,22 @@ const MobileNav = ({ activeItem, setActiveItem }: MobileNavProps) => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pb-safe pt-2 px-2 flex justify-around items-center z-[100] h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pb-safe pt-2 px-1 flex justify-around items-center z-[100] h-16 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
       {navItems.map((item) => (
         <button
           key={item.id}
           onClick={() => setActiveItem(item.id)}
           className={`flex flex-col items-center justify-center flex-1 transition-all ${
             item.isCenter 
-              ? 'bg-blue-600 text-white rounded-2xl w-12 h-12 shadow-lg shadow-blue-500/30 -mt-8' 
+              ? 'bg-blue-600 text-white rounded-xl w-10 h-10 shadow-md shadow-blue-500/30 -mt-6 shrink-0 flex-none mx-2' 
               : activeItem === item.id 
                 ? 'text-blue-600' 
-                : 'text-slate-400 dark:text-slate-500'
+                : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
           }`}
         >
-          <item.icon size={item.isCenter ? 24 : 22} strokeWidth={item.isCenter ? 3 : 2.5} />
+          <item.icon size={item.isCenter ? 20 : 20} strokeWidth={item.isCenter ? 3 : 2.5} />
           {!item.isCenter && (
-            <span className="text-[10px] font-bold mt-1 uppercase tracking-tight">{item.label}</span>
+            <span className="text-[9px] font-bold mt-1 uppercase tracking-tight">{item.label}</span>
           )}
         </button>
       ))}
