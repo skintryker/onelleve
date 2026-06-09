@@ -140,13 +140,13 @@ export default function MobileApp() {
             </div>
 
             {/* Branding Footer to fill empty space */}
-            <div className="flex flex-col items-center justify-center pt-12 pb-8">
+            <div className="flex flex-col items-center justify-center pt-12 pb-16 w-full">
               <img 
                 src="/logo-onelleve.jpg" 
                 alt="onelleve" 
-                className="h-16 md:h-20 w-auto object-contain mix-blend-multiply dark:invert mb-4 opacity-90"
+                className="w-[85%] max-w-[320px] h-auto object-contain mix-blend-multiply dark:invert mb-8 opacity-90"
               />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Premium Personal Finance</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Premium Personal Finance</p>
             </div>
           </div>
         );
