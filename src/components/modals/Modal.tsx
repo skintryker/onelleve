@@ -44,7 +44,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           </button>
         </div>
         
-        <div className="p-5 md:p-6 overflow-y-auto custom-scrollbar">
+        <div className="p-5 md:p-6 overflow-y-auto custom-scrollbar pb-10 md:pb-8">
           {children}
         </div>
       </div>
