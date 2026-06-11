@@ -167,21 +167,19 @@ export default function MobileApp() {
   return (
     <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 pt-4 pb-24">
-          <div className="flex justify-between items-center mb-6">
-            {/* Centered Logo/Subtitle Block */}
-            <div className="flex-1 flex flex-col items-center">
+        <main className="flex-1 overflow-y-auto custom-scrollbar">
+          {/* New Header */}
+          <div className="bg-white dark:bg-slate-900 pt-6 pb-5 px-4 relative">
+            <div className="flex flex-col items-center text-center">
               <img
-                src="/logo-onelleve.svg"
+                src="/logo-onelleve.jpg"
                 alt="Onelleve"
-                className="w-[210px] h-auto object-contain dark:invert"
+                className="w-[210px] h-auto object-contain"
               />
-              <p className="mt-2 text-center text-[9px] tracking-[0.2em] uppercase text-slate-400 font-black">
+              <p className="mt-2 text-[9px] tracking-[0.2em] uppercase text-slate-400 font-black">
                 Personal Finance Dashboard
               </p>
             </div>
-  
-            {/* Home button remains on the right */}
             <button 
               onClick={() => setActiveItem('Home')}
               className="absolute top-6 right-4 px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors flex items-center gap-2 active:scale-95 shrink-0"
@@ -190,7 +188,9 @@ export default function MobileApp() {
                <span className="text-[10px] font-black tracking-widest uppercase">Home</span>
             </button>
           </div>
-          {renderView()}
+          <div className="p-4">
+            {renderView()}
+          </div>
         </main>
 
         <MobileNav 
