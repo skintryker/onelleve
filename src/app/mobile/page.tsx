@@ -176,9 +176,10 @@ export default function MobileApp() {
                 alt="Onelleve"
                 className="w-[210px] h-auto object-contain"
               />
-              <p className="mt-2 text-[9px] tracking-[0.2em] uppercase text-slate-400 font-black">
+              <p className="mt-2 text-center text-[12px] tracking-[0.22em] uppercase text-slate-500 font-semibold">
                 Personal Finance Dashboard
               </p>
+
             </div>
             <button 
               onClick={() => setActiveItem('Home')}
