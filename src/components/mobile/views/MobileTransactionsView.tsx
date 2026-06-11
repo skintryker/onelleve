@@ -2,20 +2,38 @@
 
 import React, { useMemo } from 'react';
 import { useAppContext, UnifiedTransaction, IncomeLog, ExpenseLog } from '@/context/AppContext';
-import { ArrowUpRight, ArrowDownLeft, Edit2, Trash2, TrendingUp, Search } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Edit2, Trash2, TrendingUp, Search, Plus } from 'lucide-react';
 import { translations, Language, formatDate } from '@/utils/translations';
 
 interface MobileTransactionsViewProps {
   type: 'income' | 'expense';
   onEditIncome: (log: IncomeLog) => void;
   onEditExpense: (log: ExpenseLog) => void;
+  onAdd: () => void;
+  autoOpenModal?: boolean;
+  onModalClose?: () => void;
 }
 
-export default function MobileTransactionsView({ type, onEditIncome, onEditExpense }: MobileTransactionsViewProps) {
+export default function MobileTransactionsView({ 
+  type, 
+  onEditIncome, 
+  onEditExpense, 
+  onAdd,
+  autoOpenModal,
+  onModalClose
+}: MobileTransactionsViewProps) {
   const { transactions, deleteTransaction, activeExpenseLogs, activeIncomeLogs, settings, maskValue } = useAppContext();
   const currentLang = (settings?.language as Language) || 'en';
   const dateFormat = settings?.date_format || 'MM/DD/YYYY';
   const t = translations[currentLang];
+
+  // Handle auto-open from Quick Add
+  React.useEffect(() => {
+    if (autoOpenModal) {
+      onAdd();
+      if (onModalClose) onModalClose();
+    }
+  }, [autoOpenModal]);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tr => tr.type === type);
@@ -43,6 +61,12 @@ export default function MobileTransactionsView({ type, onEditIncome, onEditExpen
         <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
           {type === 'income' ? t.income : t.expenses}
         </h2>
+        <button 
+          onClick={onAdd}
+          className="p-2 bg-blue-600 text-white rounded-xl active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+        >
+          <Plus size={20} strokeWidth={3} />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-3">

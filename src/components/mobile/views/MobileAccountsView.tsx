@@ -9,12 +9,21 @@ interface MobileAccountsViewProps {
   autoOpenModal?: boolean;
   onModalClose?: () => void;
   onEditAccount: (account: Account) => void;
+  onAddAccount: () => void;
 }
 
-const MobileAccountsView = ({ onEditAccount }: MobileAccountsViewProps) => {
+const MobileAccountsView = ({ autoOpenModal, onModalClose, onEditAccount, onAddAccount }: MobileAccountsViewProps) => {
   const { accounts, deleteAccount, settings, maskValue } = useAppContext();
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
+
+  // Handle auto-open from Quick Add
+  React.useEffect(() => {
+    if (autoOpenModal) {
+      onAddAccount();
+      if (onModalClose) onModalClose();
+    }
+  }, [autoOpenModal]);
 
   const handleDelete = (id: string) => {
     if (confirm(t.areYouSureDeleteAccount)) {
@@ -26,6 +35,12 @@ const MobileAccountsView = ({ onEditAccount }: MobileAccountsViewProps) => {
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-center mb-2 px-1">
         <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t.accounts}</h2>
+        <button 
+          onClick={onAddAccount}
+          className="p-2 bg-blue-600 text-white rounded-xl active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+        >
+          <Plus size={20} strokeWidth={3} />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-3">

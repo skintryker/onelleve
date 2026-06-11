@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAppContext, IncomeLog } from '@/context/AppContext';
+import { useAppContext, IncomeLog, Account } from '@/context/AppContext';
 import Auth from '@/components/Auth';
 import MobileNav from '@/components/mobile/MobileNav';
 import MobileQuickAdd from '@/components/mobile/MobileQuickAdd';
@@ -31,6 +31,7 @@ export default function MobileApp() {
   const [autoOpenModal, setAutoOpenModal] = useState<string | null>(null);
   const [editingIncome, setEditingIncome] = useState<IncomeLog | null>(null);
   const [editingExpense, setEditingExpense] = useState<any>(null);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
@@ -58,17 +59,10 @@ export default function MobileApp() {
     return <Auth />;
   }
 
-  const handleQuickAddSelect = (item: string, modal: string) => {    setIsQuickAddOpen(false);
-    if (modal === 'income') {
-      setEditingIncome(null);
-      setIsIncomeModalOpen(true);
-    } else if (modal === 'expense') {
-      setEditingExpense(null);
-      setIsTransactionModalOpen(true);
-    } else {
-      setActiveItem(item);
-      setAutoOpenModal(modal);
-    }
+  const handleQuickAddSelect = (item: string, modal: string) => {
+    setIsQuickAddOpen(false);
+    setActiveItem(item);
+    setAutoOpenModal(modal);
   };
 
   const renderView = () => {
@@ -141,15 +135,15 @@ export default function MobileApp() {
           </div>
         );
       case 'Accounts':
-        return <div className="pb-24"><MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setIsAccountModalOpen(true); }} /></div>;
+        return <div className="pb-24"><MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setEditingAccount(acc); setIsAccountModalOpen(true); }} onAddAccount={() => { setEditingAccount(null); setIsAccountModalOpen(true); }} /></div>;
       case 'Cards':
-        return <div className="pb-24"><MobileCardsView onEditCard={(card) => { /* Desktop requires Cards modal handling, we'll just implement basic view for now or handle later */ }} /></div>;
+        return <div className="pb-24"><MobileCardsView autoOpenModal={autoOpenModal === 'card'} onModalClose={() => setAutoOpenModal(null)} /></div>;
       case 'Income':
-        return <div className="pb-24"><MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onEditExpense={() => {}} /></div>;
+        return <div className="pb-24"><MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onEditExpense={() => {}} onAdd={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} autoOpenModal={autoOpenModal === 'income'} onModalClose={() => setAutoOpenModal(null)} /></div>;
       case 'Expenses':
-        return <div className="pb-24"><MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onEditIncome={() => {}} /></div>;
+        return <div className="pb-24"><MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onEditIncome={() => {}} onAdd={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} autoOpenModal={autoOpenModal === 'expense'} onModalClose={() => setAutoOpenModal(null)} /></div>;
       case 'Investments':
-        return <div className="pb-24"><MobileInvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} onEditInvestment={(inv) => { /* Handle edit */ }} /></div>;
+        return <div className="pb-24"><MobileInvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} /></div>;
       case 'Reports':
         return <div className="pb-24"><MobileReportsView autoOpenModal={autoOpenModal === 'report'} onModalClose={() => setAutoOpenModal(null)} /></div>;
       case 'Settings':
@@ -175,7 +169,7 @@ export default function MobileApp() {
                 />
               </div>
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mt-0.5">
-                Personal Finance Dashboard
+                Personal Finance Dashboard TEST
               </p>
             </div>
             <button 
@@ -214,8 +208,10 @@ export default function MobileApp() {
         />
         <AccountModal 
           isOpen={isAccountModalOpen} 
-          onClose={() => { setIsAccountModalOpen(false); setAutoOpenModal(null); }} 
+          onClose={() => { setIsAccountModalOpen(false); setEditingAccount(null); setAutoOpenModal(null); }} 
+          editingAccount={editingAccount}
         />
+
         <IncomeModal
           isOpen={isIncomeModalOpen}
           onClose={() => { setIsIncomeModalOpen(false); setEditingIncome(null); }}
