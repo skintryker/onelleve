@@ -40,8 +40,8 @@ const MobileNav = ({ activeItem, setActiveItem, isSecondaryView }: MobileNavProp
               </div>
             ) : (
               <>
-                <item.icon size={24} strokeWidth={isActive ? 3 : 2.5} />
-                <span className="text-[11px] font-bold mt-2 uppercase tracking-tight">{item.label}</span>
+                <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+                <span className={`text-[11px] mt-2 uppercase tracking-tight ${isActive ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
               </>
             )}
           </button>
