@@ -257,11 +257,12 @@ export default function MobileCardsView({ autoOpenModal, onModalClose }: MobileC
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.annualFee} ($)</label>
               <input 
-                type="number" 
-                step="0.01"
+                type="text" 
+                inputMode="decimal"
+                pattern="[0-9]*[.,]?[0-9]*"
                 placeholder="e.g. 695.00"
                 value={annualFee}
-                onChange={(e) => setAnnualFee(e.target.value)}
+                onChange={(e) => setAnnualFee(e.target.value.replace(/[^0-9.]/g, ''))}
                 className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20"
               />
             </div>

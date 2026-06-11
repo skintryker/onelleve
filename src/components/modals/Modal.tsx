@@ -33,7 +33,8 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-in fade-in zoom-in duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90dvh]">
+        {/* Header */}
         <div className="flex items-center justify-between p-5 md:p-6 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
           <button 
@@ -44,7 +45,8 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           </button>
         </div>
         
-        <div className="p-5 md:p-6 overflow-y-auto custom-scrollbar pb-10 md:pb-8">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 md:p-6 pb-20">
           {children}
         </div>
       </div>
