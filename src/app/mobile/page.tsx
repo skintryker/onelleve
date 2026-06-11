@@ -78,53 +78,60 @@ export default function MobileApp() {
     switch (activeItem) {
       case 'Home':
         return (
-          <div className="space-y-4 pb-24">
-            <div className="bg-blue-600 p-6 rounded-3xl text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 bg-blue-400/20 rounded-full blur-lg" />
-              <div className="relative z-10 text-center">
-                <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest mb-1">{t.availableBalance}</p>
-                <h2 className="text-4xl font-black tracking-tighter">
+          <div className="space-y-3 pb-24">
+            <div className="grid grid-cols-2 gap-3">
+              {/* Available Balance */}
+              <div className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.availableBalance}</p>
+                <h2 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
                   ${maskValue(summary.availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </h2>
-                <p className="text-[9px] font-medium text-blue-200 mt-1 italic">{t.actualCashOutDesc}</p>
+                <p className="text-[9px] font-medium text-slate-400 mt-1 italic">{t.actualCashOutDesc}</p>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+
+              {/* Income */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.incomeThisMonth}</p>
-                <p className="text-lg font-black text-emerald-600 tracking-tighter break-words">
+                <p className="text-xl font-black text-emerald-600 tracking-tight break-words">
                   ${maskValue(summary.incomeThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
+
+              {/* Cash Out */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.cashOutThisMonth}</p>
-                <p className="text-lg font-black text-rose-600 tracking-tighter break-words">
+                <p className="text-xl font-black text-rose-600 tracking-tight break-words">
                   ${maskValue(summary.cashOutThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
+
+              {/* Credit Cards Outstanding */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.creditCardsOutstanding}</p>
-                <p className="text-lg font-black text-amber-600 tracking-tighter break-words">
+                <p className="text-xl font-black text-amber-600 tracking-tight break-words">
                   ${maskValue(summary.cardOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
+
+              {/* Investment This Month */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.investmentThisMonth}</p>
-                <p className="text-lg font-black text-indigo-600 tracking-tighter break-words">
+                <p className="text-xl font-black text-indigo-600 tracking-tight break-words">
                   ${maskValue(summary.investmentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-              <div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.investmentsTotal}</p>
-                <p className="text-xl font-black text-slate-900 dark:text-white tracking-tighter">
-                  ${maskValue(summary.investmentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
-                </p>
-              </div>
-              <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl">
-                <TrendingUp size={20} />
+
+              {/* Investments Total */}
+              <div className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.investmentsTotal}</p>
+                  <p className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">
+                    ${maskValue(summary.investmentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
+                  </p>
+                </div>
+                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl">
+                  <TrendingUp size={24} />
+                </div>
               </div>
             </div>
           </div>
