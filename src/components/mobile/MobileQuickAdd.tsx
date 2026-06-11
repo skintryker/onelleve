@@ -28,7 +28,7 @@ const MobileQuickAdd = ({ isOpen, onClose, onSelect }: MobileQuickAddProps) => {
 
   const items = [
     { id: 'Accounts', modal: 'account', icon: Wallet, label: t.accounts, color: 'blue' },
-    { id: 'Credit Cards', modal: 'card', icon: CreditCard, label: t.creditCards, color: 'indigo' },
+    { id: 'Cards', modal: 'card', icon: CreditCard, label: t.creditCards, color: 'indigo' },
     { id: 'Income', modal: 'income', icon: ArrowUpRight, label: t.income, color: 'emerald' },
     { id: 'Expenses', modal: 'expense', icon: ArrowDownLeft, label: t.expenses, color: 'rose' },
     { id: 'Investments', modal: 'investment', icon: TrendingUp, label: t.investments, color: 'amber' },

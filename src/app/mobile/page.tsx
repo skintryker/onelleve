@@ -61,8 +61,17 @@ export default function MobileApp() {
 
   const handleQuickAddSelect = (item: string, modal: string) => {
     setIsQuickAddOpen(false);
-    setActiveItem(item);
-    setAutoOpenModal(modal);
+
+    if (modal === 'income') {
+      setEditingIncome(null);
+      setIsIncomeModalOpen(true);
+    } else if (modal === 'expense') {
+      setEditingExpense(null);
+      setIsTransactionModalOpen(true);
+    } else {
+      setActiveItem(item);
+      setAutoOpenModal(modal);
+    }
   };
 
   const renderView = () => {
