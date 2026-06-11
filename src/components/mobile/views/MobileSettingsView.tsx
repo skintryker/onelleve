@@ -1,22 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { Monitor, LogOut, Loader2, Globe, FileText, ChevronRight } from 'lucide-react';
+import { 
+  User, 
+  Globe, 
+  Monitor, 
+  Calendar, 
+  Trash2, 
+  LogOut, 
+  ChevronRight,
+  Loader2
+} from 'lucide-react';
 import { translations, Language } from '@/utils/translations';
 import { supabase } from '@/utils/supabaseClient';
+import Modal from '@/components/modals/Modal';
 
 export default function MobileSettingsView() {
-  const { user, settings, updateSettings } = useAppContext();
-  const [saving, setSaving] = React.useState(false);
+  const { user, settings, updateSettings, startNewMonth, factoryReset } = useAppContext();
+  const [saving, setSaving] = useState(false);
+  const [isStartMonthModalOpen, setIsStartMonthModalOpen] = useState(false);
+  const [isFactoryResetModalOpen, setIsFactoryResetModalOpen] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
+  
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
-
-  const handleLogout = async () => {
-    if (confirm(t.logout + '?')) {
-      if (supabase) await supabase.auth.signOut();
-    }
-  };
 
   const handleSwitchToDesktop = async () => {
     setSaving(true);
@@ -29,53 +37,133 @@ export default function MobileSettingsView() {
     }
   };
 
+  const handleStartNewMonth = async () => {
+    setSaving(true);
+    try {
+      await startNewMonth();
+      setIsStartMonthModalOpen(false);
+    } catch (error) {
+      alert('Failed to start new month.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleFactoryReset = async () => {
+    if (resetConfirmText !== 'RESET') return;
+    setSaving(true);
+    try {
+      await factoryReset();
+      setIsFactoryResetModalOpen(false);
+      setResetConfirmText('');
+    } catch (error) {
+      alert('Failed to perform factory reset.');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  const handleLogout = async () => {
+    if (confirm(t.logout + '?')) {
+      if (supabase) await supabase.auth.signOut();
+    }
+  };
+
+  const menuSections = [
+    {
+      title: 'Account',
+      items: [
+        { id: 'fullname', label: t.fullName, value: settings?.full_name || 'User', icon: User },
+        { id: 'email', label: t.emailAddress, value: user?.email, icon: null },
+      ]
+    },
+    {
+      title: 'Preferences',
+      items: [
+        { id: 'language', label: t.language, value: settings?.language?.toUpperCase() || 'EN', icon: Globe },
+        { id: 'experience', label: 'Experience', value: 'Mobile App', action: handleSwitchToDesktop, icon: Monitor, actionLabel: 'Switch to Desktop' },
+      ]
+    },
+    {
+      title: 'Data Management',
+      items: [
+        { id: 'newmonth', label: t.startNewMonth, action: () => setIsStartMonthModalOpen(true), icon: Calendar, color: 'text-blue-500' },
+        { id: 'reset', label: t.factoryReset, action: () => setIsFactoryResetModalOpen(true), icon: Trash2, color: 'text-rose-500' },
+      ]
+    }
+  ];
+
+  const renderItem = (item: any, index: number) => {
+    const content = (
+      <div className={`flex items-center justify-between p-4 ${index > 0 ? 'border-t border-slate-100 dark:border-slate-800' : ''}`}>
+        <div className="flex items-center gap-3">
+          {item.icon && (
+            <div className={`p-2 bg-slate-100 dark:bg-slate-800 rounded-lg ${item.color || 'text-slate-500'}`}>
+              <item.icon size={16} strokeWidth={2.5} />
+            </div>
+          )}
+          <p className="font-semibold text-slate-700 dark:text-slate-300 text-sm">{item.label}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <p className="text-sm font-bold text-slate-900 dark:text-white">{item.value}</p>
+          {item.action && (saving ? <Loader2 size={16} className="text-slate-400 animate-spin" /> : <ChevronRight size={16} className="text-slate-300" />)}
+        </div>
+      </div>
+    );
+
+    if (item.action) {
+      return (
+        <button key={item.id} onClick={item.action} className="w-full text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+          {content}
+        </button>
+      );
+    }
+    return <div key={item.id}>{content}</div>;
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex justify-between items-center mb-4 px-1">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
+      <div className="px-1 mb-4">
         <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{t.settings}</h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-        
-        <div className="p-5">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.fullName}</p>
-          <p className="font-bold text-slate-900 dark:text-white">{settings?.full_name || 'User'}</p>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3 mb-1">{t.emailAddress}</p>
-          <p className="font-bold text-slate-900 dark:text-white">{user?.email}</p>
-        </div>
-
-        <button 
-          onClick={handleSwitchToDesktop}
-          disabled={saving}
-          className="w-full flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl">
-              <Monitor size={18} />
-            </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-sm">Switch to Desktop Version</p>
-              <p className="text-[10px] text-slate-500 font-medium">Full dashboard experience</p>
-            </div>
+      {menuSections.map((section, sIndex) => (
+        <div key={sIndex} className="space-y-3">
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">{section.title}</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            {section.items.map(renderItem)}
           </div>
-          {saving ? <Loader2 size={16} className="text-slate-400 animate-spin" /> : <ChevronRight size={16} className="text-slate-300" />}
-        </button>
-
+        </div>
+      ))}
+      
+      <div className="pt-4">
         <button 
           onClick={handleLogout}
-          className="w-full flex items-center justify-between p-5 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors text-left group"
+          className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm active:scale-95 transition-transform"
         >
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-xl group-hover:scale-110 transition-transform">
-              <LogOut size={18} />
-            </div>
-            <p className="font-bold text-rose-600 text-sm">{t.logout}</p>
-          </div>
+          {t.logout}
         </button>
-
       </div>
-      
-      <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-8">Onelleve Premium</p>
+
+      <Modal isOpen={isStartMonthModalOpen} onClose={() => setIsStartMonthModalOpen(false)} title={t.startNewMonth}>
+        <div className="space-y-6">
+          <p className="text-sm text-slate-500 leading-relaxed">{t.startNewMonthConfirm}</p>
+          <button disabled={saving} onClick={handleStartNewMonth} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : 'Confirm & Start'}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isFactoryResetModalOpen} onClose={() => setIsFactoryResetModalOpen(false)} title={t.factoryReset}>
+        <div className="space-y-6">
+          <p className="text-sm text-rose-500 bg-rose-50 dark:bg-rose-950/30 p-4 rounded-xl leading-relaxed font-semibold">{t.factoryResetConfirm}</p>
+          <input type="text" value={resetConfirmText} onChange={(e) => setResetConfirmText(e.target.value)} placeholder="Type RESET to confirm" className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl outline-none text-center font-bold tracking-widest uppercase focus:border-rose-500" />
+          <button disabled={saving || resetConfirmText !== 'RESET'} onClick={handleFactoryReset} className="w-full py-3 bg-rose-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : 'DELETE EVERYTHING'}
+          </button>
+        </div>
+      </Modal>
+
     </div>
   );
 }
