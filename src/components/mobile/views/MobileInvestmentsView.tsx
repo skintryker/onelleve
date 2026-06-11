@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppContext, Investment } from '@/context/AppContext';
-import { TrendingUp, Edit2, Trash2, Plus, Calendar, Percent } from 'lucide-react';
+import { TrendingUp, Edit2, Trash2, Plus, Calendar, Percent, Loader2 } from 'lucide-react';
 import { translations, Language, formatDate } from '@/utils/translations';
 import Modal from '@/components/modals/Modal';
 
