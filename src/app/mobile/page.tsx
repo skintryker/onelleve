@@ -172,7 +172,7 @@ export default function MobileApp() {
           <div className="bg-white dark:bg-slate-900 pt-6 pb-5 px-4 relative">
             <div className="flex flex-col items-center text-center">
               <img
-                src="/logo-onelleve.jpg"
+                src="/logo-onelleve-clean.png"
                 alt="Onelleve"
                 className="w-[210px] h-auto object-contain"
               />
