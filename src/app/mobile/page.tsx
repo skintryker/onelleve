@@ -11,6 +11,7 @@ import MobileInvestmentsView from '@/components/mobile/views/MobileInvestmentsVi
 import MobileTransactionsView from '@/components/mobile/views/MobileTransactionsView';
 import MobileReportsView from '@/components/mobile/views/MobileReportsView';
 import MobileSettingsView from '@/components/mobile/views/MobileSettingsView';
+import MoreView from '@/components/mobile/views/MoreView';
 import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
 import IncomeModal from '@/components/modals/IncomeModal';
@@ -24,7 +25,6 @@ export default function MobileApp() {
   const [activeItem, setActiveItem] = useState('Home');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   
-  // Modal states
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
@@ -33,17 +33,17 @@ export default function MobileApp() {
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
+  const secondaryViews = ['Accounts', 'Cards', 'Investments', 'Reports', 'Settings'];
+  const isSecondaryView = secondaryViews.includes(activeItem);
+
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
 
-  // Routing and Experience Selection Logic
   React.useEffect(() => {
     if (!loading && user && settings) {
       if (!settings.preferred_experience) {
         router.push('/choose-experience');
       }
-      // Note: We DO NOT redirect to desktop if they manually visited /mobile,
-      // per the specific requirement to allow manual navigation.
     }
   }, [loading, user, settings, router]);
 
@@ -79,12 +79,9 @@ export default function MobileApp() {
       case 'Home':
         return (
           <div className="space-y-4 pb-24">
-            
-            {/* Main Hero Card: Available Balance */}
             <div className="bg-blue-600 p-6 rounded-3xl text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
               <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-xl" />
               <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 bg-blue-400/20 rounded-full blur-lg" />
-              
               <div className="relative z-10 text-center">
                 <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest mb-1">{t.availableBalance}</p>
                 <h2 className="text-4xl font-black tracking-tighter">
@@ -93,34 +90,25 @@ export default function MobileApp() {
                 <p className="text-[9px] font-medium text-blue-200 mt-1 italic">{t.actualCashOutDesc}</p>
               </div>
             </div>
-
-            {/* 2-Column Grid for Secondary KPIs */}
             <div className="grid grid-cols-2 gap-3">
-              {/* Income */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.incomeThisMonth}</p>
                 <p className="text-lg font-black text-emerald-600 tracking-tighter break-words">
                   ${maskValue(summary.incomeThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
-
-              {/* Cash Out */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.cashOutThisMonth}</p>
                 <p className="text-lg font-black text-rose-600 tracking-tighter break-words">
                   ${maskValue(summary.cashOutThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
-
-              {/* Credit Cards Outstanding */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.creditCardsOutstanding}</p>
                 <p className="text-lg font-black text-amber-600 tracking-tighter break-words">
                   ${maskValue(summary.cardOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </div>
-
-              {/* Investment This Month */}
               <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.investmentThisMonth}</p>
                 <p className="text-lg font-black text-indigo-600 tracking-tighter break-words">
@@ -128,8 +116,6 @@ export default function MobileApp() {
                 </p>
               </div>
             </div>
-
-            {/* Full Width Card for Investments Total */}
             <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.investmentsTotal}</p>
@@ -143,22 +129,24 @@ export default function MobileApp() {
             </div>
           </div>
         );
-      case 'Accounts':
-        return <div className="pb-24"><MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setEditingAccount(acc); setIsAccountModalOpen(true); }} onAddAccount={() => { setEditingAccount(null); setIsAccountModalOpen(true); }} /></div>;
-      case 'Cards':
-        return <div className="pb-24"><MobileCardsView autoOpenModal={autoOpenModal === 'card'} onModalClose={() => setAutoOpenModal(null)} /></div>;
       case 'Income':
-        return <div className="pb-24"><MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onEditExpense={() => {}} onAdd={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} autoOpenModal={autoOpenModal === 'income'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onEditExpense={() => {}} onAdd={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} autoOpenModal={autoOpenModal === 'income'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Expenses':
-        return <div className="pb-24"><MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onEditIncome={() => {}} onAdd={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} autoOpenModal={autoOpenModal === 'expense'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onEditIncome={() => {}} onAdd={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} autoOpenModal={autoOpenModal === 'expense'} onModalClose={() => setAutoOpenModal(null)} />;
+      case 'More':
+        return <MoreView onNavigate={setActiveItem} />;
+      case 'Accounts':
+        return <MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setEditingAccount(acc); setIsAccountModalOpen(true); }} onAddAccount={() => { setEditingAccount(null); setIsAccountModalOpen(true); }} />;
+      case 'Cards':
+        return <MobileCardsView autoOpenModal={autoOpenModal === 'card'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Investments':
-        return <div className="pb-24"><MobileInvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <MobileInvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Reports':
-        return <div className="pb-24"><MobileReportsView autoOpenModal={autoOpenModal === 'report'} onModalClose={() => setAutoOpenModal(null)} /></div>;
+        return <MobileReportsView autoOpenModal={autoOpenModal === 'report'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Settings':
-        return <div className="pb-24"><MobileSettingsView /></div>;
+        return <MobileSettingsView />;
       case 'QuickAdd':
-        return null; // Handled by the overlay
+        return null;
       default:
         return null;
     }
@@ -168,8 +156,7 @@ export default function MobileApp() {
     <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto custom-scrollbar">
-          {/* New Header */}
-          <div className="bg-white dark:bg-slate-900 pt-6 pb-5 px-4 relative">
+          <div className="bg-white dark:bg-slate-900 pt-8 pb-6 px-4 relative">
             <div className="flex flex-col items-center text-center">
               <img
                 src="/logo-onelleve-clean.png"
@@ -179,15 +166,7 @@ export default function MobileApp() {
               <p className="mt-2 text-center text-[12px] tracking-[0.22em] uppercase text-slate-500 font-semibold">
                 Personal Finance Dashboard
               </p>
-
             </div>
-            <button 
-              onClick={() => setActiveItem('Home')}
-              className="absolute top-6 right-4 px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors flex items-center gap-2 active:scale-95 shrink-0"
-            >
-               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-               <span className="text-[10px] font-black tracking-widest uppercase">Home</span>
-            </button>
           </div>
           <div className="p-4">
             {renderView()}
@@ -195,7 +174,8 @@ export default function MobileApp() {
         </main>
 
         <MobileNav 
-          activeItem={activeItem === 'QuickAdd' ? activeItem : activeItem} 
+          activeItem={activeItem} 
+          isSecondaryView={isSecondaryView}
           setActiveItem={(item) => {
             if (item === 'QuickAdd') {
               setIsQuickAddOpen(true);
@@ -211,7 +191,6 @@ export default function MobileApp() {
           onSelect={handleQuickAddSelect}
         />
 
-        {/* Modals reused from desktop */}
         <TransactionModal 
           isOpen={isTransactionModalOpen} 
           onClose={() => { setIsTransactionModalOpen(false); setEditingExpense(null); }} 
@@ -222,7 +201,6 @@ export default function MobileApp() {
           onClose={() => { setIsAccountModalOpen(false); setEditingAccount(null); setAutoOpenModal(null); }} 
           editingAccount={editingAccount}
         />
-
         <IncomeModal
           isOpen={isIncomeModalOpen}
           onClose={() => { setIsIncomeModalOpen(false); setEditingIncome(null); }}
