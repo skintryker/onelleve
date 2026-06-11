@@ -169,7 +169,7 @@ export default function MobileApp() {
                 />
               </div>
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mt-0.5">
-                Personal Finance Dashboard TEST LIVE
+                Personal Finance Dashboard
               </p>
 
             </div>
