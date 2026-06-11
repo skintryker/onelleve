@@ -86,7 +86,6 @@ export default function MobileApp() {
                 <h2 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
                   ${maskValue(summary.availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </h2>
-                <p className="text-[9px] font-medium text-slate-400 mt-1 italic">{t.actualCashOutDesc}</p>
               </div>
 
               {/* Income */}
