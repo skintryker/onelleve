@@ -172,9 +172,9 @@ export default function MobileApp() {
             {/* Centered Logo/Subtitle Block */}
             <div className="flex-1 flex flex-col items-center">
               <img
-                src="/logo-onelleve.jpg"
+                src="/logo-onelleve.svg"
                 alt="Onelleve"
-                className="w-[190px] h-auto object-contain mix-blend-multiply dark:invert"
+                className="w-[210px] h-auto object-contain dark:invert"
               />
               <p className="mt-2 text-center text-[9px] tracking-[0.2em] uppercase text-slate-400 font-black">
                 Personal Finance Dashboard
