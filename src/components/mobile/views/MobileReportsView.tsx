@@ -3,9 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext, SavedReport } from '@/context/AppContext';
 import { FileText, Trash2, Eye, Calendar, Loader2 } from 'lucide-react';
-import Modal from '@/components/modals/Modal';
 import { translations, Language } from '@/utils/translations';
-import Charts from '@/components/Charts';
+import MobileReportResultView from './MobileReportResultView';
 
 interface MobileReportsViewProps {
   autoOpenModal?: boolean;
@@ -13,7 +12,7 @@ interface MobileReportsViewProps {
 }
 
 export default function MobileReportsView({ autoOpenModal, onModalClose }: MobileReportsViewProps) {
-  const { reports, deleteReport, settings, addReport, calculateSummary, incomeLogs, expenseLogs, investments, accounts, cards, maskValue } = useAppContext();
+  const { reports, deleteReport, settings, addReport, calculateSummary, incomeLogs, expenseLogs, investments, accounts, cards } = useAppContext();
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -34,7 +33,6 @@ export default function MobileReportsView({ autoOpenModal, onModalClose }: Mobil
     return opts;
   }, [currentLang]);
 
-  // Handle auto-open
   React.useEffect(() => {
     if (autoOpenModal) {
       handleGenerateReport();
@@ -45,61 +43,26 @@ export default function MobileReportsView({ autoOpenModal, onModalClose }: Mobil
   const handleGenerateReport = async () => {
     setIsGenerating(true);
     try {
-      const currentMonthKey = new Date().toISOString().slice(0, 7);
-      const isSelectedCurrent = selectedMonth === currentMonthKey;
-
-      const reportData = calculateSummary(
-        selectedMonth,
-        isSelectedCurrent,
-        incomeLogs,
-        expenseLogs,
-        investments,
-        accounts,
-        cards
-      );
-
-      const hasData = 
-        reportData.incomeThisMonth > 0 || 
-        reportData.cashOutThisMonth > 0 || 
-        reportData.investmentThisMonth > 0 ||
-        reportData.investmentsTotal > 0 ||
-        reportData.availableBalance > 0 ||
-        reportData.cardOutstanding > 0;
-
-      if (!hasData) {
+      const reportData = calculateSummary(selectedMonth, selectedMonth === new Date().toISOString().slice(0, 7), incomeLogs, expenseLogs, investments, accounts, cards);
+      if (!reportData.incomeThisMonth && !reportData.cashOutThisMonth) {
         alert('No data available to generate a report.');
         return;
       }
-
-      const periodLabel = months.find(m => m.key === selectedMonth)?.label || selectedMonth;
-
-      const newReportData = {
-        title: `${periodLabel} Financial Summary`,
-        period: periodLabel,
+      const savedReport = await addReport({
+        title: `${months.find(m => m.key === selectedMonth)?.label || selectedMonth} Financial Summary`,
+        period: months.find(m => m.key === selectedMonth)?.label || selectedMonth,
         report_data: reportData
-      };
-
-      const savedReport = await addReport(newReportData);
-      
+      });
       if (savedReport) {
         setViewingReport(savedReport);
         setIsViewModalOpen(true);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error generating report:', error);
-      alert(`Failed to generate report: ${error?.message || 'Unknown error'}`);
+      alert('Failed to generate report.');
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const currentData = useMemo(() => {
-    if (!viewingReport) return null;
-    return viewingReport.report_data || (viewingReport as any).snapshot_data || {};
-  }, [viewingReport]);
-
-  const safeFormat = (val: any) => {
-    return maskValue(Number(val ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   };
 
   return (
@@ -165,28 +128,12 @@ export default function MobileReportsView({ autoOpenModal, onModalClose }: Mobil
         )}
       </div>
 
-      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title={viewingReport?.title || 'Report'}>
-        {currentData && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.totalIncome}</p>
-                <p className="text-xl font-black text-emerald-600">${safeFormat(currentData.incomeThisMonth)}</p>
-              </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.totalCashOut}</p>
-                <p className="text-xl font-black text-rose-600">${safeFormat(currentData.cashOutThisMonth)}</p>
-              </div>
-            </div>
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-900/30 text-center">
-              <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">{t.availableBalance}</p>
-              <p className="text-2xl font-black text-blue-600 dark:text-blue-400">${safeFormat(currentData.availableBalance)}</p>
-            </div>
-            {/* The Charts component works nicely if wrapped, but might be too tall for mobile. Let's just use it and rely on its own responsiveness */}
-            <Charts />
-          </div>
-        )}
-      </Modal>
+      {isViewModalOpen && (
+        <MobileReportResultView 
+          report={viewingReport}
+          onClose={() => setIsViewModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
