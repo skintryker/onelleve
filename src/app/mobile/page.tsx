@@ -118,13 +118,13 @@ export default function MobileApp() {
                   <TrendingUp size={24} />
                 </div>
               </button>
-              <button onClick={() => setActiveItem('Reports')} className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-95 transition-transform">
+              <button onClick={() => setActiveItem('Reports')} className="col-span-2 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-95 transition-transform">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.reports}</p>
-                  <p className="text-lg font-medium text-slate-500 dark:text-slate-400">View financial summaries</p>
+                  <p className="text-[15px] font-semibold text-slate-800 dark:text-white uppercase tracking-wider">{t.reports}</p>
+                  <p className="text-[12px] font-normal text-slate-400">View financial summaries</p>
                 </div>
                 <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-xl">
-                  <PieChart size={24} />
+                  <PieChart size={20} />
                 </div>
               </button>
             </div>
