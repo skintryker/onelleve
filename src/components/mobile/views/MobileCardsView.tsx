@@ -202,8 +202,8 @@ export default function MobileCardsView({ autoOpenModal, onModalClose }: MobileC
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 animate-in fade-in duration-200" onClick={handleCloseModal}>
-          <div className="w-full max-w-[430px] max-h-[92dvh] bg-white dark:bg-slate-900 rounded-[32px] overflow-hidden flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 p-0 animate-in fade-in duration-300" onClick={handleCloseModal}>
+          <div className="w-full max-w-[430px] max-h-[95dvh] bg-white dark:bg-slate-900 rounded-t-[32px] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex-shrink-0 flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">{editingCard ? t.editCard : t.newCard}</h2>
@@ -213,42 +213,38 @@ export default function MobileCardsView({ autoOpenModal, onModalClose }: MobileC
             {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto">
               <form id="card-form" onSubmit={handleSubmit} className="p-6 space-y-4">
-                <div className="space-y-2 text-slate-900 dark:text-white">
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.cardIdentification}</label>
-                  <input type="text" required placeholder="e.g. AMEX Platinum" value={cardName} onChange={(e) => handleNameChange(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
+                  <input type="text" required placeholder="e.g. AMEX Platinum" value={cardName} onChange={(e) => handleNameChange(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.dueDay} (1-31)</label>
-                    <input type="number" min="1" max="31" required placeholder="e.g. 15" value={dueDay} onChange={(e) => setDueDay(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
+                    <input type="number" min="1" max="31" required placeholder="e.g. 15" value={dueDay} onChange={(e) => setDueDay(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.expiryPlaceholder}</label>
-                    <input type="text" required placeholder="e.g. 12/28" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
+                    <input type="text" required placeholder="e.g. 12/28" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4 text-slate-900 dark:text-white">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.outstandingBalance} ($)</label>
-                    <input type="number" step="0.01" placeholder="0.00" value={outstandingBalance} onChange={(e) => setOutstandingBalance(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
+                    <input type="number" step="0.01" placeholder="0.00" value={outstandingBalance} onChange={(e) => setOutstandingBalance(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.annualFee} ($)</label>
-                    <input type="text" inputMode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="e.g. 695.00" value={annualFee} onChange={(e) => setAnnualFee(e.target.value.replace(/[^0-9.]/g, ''))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
+                    <input type="text" inputMode="decimal" pattern="[0-9]*[.,]?[0-9]*" placeholder="e.g. 695.00" value={annualFee} onChange={(e) => setAnnualFee(e.target.value.replace(/[^0-9.]/g, ''))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none font-bold focus:ring-2 focus:ring-blue-500/20" />
                   </div>
                 </div>
-
-                <div className="space-y-2 text-slate-900 dark:text-white">
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.renewalMonth}</label>
-                  <select value={renewalMonth} onChange={(e) => setRenewalMonth(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold appearance-none focus:ring-2 focus:ring-blue-500/20">
+                  <select value={renewalMonth} onChange={(e) => setRenewalMonth(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none font-bold appearance-none focus:ring-2 focus:ring-blue-500/20">
                     <option value="">e.g. January</option>
                     {months.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
-
-                <div className="space-y-2 text-slate-900 dark:text-white">
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.cardTheme}</label>
                   <div className="flex flex-wrap gap-2 p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
                     {colorOptions.map((opt) => (
@@ -260,8 +256,8 @@ export default function MobileCardsView({ autoOpenModal, onModalClose }: MobileC
             </div>
 
             {/* Footer */}
-            <div className="flex-shrink-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-              <button form="card-form" type="submit" className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs">
+            <div className="flex-shrink-0 p-4 bg-white dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              <button form="card-form" type="submit" className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-95 transition-all text-xs">
                 {editingCard ? t.updateCard : t.addCard}
               </button>
             </div>
