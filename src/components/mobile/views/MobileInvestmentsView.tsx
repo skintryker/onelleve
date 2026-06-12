@@ -192,14 +192,15 @@ export default function MobileInvestmentsView({ autoOpenModal, onModalClose }: M
               required
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
-              className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none font-bold text-slate-900 dark:text-white"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none font-bold text-slate-900 dark:text-white appearance-none focus:ring-2 focus:ring-blue-500/20"
             >
-              <option value="">{t.selectInstitution}</option>
-              <option value="CD">Certificate of Deposit (CD)</option>
-              <option value="Stocks">Stocks / Brokerage</option>
-              <option value="Crypto">Crypto</option>
-              <option value="Retirement">Retirement (401k/IRA)</option>
-              <option value="Other">Other</option>
+              <option value="">{t.selectType}</option>
+              <option value="Stocks/ETF">Stocks/ETF</option>
+              <option value="401k">401k</option>
+              <option value="Roth IRA">Roth IRA</option>
+              <option value="HSA">HSA</option>
+              <option value="HYSA">HYSA</option>
+              <option value="CD">CD</option>
             </select>
           </div>
 
