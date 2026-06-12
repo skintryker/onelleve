@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Modal from './Modal';
 import { useAppContext, IncomeLog } from '@/context/AppContext';
-import { DollarSign, Tag, Building2, Calendar } from 'lucide-react';
-import { Language, translations } from '@/utils/translations';
+import { X, Loader2 } from 'lucide-react';
+import { translations, Language } from '@/utils/translations';
 
 interface IncomeModalProps {
   isOpen: boolean;
@@ -12,10 +11,9 @@ interface IncomeModalProps {
   editingIncome?: IncomeLog | null;
 }
 
-const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
+export default function IncomeModal({ isOpen, onClose, editingIncome }: IncomeModalProps) {
   const { addIncome, accounts, settings } = useAppContext();
-  const currentLang = (settings?.language as Language) || 'en';
-  const t = translations[currentLang];
+  const t = translations[(settings?.language as Language) || 'en'];
 
   const [source, setSource] = useState('');
   const [paycheckLabel, setPaycheckLabel] = useState('');
@@ -25,6 +23,16 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
   const [notes, setNotes] = useState('');
   const [alreadyIncluded, setAlreadyIncluded] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const resetForm = () => {
+    setSource('');
+    setPaycheckLabel('');
+    setAmount('');
+    setDepositBank('');
+    setDate(new Date().toISOString().split('T')[0]);
+    setNotes('');
+    setAlreadyIncluded(false);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -37,13 +45,7 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
         setNotes(editingIncome.notes || '');
         setAlreadyIncluded(editingIncome.already_included_in_bank_balance || false);
       } else {
-        setSource('');
-        setPaycheckLabel('');
-        setAmount('');
-        setDepositBank('');
-        setDate(new Date().toISOString().split('T')[0]);
-        setNotes('');
-        setAlreadyIncluded(false);
+        resetForm();
       }
     }
   }, [isOpen, editingIncome]);
@@ -52,17 +54,11 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const data = {
-        source,
-        paycheckLabel,
-        amount: parseFloat(amount),
-        depositBank,
-        date,
-        notes,
-        already_included_in_bank_balance: alreadyIncluded,
+      await addIncome({
+        source, paycheckLabel, amount: parseFloat(amount), depositBank, date, notes, 
+        already_included_in_bank_balance: alreadyIncluded, 
         monthKey: date.slice(0, 7)
-      };
-      await addIncome(data);
+      });
       onClose();
     } catch (error) {
       console.error('Error saving income:', error);
@@ -71,113 +67,59 @@ const IncomeModal = ({ isOpen, onClose, editingIncome }: IncomeModalProps) => {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={editingIncome ? (currentLang === 'pt' ? 'Editar Renda' : currentLang === 'es' ? 'Editar Ingreso' : 'Edit Income') : (currentLang === 'pt' ? 'Adicionar Renda' : currentLang === 'es' ? 'Agregar Ingreso' : 'Add Income')}
-    >
-      <form onSubmit={handleSubmit} className="space-y-6 text-slate-900 dark:text-white">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.source}</label>
-            <div className="relative">
-              <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input 
-                type="text" 
-                required
-                placeholder={currentLang === 'pt' ? 'Ex: Salário, Freelance' : currentLang === 'es' ? 'Ej: Salario, Freelance' : 'Ex: Salary, Freelance'}
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold pl-12 text-slate-900 dark:text-white"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 p-0 animate-in fade-in duration-300" onClick={onClose}>
+      <div className="w-full max-w-[430px] max-h-[90dvh] bg-white dark:bg-slate-900 rounded-t-[32px] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex-shrink-0 flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{editingIncome ? 'Edit Income' : 'Add Income'}</h2>
+          <button onClick={onClose} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"><X size={20} /></button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto">
+          <form id="income-form" onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.amount} ($)</label>
-              <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="number" 
-                  required
-                  step="0.01"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-black pl-12 text-slate-900 dark:text-white"
-                />
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.source}</label>
+              <input type="text" required placeholder="Ex: Salary, Freelance" value={source} onChange={(e) => setSource(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.amount} ($)</label>
+                <input type="number" required step="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.date}</label>
+                <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold" />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.date}</label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="date" 
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold pl-12 text-slate-900 dark:text-white"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{currentLang === 'pt' ? 'Banco de Depósito' : currentLang === 'es' ? 'Banco de Depósito' : 'Deposit Bank'}</label>
-            <div className="relative">
-              <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <select 
-                value={depositBank}
-                onChange={(e) => setDepositBank(e.target.value)}
-                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold pl-12 text-slate-900 dark:text-white"
-                required
-              >
-                <option value="">{currentLang === 'pt' ? 'Selecionar Banco' : currentLang === 'es' ? 'Seleccionar Banco' : 'Select Bank'}</option>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deposit Bank</label>
+              <select value={depositBank} onChange={(e) => setDepositBank(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-sm font-bold" required>
+                <option value="">Select Bank</option>
                 {accounts.map(acc => <option key={acc.id} value={acc.institution}>{acc.institution}</option>)}
               </select>
             </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl">
-            <input 
-              type="checkbox" 
-              id="alreadyIncluded"
-              checked={alreadyIncluded}
-              onChange={(e) => setAlreadyIncluded(e.target.checked)}
-              className="mt-1 h-5 w-5 rounded-lg border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/20"
-            />
-            <label htmlFor="alreadyIncluded" className="flex flex-col cursor-pointer">
-              <span className="text-sm font-bold text-slate-900 dark:text-white">Already included in bank balance</span>
-              <span className="text-[11px] text-slate-500 font-medium">Use this if your selected bank balance already includes this income.</span>
-            </label>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Notes (Optional)</label>
-            <textarea 
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold min-h-[100px] text-slate-900 dark:text-white"
-              placeholder="Add details..."
-            />
-          </div>
+            <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
+              <input type="checkbox" id="alreadyIncluded" checked={alreadyIncluded} onChange={(e) => setAlreadyIncluded(e.target.checked)} className="mt-0.5 h-5 w-5 rounded-md border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/20" />
+              <label htmlFor="alreadyIncluded" className="flex flex-col cursor-pointer">
+                <span className="text-sm font-bold text-slate-900 dark:text-white">Already included in bank balance</span>
+                <span className="text-[11px] text-slate-500 font-medium">Use this if your bank balance already includes this income.</span>
+              </label>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Notes (Optional)</label>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-bold min-h-[60px]" placeholder="Add details..." />
+            </div>
+          </form>
         </div>
-
-        <div className="pt-2 flex justify-center">
-          <button 
-            type="submit"
-            disabled={saving}
-            className="w-full sm:max-w-[280px] py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-emerald-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2"
-          >
-            {editingIncome ? (currentLang === 'pt' ? 'Atualizar Renda' : currentLang === 'es' ? 'Actualizar Ingreso' : 'Update Income') : (currentLang === 'pt' ? 'Adicionar Renda' : currentLang === 'es' ? 'Agregar Ingreso' : 'Add Income')}
+        
+        <div className="flex-shrink-0 p-4 bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <button type="submit" form="income-form" disabled={saving} className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-emerald-500/25 active:scale-95 transition-all text-xs flex items-center justify-center gap-2">
+            {saving ? <Loader2 size={16} className="animate-spin"/> : (editingIncome ? 'Update Income' : 'Add Income')}
           </button>
         </div>
-      </form>
-    </Modal>
+      </div>
+    </div>
   );
 };
-
-export default IncomeModal;

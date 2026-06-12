@@ -106,11 +106,11 @@ export default function MobileSettingsView() {
 
   const renderItem = (item: any, index: number) => {
     const content = (
-      <div className={`flex items-center justify-between p-4 ${index > 0 ? 'border-t border-slate-100 dark:border-slate-800' : ''}`}>
-        <div className="flex items-center gap-4">
+      <div className={`flex items-center justify-between p-3.5 ${index > 0 ? 'border-t border-slate-100 dark:border-slate-800' : ''}`}>
+        <div className="flex items-center gap-3">
           {item.icon && (
-            <div className={`p-2 bg-slate-100 dark:bg-slate-800 rounded-lg ${item.color || 'text-slate-500'}`}>
-              <item.icon size={16} strokeWidth={3} />
+            <div className={`p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg ${item.color || 'text-slate-500'}`}>
+              <item.icon size={15} strokeWidth={3} />
             </div>
           )}
           <div>
@@ -135,24 +135,24 @@ export default function MobileSettingsView() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
-      <div className="px-1 mb-2">
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{t.settings}</h2>
+    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="px-1">
+        <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t.settings}</h2>
       </div>
 
       {menuSections.map((section, sIndex) => (
         <div key={sIndex} className="space-y-2">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">{section.title}</h3>
-          <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-3">{section.title}</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-[18px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             {section.items.map(renderItem)}
           </div>
         </div>
       ))}
       
-      <div className="pt-4">
+      <div className="pt-2">
         <button 
           onClick={handleLogout}
-          className="w-full py-3.5 bg-slate-100 dark:bg-slate-800 text-rose-500 dark:text-rose-400 rounded-xl font-bold text-sm active:scale-95 transition-transform"
+          className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-rose-500 dark:text-rose-400 rounded-xl font-bold text-sm active:scale-95 transition-transform"
         >
           {t.logout}
         </button>
@@ -187,7 +187,6 @@ export default function MobileSettingsView() {
           </button>
         </div>
       </Modal>
-
     </div>
   );
 }
