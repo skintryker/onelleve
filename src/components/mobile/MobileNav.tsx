@@ -30,12 +30,12 @@ const MobileNav = ({ activeItem, setActiveItem, isSecondaryView }: MobileNavProp
               item.isCenter 
                 ? '' 
                 : isActive
-                  ? 'text-[#1F5A8A]' 
+                  ? 'text-blue-600' 
                   : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
             {item.isCenter ? (
-              <div className='bg-[#1F5A8A] text-white rounded-2xl w-14 h-14 flex items-center justify-center shadow-lg shadow-[#1F5A8A]/30'>
+              <div className='bg-blue-600 text-white rounded-2xl w-14 h-14 flex items-center justify-center shadow-lg shadow-blue-500/30'>
                 <item.icon size={28} strokeWidth={3} />
               </div>
             ) : (
