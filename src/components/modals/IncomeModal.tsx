@@ -16,7 +16,6 @@ export default function IncomeModal({ isOpen, onClose, editingIncome }: IncomeMo
   const t = translations[(settings?.language as Language) || 'en'];
 
   const [source, setSource] = useState('');
-  const [paycheckLabel, setPaycheckLabel] = useState('');
   const [amount, setAmount] = useState('');
   const [depositBank, setDepositBank] = useState('');
   const [date, setDate] = useState('');
@@ -26,7 +25,6 @@ export default function IncomeModal({ isOpen, onClose, editingIncome }: IncomeMo
 
   const resetForm = () => {
     setSource('');
-    setPaycheckLabel('');
     setAmount('');
     setDepositBank('');
     setDate(new Date().toISOString().split('T')[0]);
@@ -38,7 +36,6 @@ export default function IncomeModal({ isOpen, onClose, editingIncome }: IncomeMo
     if (isOpen) {
       if (editingIncome) {
         setSource(editingIncome.source);
-        setPaycheckLabel(editingIncome.paycheckLabel);
         setAmount(editingIncome.amount.toString());
         setDepositBank(editingIncome.depositBank);
         setDate(editingIncome.date);
@@ -55,7 +52,7 @@ export default function IncomeModal({ isOpen, onClose, editingIncome }: IncomeMo
     setSaving(true);
     try {
       await addIncome({
-        source, paycheckLabel, amount: parseFloat(amount), depositBank, date, notes, 
+        source, paycheckLabel: '', amount: parseFloat(amount), depositBank, date, notes, 
         already_included_in_bank_balance: alreadyIncluded, 
         monthKey: date.slice(0, 7)
       });
@@ -101,7 +98,7 @@ export default function IncomeModal({ isOpen, onClose, editingIncome }: IncomeMo
               </select>
             </div>
             <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
-              <input type="checkbox" id="alreadyIncluded" checked={alreadyIncluded} onChange={(e) => setAlreadyIncluded(e.target.checked)} className="mt-0.5 h-5 w-5 rounded-md border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/20" />
+              <input type="checkbox" id="alreadyIncluded" checked={alreadyIncluded} onChange={(e) => setAlreadyIncluded(e.target.checked)} className="h-5 w-5 rounded-md border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/20" />
               <label htmlFor="alreadyIncluded" className="flex flex-col cursor-pointer">
                 <span className="text-sm font-bold text-slate-900 dark:text-white">Already included in bank balance</span>
                 <span className="text-[11px] text-slate-500 font-medium">Use this if your bank balance already includes this income.</span>

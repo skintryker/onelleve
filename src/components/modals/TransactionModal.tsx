@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppContext, ExpenseLog, TransactionType, PaymentChannel, ExpenseCategory } from '@/context/AppContext';
-import { DollarSign, Tag, AlertCircle, X } from 'lucide-react';
+import { AlertCircle, X } from 'lucide-react';
 import { Language, translations } from '@/utils/translations';
 
 interface TransactionModalProps {
@@ -15,7 +15,7 @@ const categories: ExpenseCategory[] = [
   'Housing', 'Groceries', 'Dining', 'Leisure', 'Gifts', 'Travel', 'Memberships', 'Autopay', 'Utility', 'Credit Card', 'Health', 'Transport', 'Other'
 ];
 
-const transactionTypes: TransactionType[] = ['Purchase', 'Payment', 'Autopay', 'Investment', 'Other'];
+const transactionTypes: TransactionType[] = ['Purchase', 'Payment', 'Autopay'];
 const paymentChannels: PaymentChannel[] = ['Bank', 'Credit Card', 'Autopay', 'Venmo', 'Zelle', 'Cash', 'PayPal'];
 
 const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionModalProps) => {
@@ -71,7 +71,6 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    // Validations
     if (type === 'Payment') {
       if (paymentMethod === 'Credit Card Payment' && !card) { setError('Please select target card for payment.'); return; }
       if (!bank) { setError('Please select source bank for payment.'); return; }
@@ -109,7 +108,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 p-0 animate-in fade-in duration-300" onClick={onClose}>
       <div className="w-full max-w-[430px] max-h-[95dvh] bg-white dark:bg-slate-900 rounded-t-[32px] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex-shrink-0 flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{editingTransaction ? t.editCard.replace('Card', 'Log') : t.addTransaction}</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{editingTransaction ? 'Edit Expense' : 'New Expense'}</h2>
           <button onClick={onClose} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"><X size={20} /></button>
         </div>
         
@@ -221,12 +220,10 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
 
         <div className="flex-shrink-0 p-4 bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <button type="submit" form="transaction-form" className={`w-full py-3.5 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-xs flex items-center justify-center gap-2 ${type === 'Payment' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/25' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25'} text-white`}>
-            {editingTransaction ? t.updateCard.replace('Card', 'Log') : t.addTransaction}
+            {editingTransaction ? 'Update Expense' : 'Add Expense'}
           </button>
         </div>
       </div>
     </div>
   );
 };
-
-export default TransactionModal;

@@ -17,7 +17,6 @@ const MobileAccountsView = ({ autoOpenModal, onModalClose, onEditAccount, onAddA
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
 
-  // Handle auto-open from Quick Add
   React.useEffect(() => {
     if (autoOpenModal) {
       onAddAccount();

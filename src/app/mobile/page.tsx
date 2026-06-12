@@ -14,12 +14,12 @@ import MobileSettingsView from '@/components/mobile/views/MobileSettingsView';
 import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
 import IncomeModal from '@/components/modals/IncomeModal';
-import { Loader2, TrendingUp, PieChart } from 'lucide-react';
+import { Loader2, TrendingUp, PieChart, Eye, EyeOff } from 'lucide-react';
 import { translations, Language } from '@/utils/translations';
 import { useRouter } from 'next/navigation';
 
 export default function MobileApp() {
-  const { user, loading, settings, summary, maskValue } = useAppContext();
+  const { user, loading, settings, summary, maskValue, isPrivacyMode, togglePrivacyMode } = useAppContext();
   const router = useRouter();
   const [activeItem, setActiveItem] = useState('Home');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -104,11 +104,8 @@ export default function MobileApp() {
                   <p className="text-[14px] font-semibold text-slate-700 dark:text-white uppercase tracking-wider">{t.reports}</p>
                   <p className="text-[11px] font-normal text-slate-400">View financial summaries</p>
                 </div>
-                <div className="p-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-lg">
-                  <PieChart size={18} />
-                </div>
+                <div className="p-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-lg"><PieChart size={18} /></div>
               </button>
-
             </div>
           </div>
         );
@@ -127,8 +124,12 @@ export default function MobileApp() {
     <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
         <header className="flex-shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl pt-safe-top z-10 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex flex-col items-center text-center p-3">
-            <img src="/logo-onelleve-clean.png" alt="Onelleve" className="w-[160px] h-auto object-contain" />
+          <div className="flex items-center justify-between p-3">
+            <div className="w-8"></div>
+            <img src="/logo-onelleve-clean.png" alt="Onelleve" className="w-auto h-8 object-contain" />
+            <button onClick={togglePrivacyMode} className="p-2 text-slate-400 hover:text-slate-700" title={isPrivacyMode ? "Show Values" : "Hide Values"}>
+              {isPrivacyMode ? <Eye size={18} /> : <EyeOff size={18} />}
+            </button>
           </div>
         </header>
 
