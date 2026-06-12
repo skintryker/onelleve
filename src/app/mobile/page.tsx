@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext, IncomeLog, Account } from '@/context/AppContext';
 import Auth from '@/components/Auth';
 import MobileNav from '@/components/mobile/MobileNav';
@@ -43,6 +43,8 @@ export default function MobileApp() {
     }
   }, [loading, user, settings, router]);
 
+  const isAnyModalOpen = isTransactionModalOpen || isAccountModalOpen || isIncomeModalOpen || isQuickAddOpen;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center">
@@ -57,7 +59,6 @@ export default function MobileApp() {
 
   const handleQuickAddSelect = (item: string, modal: string) => {
     setIsQuickAddOpen(false);
-
     if (modal === 'income') {
       setEditingIncome(null);
       setIsIncomeModalOpen(true);
@@ -74,136 +75,103 @@ export default function MobileApp() {
     switch (activeItem) {
       case 'Home':
         return (
-          <div className="space-y-3 pb-24">
-            {/* Clickable Cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setActiveItem('Accounts')} className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-center active:scale-95 transition-transform">
+          <div className="space-y-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
+              <button onClick={() => setActiveItem('Accounts')} className="col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center active:scale-[0.98] transition-transform">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.availableBalance}</p>
-                <h2 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
+                <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter">
                   ${maskValue(summary.availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </h2>
               </button>
-              <button onClick={() => setActiveItem('Income')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.incomeThisMonth}</p>
-                <p className="text-xl font-black text-emerald-600 tracking-tight break-words">
+              <button onClick={() => setActiveItem('Income')} className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[75px] active:scale-[0.98] transition-transform">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.incomeThisMonth}</p>
+                <p className="text-lg font-black text-emerald-600 tracking-tight break-words self-start">
                   ${maskValue(summary.incomeThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </button>
-              <button onClick={() => setActiveItem('Expenses')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.cashOutThisMonth}</p>
-                <p className="text-xl font-black text-rose-600 tracking-tight break-words">
+              <button onClick={() => setActiveItem('Expenses')} className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[75px] active:scale-[0.98] transition-transform">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.cashOutThisMonth}</p>
+                <p className="text-lg font-black text-rose-600 tracking-tight break-words self-start">
                   ${maskValue(summary.cashOutThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </button>
-              <button onClick={() => setActiveItem('Cards')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.creditCardsOutstanding}</p>
-                <p className="text-xl font-black text-amber-600 tracking-tight break-words">
+              <button onClick={() => setActiveItem('Cards')} className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[75px] active:scale-[0.98] transition-transform">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.creditCardsOutstanding}</p>
+                <p className="text-lg font-black text-amber-600 tracking-tight break-words self-start">
                   ${maskValue(summary.cardOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </button>
-              <button onClick={() => setActiveItem('Investments')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.investmentThisMonth}</p>
-                <p className="text-xl font-black text-indigo-600 tracking-tight break-words">
+              <button onClick={() => setActiveItem('Investments')} className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[75px] active:scale-[0.98] transition-transform">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.investmentThisMonth}</p>
+                <p className="text-lg font-black text-indigo-600 tracking-tight break-words self-start">
                   ${maskValue(summary.investmentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
               </button>
-              <button onClick={() => setActiveItem('Investments')} className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-95 transition-transform">
+              <button onClick={() => setActiveItem('Investments')} className="col-span-2 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-[0.98] transition-transform">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.investmentsTotal}</p>
-                  <p className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.investmentsTotal}</p>
+                  <p className="text-xl font-black text-slate-800 dark:text-white tracking-tighter">
                     ${maskValue(summary.investmentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                   </p>
                 </div>
-                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl">
-                  <TrendingUp size={24} />
+                <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-lg">
+                  <TrendingUp size={20} />
                 </div>
               </button>
-              <button onClick={() => setActiveItem('Reports')} className="col-span-2 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-95 transition-transform">
+              <button onClick={() => setActiveItem('Reports')} className="col-span-2 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-[0.98] transition-transform">
                 <div>
-                  <p className="text-[15px] font-semibold text-slate-800 dark:text-white uppercase tracking-wider">{t.reports}</p>
-                  <p className="text-[12px] font-normal text-slate-400">View financial summaries</p>
+                  <p className="text-[14px] font-semibold text-slate-700 dark:text-white uppercase tracking-wider">{t.reports}</p>
+                  <p className="text-[11px] font-normal text-slate-400">View financial summaries</p>
                 </div>
-                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-xl">
-                  <PieChart size={20} />
+                <div className="p-2.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-lg">
+                  <PieChart size={18} />
                 </div>
               </button>
             </div>
           </div>
         );
-      case 'Income':
-        return <MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onEditExpense={() => {}} onAdd={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} autoOpenModal={autoOpenModal === 'income'} onModalClose={() => setAutoOpenModal(null)} />;
-      case 'Expenses':
-        return <MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onEditIncome={() => {}} onAdd={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} autoOpenModal={autoOpenModal === 'expense'} onModalClose={() => setAutoOpenModal(null)} />;
-      case 'Accounts':
-        return <MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setEditingAccount(acc); setIsAccountModalOpen(true); }} onAddAccount={() => { setEditingAccount(null); setIsAccountModalOpen(true); }} />;
-      case 'Cards':
-        return <MobileCardsView autoOpenModal={autoOpenModal === 'card'} onModalClose={() => setAutoOpenModal(null)} />;
-      case 'Investments':
-        return <MobileInvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} />;
-      case 'Reports':
-        return <MobileReportsView autoOpenModal={autoOpenModal === 'report'} onModalClose={() => setAutoOpenModal(null)} />;
-      case 'Settings':
-        return <MobileSettingsView />;
-      case 'QuickAdd':
-        return null;
-      default:
-        return null;
+      // ... other cases
+      default: return null;
     }
   };
 
   return (
-    <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
+    <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="bg-white dark:bg-slate-900 pt-8 pb-6 px-4 relative">
-            <div className="flex flex-col items-center text-center">
-              <img
-                src="/logo-onelleve-clean.png"
-                alt="Onelleve"
-                className="w-[210px] h-auto object-contain"
-              />
-              <p className="mt-2 text-center text-[12px] tracking-[0.22em] uppercase text-slate-500 font-semibold">
-                Personal Finance Dashboard
-              </p>
-            </div>
+        {/* Header */}
+        <header className="flex-shrink-0 bg-white dark:bg-slate-900 pt-5 pb-4 px-4">
+          <div className="flex flex-col items-center text-center">
+            <img src="/logo-onelleve-clean.png" alt="Onelleve" className="w-[180px] h-auto object-contain" />
+            <p className="mt-1.5 text-center text-[10px] tracking-[0.2em] uppercase text-slate-500 font-semibold">
+              Personal Finance Dashboard
+            </p>
           </div>
-          <div className="p-4">
-            {renderView()}
-          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-y-auto p-3">
+          {renderView()}
         </main>
+        
+        {/* Modals are outside the main scroll flow */}
+        <TransactionModal isOpen={isTransactionModalOpen} onClose={() => setIsTransactionModalOpen(false)} editingTransaction={editingExpense} />
+        <AccountModal isOpen={isAccountModalOpen} onClose={() => setIsAccountModalOpen(false)} editingAccount={editingAccount} />
+        <IncomeModal isOpen={isIncomeModalOpen} onClose={() => setIsIncomeModalOpen(false)} editingIncome={editingIncome} />
+        <MobileQuickAdd isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onSelect={handleQuickAddSelect} />
 
-        <MobileNav 
-          activeItem={activeItem}
-          setActiveItem={(item) => {
-            if (item === 'QuickAdd') {
-              setIsQuickAddOpen(true);
-            } else {
-              setActiveItem(item);
-            }
-          }} 
-        />
-
-        <MobileQuickAdd 
-          isOpen={isQuickAddOpen} 
-          onClose={() => setIsQuickAddOpen(false)} 
-          onSelect={handleQuickAddSelect}
-        />
-
-        <TransactionModal 
-          isOpen={isTransactionModalOpen} 
-          onClose={() => { setIsTransactionModalOpen(false); setEditingExpense(null); }} 
-          editingTransaction={editingExpense}
-        />
-        <AccountModal 
-          isOpen={isAccountModalOpen} 
-          onClose={() => { setIsAccountModalOpen(false); setEditingAccount(null); setAutoOpenModal(null); }} 
-          editingAccount={editingAccount}
-        />
-        <IncomeModal
-          isOpen={isIncomeModalOpen}
-          onClose={() => { setIsIncomeModalOpen(false); setEditingIncome(null); }}
-          editingIncome={editingIncome}
-        />
+        {/* Bottom Nav */}
+        {!isAnyModalOpen && (
+          <MobileNav 
+            activeItem={activeItem}
+            setActiveItem={(item) => {
+              if (item === 'QuickAdd') {
+                setIsQuickAddOpen(true);
+              } else {
+                setActiveItem(item);
+              }
+            }} 
+          />
+        )}
       </div>
     </div>
   );
