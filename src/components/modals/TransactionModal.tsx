@@ -34,6 +34,7 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
   const [category, setCategory] = useState<ExpenseCategory | ''>('');
   const [date, setDate] = useState('');
   const [type, setType] = useState<TransactionType | ''>('');
+  const [paymentMethod, setPaymentMethod] = useState<'Bank Payment' | 'Credit Card Payment'>('Bank Payment');
   const [channel, setChannel] = useState<PaymentChannel | ''>('');
   const [bank, setBank] = useState('');
   const [card, setCard] = useState('');
@@ -78,18 +79,23 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
     e.preventDefault();
     setError(null);
 
-    // Basic Validations
-    if (!type) { setError('Please select transaction type.'); return; }
-    if (!category) { setError('Please select a category.'); return; }
-    if (!channel) { setError('Please select payment channel.'); return; }
-    
-    // Payment Type Specific Validations
-    if (type === 'Payment' || channel === 'Bank' || channel === 'Autopay') {
-      if (!bank) { setError('Please select source bank.'); return; }
-    }
-    
-    if (type === 'Payment' || channel === 'Credit Card') {
-      if (!card) { setError('Please select target card.'); return; }
+    if (type === 'Payment') {
+      if (paymentMethod === 'Credit Card Payment' && !card) {
+        setError('Please select target card for payment.'); return;
+      }
+      if (!bank) { setError('Please select source bank for payment.'); return; }
+    } else {
+      // Basic Validations
+      if (!type) { setError('Please select transaction type.'); return; }
+      if (!category) { setError('Please select a category.'); return; }
+      if (!channel) { setError('Please select payment channel.'); return; }
+
+      if (channel === 'Bank' || channel === 'Autopay') {
+        if (!bank) { setError('Please select source bank.'); return; }
+      }
+      if (channel === 'Credit Card') {
+        if (!card) { setError('Please select target card.'); return; }
+      }
     }
 
     if (paymentPlan === 'Installment') {
@@ -112,11 +118,11 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
       date,
       description: name,
       amount: parseFloat(amount),
-      category: category as ExpenseCategory,
+      category: type === 'Payment' ? 'Credit Card' : category as ExpenseCategory,
       transactionType: type as TransactionType,
-      paymentChannel: channel as PaymentChannel,
-      bank: (channel === 'Bank' || channel === 'Autopay' || type === 'Payment') ? bank : undefined,
-      creditCard: (channel === 'Credit Card' || type === 'Payment') ? card : undefined,
+      paymentChannel: type === 'Payment' ? 'Bank' : channel as PaymentChannel,
+      bank: bank,
+      creditCard: (type === 'Payment' && paymentMethod === 'Credit Card Payment') || channel === 'Credit Card' ? card : undefined,
       paymentPlan,
       currentInstallment: paymentPlan === 'Installment' ? parseInt(currentInstallment) : undefined,
       totalInstallments: paymentPlan === 'Installment' ? parseInt(totalInstallments) : undefined,
