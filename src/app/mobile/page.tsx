@@ -11,11 +11,10 @@ import MobileInvestmentsView from '@/components/mobile/views/MobileInvestmentsVi
 import MobileTransactionsView from '@/components/mobile/views/MobileTransactionsView';
 import MobileReportsView from '@/components/mobile/views/MobileReportsView';
 import MobileSettingsView from '@/components/mobile/views/MobileSettingsView';
-import MoreView from '@/components/mobile/views/MoreView';
 import TransactionModal from '@/components/modals/TransactionModal';
 import AccountModal from '@/components/modals/AccountModal';
 import IncomeModal from '@/components/modals/IncomeModal';
-import { Loader2, TrendingUp } from 'lucide-react';
+import { Loader2, TrendingUp, PieChart } from 'lucide-react';
 import { translations, Language } from '@/utils/translations';
 import { useRouter } from 'next/navigation';
 
@@ -32,9 +31,6 @@ export default function MobileApp() {
   const [editingIncome, setEditingIncome] = useState<IncomeLog | null>(null);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-
-  const secondaryViews = ['Accounts', 'Cards', 'Investments', 'Reports', 'Settings'];
-  const isSecondaryView = secondaryViews.includes(activeItem);
 
   const currentLang = (settings?.language as Language) || 'en';
   const t = translations[currentLang];
@@ -79,49 +75,39 @@ export default function MobileApp() {
       case 'Home':
         return (
           <div className="space-y-3 pb-24">
+            {/* Clickable Cards */}
             <div className="grid grid-cols-2 gap-3">
-              {/* Available Balance */}
-              <div className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+              <button onClick={() => setActiveItem('Accounts')} className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-center active:scale-95 transition-transform">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.availableBalance}</p>
                 <h2 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">
                   ${maskValue(summary.availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </h2>
-              </div>
-
-              {/* Income */}
-              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+              </button>
+              <button onClick={() => setActiveItem('Income')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.incomeThisMonth}</p>
                 <p className="text-xl font-black text-emerald-600 tracking-tight break-words">
                   ${maskValue(summary.incomeThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
-              </div>
-
-              {/* Cash Out */}
-              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+              </button>
+              <button onClick={() => setActiveItem('Expenses')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.cashOutThisMonth}</p>
                 <p className="text-xl font-black text-rose-600 tracking-tight break-words">
                   ${maskValue(summary.cashOutThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
-              </div>
-
-              {/* Credit Cards Outstanding */}
-              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+              </button>
+              <button onClick={() => setActiveItem('Cards')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.creditCardsOutstanding}</p>
                 <p className="text-xl font-black text-amber-600 tracking-tight break-words">
                   ${maskValue(summary.cardOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
-              </div>
-
-              {/* Investment This Month */}
-              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px]">
+              </button>
+              <button onClick={() => setActiveItem('Investments')} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[90px] active:scale-95 transition-transform">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-tight">{t.investmentThisMonth}</p>
                 <p className="text-xl font-black text-indigo-600 tracking-tight break-words">
                   ${maskValue(summary.investmentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </p>
-              </div>
-
-              {/* Investments Total */}
-              <div className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+              </button>
+              <button onClick={() => setActiveItem('Investments')} className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-95 transition-transform">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.investmentsTotal}</p>
                   <p className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">
@@ -131,7 +117,16 @@ export default function MobileApp() {
                 <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl">
                   <TrendingUp size={24} />
                 </div>
-              </div>
+              </button>
+              <button onClick={() => setActiveItem('Reports')} className="col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-95 transition-transform">
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.reports}</p>
+                  <p className="text-lg font-medium text-slate-500 dark:text-slate-400">View financial summaries</p>
+                </div>
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-xl">
+                  <PieChart size={24} />
+                </div>
+              </button>
             </div>
           </div>
         );
@@ -139,8 +134,6 @@ export default function MobileApp() {
         return <MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onEditExpense={() => {}} onAdd={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} autoOpenModal={autoOpenModal === 'income'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Expenses':
         return <MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onEditIncome={() => {}} onAdd={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} autoOpenModal={autoOpenModal === 'expense'} onModalClose={() => setAutoOpenModal(null)} />;
-      case 'More':
-        return <MoreView onNavigate={setActiveItem} />;
       case 'Accounts':
         return <MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setEditingAccount(acc); setIsAccountModalOpen(true); }} onAddAccount={() => { setEditingAccount(null); setIsAccountModalOpen(true); }} />;
       case 'Cards':
@@ -180,8 +173,7 @@ export default function MobileApp() {
         </main>
 
         <MobileNav 
-          activeItem={activeItem} 
-          isSecondaryView={isSecondaryView}
+          activeItem={activeItem}
           setActiveItem={(item) => {
             if (item === 'QuickAdd') {
               setIsQuickAddOpen(true);
