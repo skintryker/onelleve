@@ -123,17 +123,23 @@ export default function MobileApp() {
   return (
     <div className="min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center">
       <div className="w-full max-w-[430px] bg-slate-50 dark:bg-[#020617] h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
-        <header className="flex-shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl pt-safe-top z-10 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between p-3">
-            <div className="w-8"></div>
-            <img src="/logo-onelleve-clean.png" alt="Onelleve" className="w-auto h-8 object-contain" />
-            <button onClick={togglePrivacyMode} className="p-2 text-slate-400 hover:text-slate-700" title={isPrivacyMode ? "Show Values" : "Hide Values"}>
-              {isPrivacyMode ? <Eye size={18} /> : <EyeOff size={18} />}
-            </button>
+        <header className="flex-shrink-0 bg-white dark:bg-slate-900 pt-8 pb-6 px-4 relative">
+          <div className="flex flex-col items-center text-center">
+            <img
+              src="/logo-onelleve-clean.png"
+              alt="Onelleve"
+              className="w-[210px] h-auto object-contain"
+            />
+            <p className="mt-2 text-center text-[12px] tracking-[0.22em] uppercase text-slate-500 font-semibold">
+              Personal Finance Dashboard
+            </p>
           </div>
+          <button onClick={togglePrivacyMode} className="absolute top-6 right-4 p-2 text-slate-400 hover:text-slate-700" title={isPrivacyMode ? "Show Values" : "Hide Values"}>
+            {isPrivacyMode ? <Eye size={20} /> : <EyeOff size={20} />}
+          </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-3">
+        <main className="flex-1 overflow-y-auto p-4">
           {renderView()}
         </main>
         
