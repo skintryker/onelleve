@@ -139,6 +139,7 @@ export const translations = {
     factoryReset: 'Factory Reset',
     factoryResetDesc: 'Delete all financial data and history from this account. This cannot be undone.',
     factoryResetConfirm: 'Are you sure you want to delete EVERYTHING? This will remove all transactions, bank accounts, credit cards, investments, and reports. Type RESET to confirm.',
+    deleteThisRecord: "Delete this record?",
   },
   pt: {
     dashboard: 'Painel',
@@ -278,6 +279,7 @@ export const translations = {
     factoryReset: 'Reset de Fábrica',
     factoryResetDesc: 'Apaga todos os dados financeiros e histórico desta conta. Isso não pode ser desfeito.',
     factoryResetConfirm: 'Tem certeza que deseja apagar TUDO? Isso removerá todas as transações, contas bancárias, cartões de crédito, investimentos e relatórios. Digite RESET para confirmar.',
+    deleteThisRecord: "Excluir este registro?",
   },
   es: {
     dashboard: 'Panel',
@@ -400,10 +402,10 @@ export const translations = {
     updateCard: 'Actualizar Tarjeta',
     addCard: 'Agregar Tarjeta',
     reportGenerator: 'Generador de Informes',
-    selectPeriodToAnalyze: 'Seleccione un período para analizar',
-    reportName: 'Nombre del Informe',
+    selectPeriodToAnalyze: 'Selecione um período para analisar',
+    reportName: 'Nome do Relatório',
     noReportsGeneratedYet: 'Aún no hay informes generados',
-    selectMonthToGenerate: 'Seleccione un mes arriba para generar su primer resumen financiero.',
+    selectMonthToGenerate: 'Selecione um mês acima para gerar seu primeiro resumo financeiro.',
     spendingByCategory: 'Gastos por Categoría',
     noSpendingData: 'Sin datos de gastos para este período.',
     actualCashOutDesc: 'Salida de dinero real',
@@ -417,6 +419,7 @@ export const translations = {
     factoryReset: 'Reset de Fábrica',
     factoryResetDesc: 'Borra todos los datos financieros e historial de esta cuenta. Esto no se puede deshacer.',
     factoryResetConfirm: '¿Estás seguro de que quieres borrar TODO? Esto eliminará todas las transacciones, cuentas bancarias, tarjetas de crédito, inversiones e informes. Escribe RESET para confirmar.',
+    deleteThisRecord: "¿Eliminar este registro?",
   }
 };
 
