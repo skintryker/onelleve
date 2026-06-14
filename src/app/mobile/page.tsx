@@ -72,27 +72,27 @@ export default function MobileApp() {
         return (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setActiveItem('Accounts')} className="col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center active:scale-[0.98] transition-transform">
+              <button onClick={() => setActiveItem('Accounts')} className="col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-left active:scale-[0.98] transition-transform">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t.availableBalance}</p>
                 <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter">${maskValue(summary.availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</h2>
               </button>
-              <button onClick={() => setActiveItem('Income')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform">
+              <button onClick={() => setActiveItem('Income')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform text-left">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.incomeThisMonth}</p>
-                <p className="text-lg font-black text-emerald-600 tracking-tight break-words self-start">${maskValue(summary.incomeThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
+                <p className="text-lg font-black text-emerald-600 tracking-tight break-words">${maskValue(summary.incomeThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
               </button>
-              <button onClick={() => setActiveItem('Expenses')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform">
+              <button onClick={() => setActiveItem('Expenses')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform text-left">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.cashOutThisMonth}</p>
-                <p className="text-lg font-black text-rose-600 tracking-tight break-words self-start">${maskValue(summary.cashOutThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
+                <p className="text-lg font-black text-rose-600 tracking-tight break-words">${maskValue(summary.cashOutThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
               </button>
-              <button onClick={() => setActiveItem('Cards')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform">
+              <button onClick={() => setActiveItem('Cards')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform text-left">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.creditCardsOutstanding}</p>
-                <p className="text-lg font-black text-amber-600 tracking-tight break-words self-start">${maskValue(summary.cardOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
+                <p className="text-lg font-black text-amber-600 tracking-tight break-words">${maskValue(summary.cardOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
               </button>
-              <button onClick={() => setActiveItem('Investments')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform">
+              <button onClick={() => setActiveItem('Investments')} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[80px] active:scale-[0.98] transition-transform text-left">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{t.investmentThisMonth}</p>
-                <p className="text-lg font-black text-indigo-600 tracking-tight break-words self-start">${maskValue(summary.investmentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
+                <p className="text-lg font-black text-indigo-600 tracking-tight break-words">${maskValue(summary.investmentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
               </button>
-              <button onClick={() => setActiveItem('Investments')} className="col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-[0.98] transition-transform">
+              <button onClick={() => setActiveItem('Investments')} className="col-span-2 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between active:scale-[0.98] transition-transform text-left">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.investmentsTotal}</p>
                   <p className="text-xl font-black text-slate-800 dark:text-white tracking-tighter">${maskValue(summary.investmentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</p>
