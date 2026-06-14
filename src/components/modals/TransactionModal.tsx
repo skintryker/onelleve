@@ -227,3 +227,5 @@ const TransactionModal = ({ isOpen, onClose, editingTransaction }: TransactionMo
     </div>
   );
 };
+
+export default TransactionModal;

@@ -109,8 +109,8 @@ export default function MobileApp() {
             </div>
           </div>
         );
-      case 'Income': return <MobileTransactionsView type="income" onEditIncome={(log) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onAdd={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} autoOpenModal={autoOpenModal === 'income'} onModalClose={() => setAutoOpenModal(null)} onEditExpense={() => {}} />;
-      case 'Expenses': return <MobileTransactionsView type="expense" onEditExpense={(log) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onAdd={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} autoOpenModal={autoOpenModal === 'expense'} onModalClose={() => setAutoOpenModal(null)} onEditIncome={() => {}} />;
+      case 'Income': return <MobileTransactionsView type="income" onEditIncome={(log: IncomeLog) => { setEditingIncome(log); setIsIncomeModalOpen(true); }} onAdd={() => { setEditingIncome(null); setIsIncomeModalOpen(true); }} autoOpenModal={autoOpenModal === 'income'} onModalClose={() => setAutoOpenModal(null)} onEditExpense={() => {}} />;
+      case 'Expenses': return <MobileTransactionsView type="expense" onEditExpense={(log: any) => { setEditingExpense(log); setIsTransactionModalOpen(true); }} onAdd={() => { setEditingExpense(null); setIsTransactionModalOpen(true); }} autoOpenModal={autoOpenModal === 'expense'} onModalClose={() => setAutoOpenModal(null)} onEditIncome={() => {}} />;
       case 'Accounts': return <MobileAccountsView autoOpenModal={autoOpenModal === 'account'} onModalClose={() => setAutoOpenModal(null)} onEditAccount={(acc) => { setEditingAccount(acc); setIsAccountModalOpen(true); }} onAddAccount={() => { setEditingAccount(null); setIsAccountModalOpen(true); }} />;
       case 'Cards': return <MobileCardsView autoOpenModal={autoOpenModal === 'card'} onModalClose={() => setAutoOpenModal(null)} />;
       case 'Investments': return <MobileInvestmentsView autoOpenModal={autoOpenModal === 'investment'} onModalClose={() => setAutoOpenModal(null)} />;
